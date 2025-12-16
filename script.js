@@ -8,7 +8,7 @@ const resultadoDiv = document.getElementById("resultadoTerritorio");
 const territorioInput = document.getElementById("territorioInput");
 
 // URL base del backend
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://backend-territorios.onrender.com";
 
 // ===== Función para mostrar mensajes =====
 function mostrarMensaje(texto, tipo = "success") {
