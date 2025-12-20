@@ -1,140 +1,76 @@
-console.log("SCRIPT CARGADO - VERSION NUEVA");
+// ===============================
+// script.js
+// Punto de entrada de la aplicación
+// ===============================
 
-// ===== Obtener elementos del DOM =====
-const form = document.getElementById("asignacionForm");
-const mensaje = document.getElementById("mensaje");
-const consultarBtn = document.getElementById("consultarBtn");
-const resultadoDiv = document.getElementById("resultadoTerritorio");
-const territorioInput = document.getElementById("territorioInput");
+// ----- Importaciones -----
 
-// URL base del backend
-const BASE_URL = "https://backend-territorios.onrender.com";
+import { UI } from "./ui.js";
+import { Api } from "./api.js";
+import { DOM } from "./dom.js";
+import { Validators } from "./validators.js";
 
-// ===== Función para mostrar mensajes =====
-function mostrarMensaje(texto, tipo = "success") {
-  mensaje.textContent = texto;
-  mensaje.classList.remove("text-green-600", "text-red-600");
+// ===============================
 
-  if (tipo === "success") {
-    mensaje.classList.add("text-green-600");
-  } else {
-    mensaje.classList.add("text-red-600");
-  }
-}
+console.log("SCRIPT CARGADO - VERSION MODULAR");
 
-// ===== CONSULTAR ASIGNACIONES POR TERRITORIO =====
+// ===============================
+// Controllers (orquestación)
+// ===============================
 async function consultarAsignaciones(numero) {
-  resultadoDiv.innerHTML = "";
+  UI.limpiarResultados();
 
-  if (!numero || isNaN(numero)) {
-    resultadoDiv.innerHTML =
-      "<p class='text-red-600'>Ingrese un número de territorio válido.</p>";
+  if (!Validators.territorioValido(numero)) {
+    UI.mostrarErrorResultados("Ingrese un número de territorio válido.");
     return;
   }
 
-  console.log("URL llamada:", `${BASE_URL}/territorios/${numero}`);
-
-
   try {
-   const response = await fetch(
-  `${BASE_URL}/territorios/${numero}`
-  );
-
-    if (!response.ok) {
-      throw new Error("Error HTTP " + response.status);
-    }
-
-    const data = await response.json();
-
-    if (!data.asignaciones || data.asignaciones.length === 0){
-      resultadoDiv.innerHTML =
-        "<p>No se encontraron asignaciones para este territorio.</p>";
-      return;
-    }
-
-    let html = `<h3 class="font-semibold mb-2">
-      Asignaciones del territorio ${numero}
-    </h3>`;
-
-    html += "<ul class='list-disc pl-5'>";
-
-    data.asignaciones.forEach(a => {
-      html += `<li class="mb-2">
-        <strong>Conductor:</strong> ${a.conductor}<br>
-        <strong>Fecha asignado:</strong> ${a.fecha_asignado || "—"}<br>
-        <strong>Fecha completado:</strong> ${a.fecha_completado || "—"}<br>
-        <strong>Total abarcado:</strong> ${a.cantidad_abarcado || "—"}
-      </li>`;
-    });
-
-    html += "</ul>";
-    resultadoDiv.innerHTML = html;
-
+    const data = await Api.getTerritorio(numero);
+    UI.renderAsignaciones(numero, data.asignaciones || []);
   } catch (error) {
-    resultadoDiv.innerHTML =
-      "<p class='text-red-600'>Error al consultar el backend.</p>";
-    console.error("Error real:", error);
+    UI.mostrarErrorResultados("Error al consultar el backend.");
+    console.error("Error consultarAsignaciones:", error);
   }
 }
 
-// ===== Evento click del botón Consultar =====
-consultarBtn.addEventListener("click", () => {
-  const numero = territorioInput.value.trim();
-  consultarAsignaciones(numero);
+async function enviarAsignacion(asignacion) {
+  if (!Validators.asignacionCompleta(asignacion)) {
+    UI.mostrarMensaje("Por favor completa todos los campos", "error");
+    return;
+  }
+
+  try {
+    const result = await Api.crearAsignacion(asignacion);
+    UI.mostrarMensaje(result.message, "success");
+    DOM.form.reset();
+
+    if (DOM.territorioInput.value.trim() === String(asignacion.numero_territorio)) {
+      consultarAsignaciones(asignacion.numero_territorio);
+    }
+  } catch (error) {
+    UI.mostrarMensaje(error.detail || "Error al agregar asignación", "error");
+    console.error("Error enviarAsignacion:", error);
+  }
+}
+
+// ===============================
+// Eventos
+// ===============================
+DOM.consultarBtn.addEventListener("click", () => {
+  consultarAsignaciones(DOM.territorioInput.value.trim());
 });
 
-// ===== INSERTAR ASIGNACIÓN =====
-async function enviarAsignacion(data) {
-  try {
-    const response = await fetch(`${BASE_URL}/asignaciones`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      mostrarMensaje(result.message, "success");
-      form.reset();
-
-      // Refresca automáticamente si se está consultando el mismo territorio
-      if (territorioInput.value.trim() === String(data.numero_territorio)) {
-        consultarAsignaciones(data.numero_territorio);
-      }
-
-    } else {
-      mostrarMensaje(result.detail || "Error al agregar asignación", "error");
-    }
-
-  } catch (error) {
-    mostrarMensaje("Error de conexión al backend", "error");
-    console.error("Error real al insertar:", error);
-  }
-}
-
-// ===== Evento submit del formulario =====
-form.addEventListener("submit", (e) => {
+DOM.form.addEventListener("submit", e => {
   e.preventDefault();
 
   const asignacion = {
-    numero_territorio: parseInt(document.getElementById("numero_territorio").value),
-    conductor: document.getElementById("conductor").value.trim(),
-    fecha_asignado: document.getElementById("fecha_asignado").value,
-    fecha_completado: document.getElementById("fecha_completado").value,
-    total_abarcado: document.getElementById("total_abarcado").value.trim()
+    numero_territorio: parseInt(DOM.inputs.numeroTerritorio.value),
+    conductor: DOM.inputs.conductor.value.trim(),
+    fecha_asignado: DOM.inputs.fechaAsignado.value,
+    fecha_completado: DOM.inputs.fechaCompletado.value,
+    total_abarcado: DOM.inputs.totalAbarcado.value.trim()
   };
-
-  if (
-    !asignacion.numero_territorio ||
-    !asignacion.conductor ||
-    !asignacion.fecha_asignado ||
-    !asignacion.fecha_completado ||
-    !asignacion.total_abarcado
-  ) {
-    mostrarMensaje("Por favor completa todos los campos", "error");
-    return;
-  }
 
   enviarAsignacion(asignacion);
 });
