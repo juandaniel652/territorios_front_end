@@ -4,19 +4,19 @@
 // ===============================
 
 // ----- Importaciones -----
-
-import { UI } from "./ui.js";
+import { UI, renderSugerencias, renderGraficoSugerencias, mostrarSeccion } from "./ui.js";
 import { Api } from "./api.js";
 import { DOM } from "./dom.js";
 import { Validators } from "./validators.js";
 
-// ===============================
 
+// ===============================
 console.log("SCRIPT CARGADO - VERSION MODULAR");
 
 // ===============================
 // Controllers (orquestación)
 // ===============================
+
 async function consultarAsignaciones(numero) {
   UI.limpiarResultados();
 
@@ -54,9 +54,23 @@ async function enviarAsignacion(asignacion) {
   }
 }
 
+async function consultarSugerencias() {
+  const rango = DOM.rangoSelect.value;
+
+  try {
+    const data = await Api.getSugerencias(rango);
+    renderSugerencias(data.sugerencias);
+    renderGraficoSugerencias(data.sugerencias);
+  } catch (error) {
+    console.error("Error sugerencias:", error);
+    UI.mostrarErrorResultados("Error al obtener sugerencias");
+  }
+}
+
 // ===============================
 // Eventos
 // ===============================
+
 DOM.consultarBtn.addEventListener("click", () => {
   consultarAsignaciones(DOM.territorioInput.value.trim());
 });
@@ -65,7 +79,7 @@ DOM.form.addEventListener("submit", e => {
   e.preventDefault();
 
   const asignacion = {
-    numero_territorio: parseInt(DOM.inputs.numeroTerritorio.value),
+    numero_territorio: parseInt(DOM.inputs.numeroTerritorio.value, 10),
     conductor: DOM.inputs.conductor.value.trim(),
     fecha_asignado: DOM.inputs.fechaAsignado.value,
     fecha_completado: DOM.inputs.fechaCompletado.value,
@@ -73,4 +87,22 @@ DOM.form.addEventListener("submit", e => {
   };
 
   enviarAsignacion(asignacion);
+});
+
+DOM.btnBuscarSugerencias.addEventListener("click", consultarSugerencias);
+
+document.getElementById("btnDashboard").addEventListener("click", () => {
+  mostrarSeccion("dashboard");
+});
+
+document.getElementById("btnAgregar").addEventListener("click", () => {
+  mostrarSeccion("agregar");
+});
+
+document.getElementById("btnConsultar").addEventListener("click", () => {
+  mostrarSeccion("consultar");
+});
+
+document.getElementById("btnSugerencias").addEventListener("click", () => {
+  mostrarSeccion("sugerencias");
 });

@@ -37,3 +37,17 @@ export async function enviarAsignacion(asignacion) {
     console.error(error);
   }
 }
+
+export async function cargarSugerencias() {
+  const rango = DOM.rangoSelect.value;
+
+  try {
+    const data = await Api.getSugerencias(rango);
+
+    UI.renderSugerencias(data.sugerencias);
+    UI.renderGraficoSugerencias(data.sugerencias);
+
+  } catch (e) {
+    UI.mostrarError("Error al cargar sugerencias");
+  }
+}

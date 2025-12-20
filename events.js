@@ -18,3 +18,8 @@ DOM.form.addEventListener("submit", e => {
 
   enviarAsignacion(asignacion);
 });
+
+DOM.btnBuscarSugerencias.addEventListener("click", () => {
+  Controller.cargarSugerencias();
+});
+
