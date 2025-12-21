@@ -25,6 +25,19 @@ export const DOM = {
   btnBuscarSugerencias: document.getElementById("btnBuscarSugerencias"),
   rangoSelect: document.getElementById("rangoSelect"),
   resultadoSugerencias: document.getElementById("resultadoSugerencias"),
+
+  // ====== Secciones ======
+  mostrarSeccion: function(id) {
+    document.querySelectorAll("main section").forEach(sec => {
+      sec.classList.add("hidden");
+      sec.classList.remove("animate-section-in");
+    });
+
+    const activa = document.getElementById(id);
+    activa.classList.remove("hidden");
+    void activa.offsetWidth; // fuerza repaint para animación
+    activa.classList.add("animate-section-in");
+  }
 };
 
 export const SECCIONES = {

@@ -115,29 +115,38 @@
     <!-- ================= Agregar ================= -->
     <section id="seccionAgregar" class="section-base bg-white shadow-2xl rounded-xl p-8 space-y-6 hidden">
       <h3 class="text-2xl font-semibold">Agregar Asignación</h3>
-
+    
       <form id="asignacionForm" class="space-y-5">
         <input id="numero_territorio" type="number" placeholder="Número de territorio"
           class="w-full border rounded-lg p-3" required />
-
+      
         <input id="conductor" type="text" placeholder="Nombre del conductor"
           class="w-full border rounded-lg p-3" required />
-
+      
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input id="fecha_asignado" type="date" class="border rounded-lg p-3" required />
-          <input id="fecha_completado" type="date" class="border rounded-lg p-3" required />
+          <div>
+            <label for="fecha_asignado" class="block text-gray-700 font-medium mb-1">Fecha Asignado (Domingos)</label>
+            <select id="fecha_asignado" class="w-full border rounded-lg p-3" required></select>
+          </div>
+        
+          <div>
+            <label for="fecha_completado" class="block text-gray-700 font-medium mb-1">Fecha Completado (Semana siguiente)</label>
+            <select id="fecha_completado" class="w-full border rounded-lg p-3" required></select>
+          </div>
         </div>
-
+      
         <input id="total_abarcado" type="text" placeholder="Total abarcado"
           class="w-full border rounded-lg p-3" required />
-
+      
         <button class="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700">
           Agregar
         </button>
       </form>
-
+    
       <div id="mensaje" class="text-center font-medium"></div>
     </section>
+
+
 
     <!-- ================= Consultar ================= -->
     <section id="seccionConsultar" class="section-base bg-white shadow-2xl rounded-xl p-8 space-y-6 hidden">
