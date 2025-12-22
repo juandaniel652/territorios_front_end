@@ -1,0 +1,7 @@
+{
+  "routes": [
+    { "src": "^/$", "dest": "/frontend/dashboard/index.html" },
+    { "src": "^/login$", "dest": "/frontend/login/index.html" },
+    { "src": "^/(.*)$", "dest": "/frontend/$1" }
+  ]
+}
