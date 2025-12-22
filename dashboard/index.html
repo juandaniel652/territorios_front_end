@@ -84,6 +84,7 @@
       <button id="btnMobileSidebar" class="md:hidden bg-indigo-600 text-white px-4 py-2 rounded-lg">
         Menú
       </button>
+
     </header>
 
     <!-- ================= Dashboard ================= -->
@@ -186,6 +187,16 @@
     </section>
 
   </main>
+
+  <script type="module">
+    // Verificar token en localStorage
+    const token = localStorage.getItem("token");
+    if (!token) {
+      // Redirigir al login si no hay token
+      window.location.href = "../login/index.html";
+    }
+  </script>
+
 
   <!-- ================= JS ================= -->
   <script type="module" src="script.js"></script>

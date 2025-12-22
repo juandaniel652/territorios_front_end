@@ -1,0 +1,17 @@
+frontend/
+│
+├── login/
+│   ├── index.html        <-- Login page
+│   ├── login.js          <-- JS específico de login
+│   └── login.css         <-- CSS de login
+│
+├── dashboard/
+│   ├── index.html        <-- Dashboard principal
+│   ├── script.js         <-- JS con tus funciones de asignaciones, fechas, sugerencias, etc.
+│   ├── ui.js
+│   ├── api.js
+│   ├── dom.js
+│   └── validators.js
+│
+├── assets/               <-- imágenes, iconos, fonts, etc.
+└── styles/               <-- CSS global, si querés compartir

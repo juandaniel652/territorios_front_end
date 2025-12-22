@@ -1,0 +1,139 @@
+/* RESET BÁSICO Y FIX CLAVE */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Evita scroll horizontal fantasma */
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* BODY */
+body {
+    margin: 0;
+    font-family: 'Inter', Arial, sans-serif;
+    background: linear-gradient(135deg, #e0f2ff, #f5f5f5);
+    transition: background 0.5s ease-in-out;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.login-container {
+    width: 100%;
+    max-width: 380px;
+    margin: 60px auto;
+    padding: 35px;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
+    transition: all 0.4s ease;
+}
+
+/* TÍTULO */
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #1e3a8a;
+    font-weight: 600;
+}
+
+/* FORM */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    color: #444;
+    font-size: 14px;
+}
+
+/* INPUTS */
+input {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+input:focus {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 8px rgba(30,58,138,0.3);
+    outline: none;
+}
+
+/* BOTÓN */
+button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #1e3a8a, #0f1e5a);
+    color: white;
+    border: none;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+button:hover {
+    transform: translateY(-2px) scale(1.02);
+    background: linear-gradient(135deg, #0f1e5a, #0a143d);
+}
+
+/* MENSAJE DE ERROR */
+.error-message {
+    color: #d9534f;
+    margin-top: 12px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+/* Tablets */
+@media (max-width: 768px) {
+    .login-container {
+        margin: 40px auto;
+        padding: 28px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    input,
+    button {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+/* Celulares */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .login-container {
+        margin: 0 auto;
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    input,
+    button {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
