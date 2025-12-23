@@ -2,11 +2,10 @@
 // script.js (Dashboard con login)
 // ===============================
 
-import { UI } from "/dashboard/ui.js";
-import { Api } from "/dashboard/api.js";
-import { DOM } from "/dashboard/dom.js";
-import { Validators } from "/dashboard/validators.js";
-
+import { UI, renderSugerencias, renderGraficoSugerencias } from "../dashboard/ui.js";
+import { Api } from "../dashboard/api.js";
+import { DOM } from "../dashboard/dom.js";
+import { Validators } from "../dashboard/validators.js";
 
 console.log("SCRIPT CARGADO - VERSION FINAL");
 
@@ -22,15 +21,11 @@ if (!token) {
 
 // Función de logout
 function setupLogout() {
-    const container = document.getElementById("logoutContainer");
-
     const btnLogout = document.createElement("button");
     btnLogout.id = "btnLogout";
     btnLogout.textContent = "Salir";
-    btnLogout.className =
-        "h-10 flex items-center justify-center bg-red-600 text-white px-4 rounded-lg hover:bg-red-700";
-
-    container.appendChild(btnLogout);
+    btnLogout.className = "bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 absolute top-6 right-6";
+    document.body.appendChild(btnLogout);
 
     btnLogout.addEventListener("click", () => {
         localStorage.removeItem("token");
@@ -194,45 +189,3 @@ document.getElementById("btnAgregar").addEventListener("click", () => DOM.mostra
 document.getElementById("btnConsultar").addEventListener("click", () => DOM.mostrarSeccion("seccionConsultar"));
 document.getElementById("btnSugerencias").addEventListener("click", () => DOM.mostrarSeccion("seccionSugerencias"));
 
-
-// ===============================
-// Sidebar Toggle (Mobile)
-// ===============================
-
-const sidebar = document.getElementById("sidebar");
-const btnToggleMenu = document.getElementById("btnToggleMenu");
-const overlay = document.getElementById("overlay");
-
-// Abrir / cerrar sidebar
-function toggleSidebar() {
-    sidebar.classList.toggle("open");
-    overlay.classList.toggle("active");
-}
-
-// Cerrar sidebar
-function closeSidebar() {
-    sidebar.classList.remove("open");
-    overlay.classList.remove("active");
-}
-
-// Botón hamburguesa
-btnToggleMenu?.addEventListener("click", toggleSidebar);
-
-// Click fuera (overlay)
-overlay?.addEventListener("click", closeSidebar);
-
-// ===============================
-// Cerrar sidebar al navegar (mobile)
-// ===============================
-
-[
-    "btnDashboard",
-    "btnAgregar",
-    "btnConsultar",
-    "btnSugerencias",
-].forEach(id => {
-    const btn = document.getElementById(id);
-    btn?.addEventListener("click", () => {
-        closeSidebar();
-    });
-});
