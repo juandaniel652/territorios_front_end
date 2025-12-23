@@ -1,5 +1,6 @@
 // login.js
 import { Api } from "../dashboard/api.js"; // suponiendo que api.js contiene funciones de fetch para tu backend
+import { CONFIG } from "../dashboard/config.js";
 
 const loginForm = document.getElementById("loginForm");
 const errorMessage = document.getElementById("errorMessage");
@@ -20,11 +21,13 @@ loginForm.addEventListener("submit", async (e) => {
         const formData = new URLSearchParams();
         formData.append("username", email);
         formData.append("password", password);
-            
-        const res = await fetch("http://127.0.0.1:8000/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: formData
+
+        const res = await fetch(`${CONFIG.BASE_URL}/auth/login`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: formData
         });
 
         const data = await res.json();
