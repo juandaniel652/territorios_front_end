@@ -2,10 +2,10 @@
 // script.js (Dashboard con login)
 // ===============================
 
-import { UI, renderSugerencias, renderGraficoSugerencias } from "../dashboard/ui.js";
-import { Api } from "../dashboard/api.js";
-import { DOM } from "../dashboard/dom.js";
-import { Validators } from "../dashboard/validators.js";
+import { UI, renderSugerencias, renderGraficoSugerencias } from "./dashboard/ui.js";
+import { Api } from "./dashboard/api.js";
+import { DOM } from "./dashboard/dom.js";
+import { Validators } from "./dashboard/validators.js";
 
 console.log("SCRIPT CARGADO - VERSION FINAL");
 
