@@ -215,38 +215,7 @@
   <!-- ================= JS ================= -->
   <script type="module" src="script.js"></script>
 
-  <!-- Sidebar mobile toggle -->
-  <script>
-    const sidebar = document.getElementById("sidebar");
-    const btnMobileMenu = document.getElementById("btnMobileMenu");
 
-    btnMobileMenu.onclick = () => {
-      sidebar.classList.toggle("-translate-x-full");
-    };
-
-    function cerrarSidebarMobile() {
-      if (window.innerWidth < 768) {
-        sidebar.classList.add("-translate-x-full");
-      }
-    }
-
-    document.getElementById("btnDashboard").onclick = () => {
-      mostrarSeccion("seccionDashboard");
-      cerrarSidebarMobile();
-    };
-    document.getElementById("btnAgregar").onclick = () => {
-      mostrarSeccion("seccionAgregar");
-      cerrarSidebarMobile();
-    };
-    document.getElementById("btnConsultar").onclick = () => {
-      mostrarSeccion("seccionConsultar");
-      cerrarSidebarMobile();
-    };
-    document.getElementById("btnSugerencias").onclick = () => {
-      mostrarSeccion("seccionSugerencias");
-      cerrarSidebarMobile();
-    };
-  </script>
 
 </body>
 </html>
