@@ -20,13 +20,9 @@ if (!token) {
 }
 
 // Función de logout
-function setupLogout() {
-    const btnLogout = document.createElement("button");
-    btnLogout.id = "btnLogout";
-    btnLogout.textContent = "Salir";
-    btnLogout.className = "bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 absolute top-6 right-6";
-    document.body.appendChild(btnLogout);
+const btnLogout = document.getElementById("btnLogout");
 
+if (btnLogout) {
     btnLogout.addEventListener("click", () => {
         localStorage.removeItem("token");
         window.location.href = "../login/index.html";
