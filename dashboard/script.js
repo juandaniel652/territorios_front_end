@@ -29,8 +29,6 @@ if (btnLogout) {
     });
 }
 
-// Inicializar logout
-setupLogout();
 
 // ===============================
 // Helpers (fechas, domingos, semana completado)
