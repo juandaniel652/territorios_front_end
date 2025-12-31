@@ -29,10 +29,12 @@ if (btnLogout) {
     });
 }
 
-
 // ===============================
 // Helpers (fechas, domingos, semana completado)
 // ===============================
+
+// Nombres de días en español
+const diasES = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 
 function generarUltimosDomingos(cantidad = 10) {
     const hoy = new Date();
@@ -47,7 +49,7 @@ function generarUltimosDomingos(cantidad = 10) {
         const yyyy = fecha.getFullYear();
         const mm = String(fecha.getMonth() + 1).padStart(2, "0");
         const dd = String(fecha.getDate()).padStart(2, "0");
-        domingos.push(`${yyyy}-${mm}-${dd}`);
+        domingos.push({ iso: `${yyyy}-${mm}-${dd}`, dia: diasES[fecha.getDay()] });
     }
 
     return domingos;
@@ -63,7 +65,7 @@ function obtenerSemanaCompletado(domingoISO) {
         const yyyy = dia.getFullYear();
         const mm = String(dia.getMonth() + 1).padStart(2, "0");
         const dd = String(dia.getDate()).padStart(2, "0");
-        dias.push(`${yyyy}-${mm}-${dd}`);
+        dias.push({ iso: `${yyyy}-${mm}-${dd}`, dia: diasES[dia.getDay()] });
     }
     return dias;
 }
@@ -80,13 +82,13 @@ function llenarDomingos() {
     fechaAsignadoSelect.innerHTML = "";
     domingos.forEach(d => {
         const option = document.createElement("option");
-        option.value = d;
-        option.textContent = d;
+        option.value = d.iso;
+        option.textContent = `${d.dia} (${d.iso})`;
         fechaAsignadoSelect.appendChild(option);
     });
 
-    fechaAsignadoSelect.value = domingos[0];
-    actualizarSemanaCompletado(domingos[0]);
+    fechaAsignadoSelect.value = domingos[0].iso;
+    actualizarSemanaCompletado(domingos[0].iso);
 }
 
 function actualizarSemanaCompletado(domingoISO) {
@@ -94,11 +96,11 @@ function actualizarSemanaCompletado(domingoISO) {
     fechaCompletadoSelect.innerHTML = "";
     dias.forEach(d => {
         const option = document.createElement("option");
-        option.value = d;
-        option.textContent = d;
+        option.value = d.iso;
+        option.textContent = `${d.dia} (${d.iso})`;
         fechaCompletadoSelect.appendChild(option);
     });
-    fechaCompletadoSelect.value = dias[0];
+    fechaCompletadoSelect.value = dias[0].iso;
 }
 
 fechaAsignadoSelect.addEventListener("change", () => {
@@ -182,4 +184,3 @@ document.getElementById("btnDashboard").addEventListener("click", () => DOM.most
 document.getElementById("btnAgregar").addEventListener("click", () => DOM.mostrarSeccion("seccionAgregar"));
 document.getElementById("btnConsultar").addEventListener("click", () => DOM.mostrarSeccion("seccionConsultar"));
 document.getElementById("btnSugerencias").addEventListener("click", () => DOM.mostrarSeccion("seccionSugerencias"));
-
