@@ -20,7 +20,7 @@ loginForm.addEventListener("submit", async (e) => {
         formData.append("username", email);
         formData.append("password", password);
 
-        const res = await fetch(`${CONFIG.BASE_URL}/auth/login`, {
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/auth/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
