@@ -42,3 +42,31 @@ export async function cargarSugerencias(rango, ui) {
         ui.mostrarErrorResultados("Error al obtener sugerencias.");
     }
 }
+
+// ── NUEVO ────────────────────────────────────────────────────────────────────
+export async function editarAsignacion(id, campos, ui, onSuccess) {
+    /**
+     * campos: solo los campos modificados por el usuario en el modal.
+     * El backend aplica patch semántico.
+     */
+    try {
+        const result = await Api.editarAsignacion(id, campos);
+        ui.mostrarMensaje(result.message || "Asignación actualizada.", "success");
+        if (onSuccess) onSuccess();
+    } catch (error) {
+        console.error(error);
+        ui.mostrarMensaje(error.detail || "Error al actualizar asignación.", "error");
+    }
+}
+
+export async function eliminarAsignacion(id, ui, onSuccess) {
+    try {
+        const result = await Api.eliminarAsignacion(id);
+        ui.mostrarMensaje(result.message || "Asignación eliminada.", "success");
+        if (onSuccess) onSuccess();
+    } catch (error) {
+        console.error(error);
+        ui.mostrarMensaje(error.detail || "Error al eliminar asignación.", "error");
+    }
+}
+// ── FIN NUEVO ────────────────────────────────────────────────────────────────

@@ -19,21 +19,46 @@ async function handleResponse(res) {
 
 export const Api = {
     async getTerritorio(numero) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/${numero}`, { headers: authHeaders() });
+        const res = await fetch(`${CONFIG.BASE_URL}/territorios/${numero}`, { headers: authHeaders() });
         const data = await handleResponse(res);
         return new Territorio({ numero, asignaciones: data.asignaciones ?? [] });
     },
+
     async crearAsignacion(asignacionData) {
         const asignacion = new Asignacion(asignacionData);
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones`, {
+        const res = await fetch(`${CONFIG.BASE_URL}/asignaciones`, {
             method: "POST",
             headers: authHeaders(),
             body: JSON.stringify(asignacion)
         });
         return handleResponse(res);
     },
+
+    // ── NUEVO ────────────────────────────────────────────────────────────────
+    async editarAsignacion(id, campos) {
+        /**
+         * campos: objeto con solo los campos que cambiaron.
+         * El backend aplica patch semántico — lo que no llega no se toca.
+         */
+        const res = await fetch(`${CONFIG.BASE_URL}/asignaciones/${id}`, {
+            method: "PUT",
+            headers: authHeaders(),
+            body: JSON.stringify(campos)
+        });
+        return handleResponse(res);
+    },
+
+    async eliminarAsignacion(id) {
+        const res = await fetch(`${CONFIG.BASE_URL}/asignaciones/${id}`, {
+            method: "DELETE",
+            headers: authHeaders(),
+        });
+        return handleResponse(res);
+    },
+    // ── FIN NUEVO ────────────────────────────────────────────────────────────
+
     async getSugerencias(rango) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/sugerencias?rango=${rango}`, { headers: authHeaders() });
+        const res = await fetch(`${CONFIG.BASE_URL}/territorios/sugerencias?rango=${rango}`, { headers: authHeaders() });
         return handleResponse(res);
     }
 };
