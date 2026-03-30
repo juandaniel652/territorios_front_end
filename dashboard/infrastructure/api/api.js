@@ -19,13 +19,13 @@ async function handleResponse(res) {
 
 export const Api = {
     async getTerritorio(numero) {
-        const res = await fetch(`${CONFIG.BASE_URL}/territorios/${numero}`, { headers: authHeaders() });
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/${numero}`, { headers: authHeaders() });
         const data = await handleResponse(res);
         return new Territorio({ numero, asignaciones: data.asignaciones ?? [] });
     },
     async crearAsignacion(asignacionData) {
         const asignacion = new Asignacion(asignacionData);
-        const res = await fetch(`${CONFIG.BASE_URL}/asignaciones`, {
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones`, {
             method: "POST",
             headers: authHeaders(),
             body: JSON.stringify(asignacion)
@@ -33,7 +33,7 @@ export const Api = {
         return handleResponse(res);
     },
     async getSugerencias(rango) {
-        const res = await fetch(`${CONFIG.BASE_URL}/territorios/sugerencias?rango=${rango}`, { headers: authHeaders() });
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/sugerencias?rango=${rango}`, { headers: authHeaders() });
         return handleResponse(res);
     }
 };
