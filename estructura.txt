@@ -1,17 +1,14 @@
-frontend/
-│
-├── login/
-│   ├── index.html        <-- Login page
-│   ├── login.js          <-- JS específico de login
-│   └── login.css         <-- CSS de login
-│
-├── dashboard/
-│   ├── index.html        <-- Dashboard principal
-│   ├── script.js         <-- JS con tus funciones de asignaciones, fechas, sugerencias, etc.
-│   ├── ui.js
-│   ├── api.js
-│   ├── dom.js
-│   └── validators.js
-│
-├── assets/               <-- imágenes, iconos, fonts, etc.
-└── styles/               <-- CSS global, si querés compartir
+dashboard/
+├── domain/
+│   ├── entities/        ← Asignacion.js, Territorio.js
+│   ├── ports/           ← AsignacionRepository.js (interfaz)
+│   └── validators.js    ← ya lo tenés
+├── application/
+│   └── usecases/        ← consultarAsignacion.js, crearAsignacion.js
+├── infrastructure/
+│   ├── api/             ← api.js (implementa el puerto)
+│   └── auth/            ← localStorage adapter
+└── ui/
+    ├── ui.js            ← renderer
+    ├── dom.js
+    └── events.js

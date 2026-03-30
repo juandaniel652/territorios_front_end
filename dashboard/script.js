@@ -1,186 +1,84 @@
-// ===============================
-// script.js (Dashboard con login)
-// ===============================
+// script.js — Entry point
+import { UI }          from "./ui/ui.js";
+import { DOM }         from "./ui/dom.js";
+import { AuthService } from "./infrastructure/auth/AuthService.js";
+import { consultarAsignaciones, crearAsignacion, cargarSugerencias }
+                       from "./application/usecases/controller.js";
 
-import { UI, renderSugerencias, renderGraficoSugerencias } from "../dashboard/ui.js";
-import { Api } from "../dashboard/api.js";
-import { DOM } from "../dashboard/dom.js";
-import { Validators } from "../dashboard/validators.js";
+if (!AuthService.isAuthenticated()) window.location.href = "../login/index.html";
 
-console.log("SCRIPT CARGADO - VERSION FINAL");
+document.getElementById("btnLogout").addEventListener("click", () => AuthService.logout());
 
-// ===============================
-// Login / Autenticación
-// ===============================
-
-// Verificar token al cargar
-const token = localStorage.getItem("token");
-if (!token) {
-    window.location.href = "../login/index.html";
-}
-
-// Función de logout
-const btnLogout = document.getElementById("btnLogout");
-
-if (btnLogout) {
-    btnLogout.addEventListener("click", () => {
-        localStorage.removeItem("token");
-        window.location.href = "../login/index.html";
-    });
-}
-
-// ===============================
-// Helpers (fechas, domingos, semana completado)
-// ===============================
-
-// Nombres de días en español
+// ── Fechas ────────────────────────────────────────────────────
 const diasES = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 
 function generarUltimosDomingos(cantidad = 10) {
     const hoy = new Date();
-    const domingos = [];
-    const dia = hoy.getDay();
-    const ultimoDomingo = new Date(hoy);
-    ultimoDomingo.setDate(hoy.getDate() - dia);
-
-    for (let i = 0; i < cantidad; i++) {
-        const fecha = new Date(ultimoDomingo);
-        fecha.setDate(ultimoDomingo.getDate() - i * 7);
-        const yyyy = fecha.getFullYear();
-        const mm = String(fecha.getMonth() + 1).padStart(2, "0");
-        const dd = String(fecha.getDate()).padStart(2, "0");
-        domingos.push({ iso: `${yyyy}-${mm}-${dd}`, dia: diasES[fecha.getDay()] });
-    }
-
-    return domingos;
+    const ultimo = new Date(hoy);
+    ultimo.setDate(hoy.getDate() - hoy.getDay());
+    return Array.from({ length: cantidad }, (_, i) => {
+        const f = new Date(ultimo);
+        f.setDate(ultimo.getDate() - i * 7);
+        const yyyy = f.getFullYear();
+        const mm   = String(f.getMonth() + 1).padStart(2, "0");
+        const dd   = String(f.getDate()).padStart(2, "0");
+        return { iso: `${yyyy}-${mm}-${dd}`, dia: diasES[f.getDay()] };
+    });
 }
 
 function obtenerSemanaCompletado(domingoISO) {
-    const [yyyy, mm, dd] = domingoISO.split("-");
-    const domingo = new Date(yyyy, mm - 1, dd);
-    const dias = [];
-    for (let i = 1; i <= 6; i++) { // lunes a sábado
-        const dia = new Date(domingo);
-        dia.setDate(domingo.getDate() + i);
-        const yyyy = dia.getFullYear();
-        const mm = String(dia.getMonth() + 1).padStart(2, "0");
-        const dd = String(dia.getDate()).padStart(2, "0");
-        dias.push({ iso: `${yyyy}-${mm}-${dd}`, dia: diasES[dia.getDay()] });
-    }
-    return dias;
+    const [y, m, d] = domingoISO.split("-");
+    const domingo = new Date(y, m - 1, d);
+    return Array.from({ length: 6 }, (_, i) => {
+        const f = new Date(domingo);
+        f.setDate(domingo.getDate() + i + 1);
+        const yy = f.getFullYear();
+        const mm = String(f.getMonth() + 1).padStart(2, "0");
+        const dd = String(f.getDate()).padStart(2, "0");
+        return { iso: `${yy}-${mm}-${dd}`, dia: diasES[f.getDay()] };
+    });
 }
-
-// ===============================
-// Fecha asignado y completado
-// ===============================
-
-const fechaAsignadoSelect = DOM.inputs.fechaAsignado;
-const fechaCompletadoSelect = DOM.inputs.fechaCompletado;
 
 function llenarDomingos() {
     const domingos = generarUltimosDomingos(10);
-    fechaAsignadoSelect.innerHTML = "";
-    domingos.forEach(d => {
-        const option = document.createElement("option");
-        option.value = d.iso;
-        option.textContent = `${d.dia} (${d.iso})`;
-        fechaAsignadoSelect.appendChild(option);
-    });
-
-    fechaAsignadoSelect.value = domingos[0].iso;
+    DOM.inputs.fechaAsignado.innerHTML = domingos
+        .map(d => `<option value="${d.iso}">${d.dia} (${d.iso})</option>`).join("");
+    DOM.inputs.fechaAsignado.value = domingos[0].iso;
     actualizarSemanaCompletado(domingos[0].iso);
 }
 
 function actualizarSemanaCompletado(domingoISO) {
     const dias = obtenerSemanaCompletado(domingoISO);
-    fechaCompletadoSelect.innerHTML = "";
-    dias.forEach(d => {
-        const option = document.createElement("option");
-        option.value = d.iso;
-        option.textContent = `${d.dia} (${d.iso})`;
-        fechaCompletadoSelect.appendChild(option);
-    });
-    fechaCompletadoSelect.value = dias[0].iso;
+    DOM.inputs.fechaCompletado.innerHTML = dias
+        .map(d => `<option value="${d.iso}">${d.dia} (${d.iso})</option>`).join("");
+    DOM.inputs.fechaCompletado.value = dias[0].iso;
 }
 
-fechaAsignadoSelect.addEventListener("change", () => {
-    actualizarSemanaCompletado(fechaAsignadoSelect.value);
-});
+DOM.inputs.fechaAsignado.addEventListener("change", () =>
+    actualizarSemanaCompletado(DOM.inputs.fechaAsignado.value));
 
 llenarDomingos();
 
-// ===============================
-// Controllers (Asignaciones, sugerencias)
-// ===============================
+// ── Eventos ───────────────────────────────────────────────────
+DOM.consultarBtn.addEventListener("click", () =>
+    consultarAsignaciones(DOM.territorioInput.value.trim(), UI));
 
-async function consultarAsignaciones(numero) {
-    UI.limpiarResultados();
-    if (!Validators.territorioValido(numero)) {
-        UI.mostrarErrorResultados("Ingrese un número de territorio válido.");
-        return;
-    }
-    try {
-        const data = await Api.getTerritorio(numero, token); // token incluido
-        UI.renderAsignaciones(numero, data.asignaciones || []);
-    } catch (err) {
-        console.error(err);
-        UI.mostrarErrorResultados("Error al consultar el backend.");
-    }
-}
-
-async function enviarAsignacion(asignacion) {
-    if (!Validators.asignacionCompleta(asignacion)) {
-        UI.mostrarMensaje("Completá todos los campos.", "error");
-        return;
-    }
-    try {
-        const res = await Api.crearAsignacion(asignacion, token); // token incluido
-        UI.mostrarMensaje(res.message || "Asignación guardada", "success");
-        DOM.form.reset();
-        llenarDomingos();
-    } catch (err) {
-        console.error(err);
-        UI.mostrarMensaje(err.detail || "Error al guardar asignación", "error");
-    }
-}
-
-// ===============================
-// Eventos
-// ===============================
-
-DOM.consultarBtn.addEventListener("click", () => {
-    consultarAsignaciones(DOM.territorioInput.value.trim());
-});
-
-DOM.form.addEventListener("submit", (e) => {
+DOM.form.addEventListener("submit", e => {
     e.preventDefault();
-    const asignacion = {
+    crearAsignacion({
         numero_territorio: Number(DOM.inputs.numeroTerritorio.value),
-        conductor: DOM.inputs.conductor.value.trim(),
-        fecha_asignado: DOM.inputs.fechaAsignado.value,
-        fecha_completado: DOM.inputs.fechaCompletado.value,
-        total_abarcado: DOM.inputs.totalAbarcado.value.trim(),
-    };
-    enviarAsignacion(asignacion);
+        conductor:         DOM.inputs.conductor.value.trim(),
+        fecha_asignado:    DOM.inputs.fechaAsignado.value,
+        fecha_completado:  DOM.inputs.fechaCompletado.value,
+        total_abarcado:    DOM.inputs.totalAbarcado.value.trim(),
+    }, UI, () => llenarDomingos());
 });
 
-DOM.btnBuscarSugerencias.addEventListener("click", async () => {
-    try {
-        const rango = DOM.rangoSelect.value;
-        const data = await Api.getSugerencias(rango, token); // token incluido
-        renderSugerencias(data.sugerencias);
-        renderGraficoSugerencias(data.sugerencias);
-    } catch (err) {
-        console.error(err);
-        UI.mostrarErrorResultados("Error al obtener sugerencias");
-    }
-});
+DOM.btnBuscarSugerencias.addEventListener("click", () =>
+    cargarSugerencias(DOM.rangoSelect.value, UI));
 
-// ===============================
-// Sidebar
-// ===============================
-
-document.getElementById("btnDashboard").addEventListener("click", () => DOM.mostrarSeccion("seccionDashboard"));
-document.getElementById("btnAgregar").addEventListener("click", () => DOM.mostrarSeccion("seccionAgregar"));
-document.getElementById("btnConsultar").addEventListener("click", () => DOM.mostrarSeccion("seccionConsultar"));
+// ── Sidebar ───────────────────────────────────────────────────
+document.getElementById("btnDashboard").addEventListener("click",   () => DOM.mostrarSeccion("seccionDashboard"));
+document.getElementById("btnAgregar").addEventListener("click",     () => DOM.mostrarSeccion("seccionAgregar"));
+document.getElementById("btnConsultar").addEventListener("click",   () => DOM.mostrarSeccion("seccionConsultar"));
 document.getElementById("btnSugerencias").addEventListener("click", () => DOM.mostrarSeccion("seccionSugerencias"));
