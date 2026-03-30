@@ -19,7 +19,7 @@ async function handleResponse(res) {
 
 export const Api = {
     async getTerritorio(numero) {
-        const res = await fetch(`${CONFIG.BASE_URL}api/v1/territorios/${numero}`, { headers: authHeaders() });
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/${numero}`, { headers: authHeaders() });
         const data = await handleResponse(res);
         return new Territorio({ numero, asignaciones: data.asignaciones ?? [] });
     },
