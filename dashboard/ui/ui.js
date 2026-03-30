@@ -74,10 +74,10 @@ export const UI = {
         chartInstance = new Chart(canvas, {
             type: "bar",
             data: {
-                labels: sugerencias.map(s => `T-${s.numero_territorio}`),
+                labels: sugerencias.map(s => `T-${s.numero}`),
                 datasets: [{
                     label: "Días sin asignar",
-                    data: sugerencias.map(s => s.dias_sin_asignar ?? 0),
+                    data: sugerencias.map(s => s.dias_atraso ?? 0),
                     backgroundColor: "rgba(34, 197, 94, 0.2)",
                     borderColor: "#16a34a",
                     borderWidth: 2,
@@ -94,4 +94,5 @@ export const UI = {
             }
         });
     }
+
 };
