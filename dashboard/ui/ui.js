@@ -57,13 +57,15 @@ export const UI = {
         }
         container.innerHTML = sugerencias.map(s => `
             <div class="sugerencia-card">
-                <span class="sugerencia-card__num">${s.numero_territorio}</span>
+                <span class="sugerencia-card__num">T-${s.numero}</span>
                 <div class="sugerencia-card__info">
                     <p class="sugerencia-card__last">Última: ${s.ultima_fecha ?? "—"}</p>
-                    <p class="sugerencia-card__days">Sin asignar: <strong>${s.dias_sin_asignar ?? "—"} días</strong></p>
+                    <p class="sugerencia-card__days">Sin asignar: <strong>${s.dias_atraso ?? "—"} días</strong></p>
+                    <p class="sugerencia-card__sev">Severidad: ${s.severidad}</p>
                 </div>
             </div>`).join("");
     },
+
 
     renderGraficoSugerencias(sugerencias) {
         const canvas = document.getElementById("asignacionesChart");
