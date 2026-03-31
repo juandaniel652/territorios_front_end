@@ -5,6 +5,6 @@ export class Asignacion {
         this.conductor         = conductor;
         this.fecha_asignado    = fecha_asignado;
         this.fecha_completado  = fecha_completado;
-        this.total_abarcado    = cantidad_abarcado ?? null;
+        this.cantidad_abarcado    = cantidad_abarcado ?? null;
     }
 }
