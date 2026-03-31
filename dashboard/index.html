@@ -316,7 +316,7 @@
 
   <!-- Auth guard -->
   <script type="module">
-    import { AuthService } from "../dashboard/infrastructure/auth/AuthService.js";
+    import { AuthService } from "./infrastructure/auth/AuthService.js";
     if (!AuthService.isAuthenticated()) window.location.href = "../login/index.html";
   </script>
   <script type="module" src="../dashboard/script.js"></script>
