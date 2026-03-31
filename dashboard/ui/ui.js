@@ -1,10 +1,37 @@
 // ui/ui.js
 import { DOM } from "./dom.js";
 
-let chartInstance = null;
+let chartInstance  = null;
+let delegacionActiva = false;  // registrar delegación solo una vez
 
 export let onAsignacionModificada = () => {};
 export function setOnAsignacionModificada(fn) { onAsignacionModificada = fn; }
+
+// ── Event delegation: se registra UNA vez sobre el contenedor padre ───────────
+// No importa cuándo se inserten los botones — el listener siempre los captura.
+function registrarDelegacion() {
+    if (delegacionActiva) return;
+    delegacionActiva = true;
+
+    DOM.resultadoDiv.addEventListener("click", (e) => {
+        const btnEdit   = e.target.closest(".btn-row-edit");
+        const btnDelete = e.target.closest(".btn-row-delete");
+
+        if (btnEdit && !btnEdit.disabled) {
+            UI.abrirModalEdicion({
+                id:               btnEdit.dataset.id,
+                conductor:        btnEdit.dataset.conductor,
+                fecha_asignado:   btnEdit.dataset.fechaAsignado,
+                fecha_completado: btnEdit.dataset.fechaCompletado,
+                cantidad_abarcado: btnEdit.dataset.cantidad,
+            });
+        }
+
+        if (btnDelete && !btnDelete.disabled) {
+            UI.confirmarEliminacion(btnDelete.dataset.id);
+        }
+    });
+}
 
 export const UI = {
     limpiarResultados() {
@@ -25,6 +52,9 @@ export const UI = {
     },
 
     renderAsignaciones(numero, asignaciones) {
+        // Activar delegación la primera vez que se renderizan resultados
+        registrarDelegacion();
+
         if (!asignaciones.length) {
             DOM.resultadoDiv.innerHTML = `
                 <p class="result-empty">Sin asignaciones para el territorio <strong>${numero}</strong>.</p>`;
@@ -32,9 +62,8 @@ export const UI = {
         }
 
         const filas = asignaciones.map(a => {
-            // Verificar que el id exista — si no hay id el backend no lo está enviando
-            const id = a.id ?? null;
-            const tieneId = id !== null && id !== undefined;
+            const id       = a.id ?? null;
+            const tieneId  = id !== null && id !== undefined && id !== "";
 
             return `
             <tr>
@@ -50,12 +79,12 @@ export const UI = {
                             data-fecha-asignado="${a.fecha_asignado ?? ""}"
                             data-fecha-completado="${a.fecha_completado ?? ""}"
                             data-cantidad="${a.cantidad_abarcado ?? ""}"
-                            ${!tieneId ? "disabled title='ID no disponible'" : ""}>
+                            ${!tieneId ? "disabled" : ""}>
                             Editar
                         </button>
                         <button class="btn-row-delete"
                             data-id="${id}"
-                            ${!tieneId ? "disabled title='ID no disponible'" : ""}>
+                            ${!tieneId ? "disabled" : ""}>
                             Eliminar
                         </button>
                     </div>
@@ -77,33 +106,19 @@ export const UI = {
                     <tbody>${filas}</tbody>
                 </table>
             </div>`;
-
-        DOM.resultadoDiv.querySelectorAll(".btn-row-edit:not([disabled])").forEach(btn => {
-            btn.addEventListener("click", () => {
-                UI.abrirModalEdicion({
-                    id:               btn.dataset.id,       // string — se convierte en controller
-                    conductor:        btn.dataset.conductor,
-                    fecha_asignado:   btn.dataset.fechaAsignado,
-                    fecha_completado: btn.dataset.fechaCompletado,
-                    cantidad_abarcado: btn.dataset.cantidad,
-                });
-            });
-        });
-
-        DOM.resultadoDiv.querySelectorAll(".btn-row-delete:not([disabled])").forEach(btn => {
-            btn.addEventListener("click", () => {
-                UI.confirmarEliminacion(btn.dataset.id);    // string — se convierte en controller
-            });
-        });
     },
 
     abrirModalEdicion(asignacion) {
+        console.log("abrirModalEdicion llamado con:", asignacion);
         const modal = document.getElementById("modalEdicion");
-        document.getElementById("editId").value              = asignacion.id;
-        document.getElementById("editConductor").value       = asignacion.conductor;
-        document.getElementById("editFechaAsignado").value   = asignacion.fecha_asignado;
-        document.getElementById("editFechaCompletado").value = asignacion.fecha_completado;
-        document.getElementById("editCantidad").value        = asignacion.cantidad_abarcado;
+        if (!modal) { console.error("Modal #modalEdicion no encontrado"); return; }
+
+        document.getElementById("editId").value              = asignacion.id              ?? "";
+        document.getElementById("editConductor").value       = asignacion.conductor       ?? "";
+        document.getElementById("editFechaAsignado").value   = asignacion.fecha_asignado  ?? "";
+        document.getElementById("editFechaCompletado").value = asignacion.fecha_completado ?? "";
+        document.getElementById("editCantidad").value        = asignacion.cantidad_abarcado ?? "";
+
         modal.classList.remove("hidden");
         document.getElementById("editConductor").focus();
     },
@@ -113,7 +128,9 @@ export const UI = {
     },
 
     confirmarEliminacion(id) {
+        console.log("confirmarEliminacion llamado con id:", id);
         const modal = document.getElementById("modalConfirm");
+        if (!modal) { console.error("Modal #modalConfirm no encontrado"); return; }
         document.getElementById("confirmDeleteId").value = id;
         modal.classList.remove("hidden");
     },
