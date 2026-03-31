@@ -33,18 +33,18 @@ export const UI = {
             return;
         }
 
-        // BUG FIX: el backend devuelve conductor_nombre y cantidad_abarcado,
-        // no conductor ni total_abarcado como estaba antes.
+        // CAMPOS CORRECTOS según AsignacionDeTerritorioOut:
+        //   conductor, fecha_asignado, fecha_completado, cantidad_abarcado
         const filas = asignaciones.map(a => `
             <tr>
-                <td>${a.conductor_nombre ?? "—"}</td>
-                <td>${a.fecha_asignado   ?? "—"}</td>
-                <td>${a.fecha_completado ?? "—"}</td>
+                <td>${a.conductor         ?? "—"}</td>
+                <td>${a.fecha_asignado    ?? "—"}</td>
+                <td>${a.fecha_completado  ?? "—"}</td>
                 <td>${a.cantidad_abarcado ?? "—"}</td>
                 <td>
                     <div class="row-actions">
-                        <button class="btn-row-edit"   data-id="${a.id}"
-                            data-conductor="${a.conductor_nombre ?? ""}"
+                        <button class="btn-row-edit"   data-id="${a.id ?? ""}"
+                            data-conductor="${a.conductor ?? ""}"
                             data-fecha-asignado="${a.fecha_asignado ?? ""}"
                             data-fecha-completado="${a.fecha_completado ?? ""}"
                             data-cantidad="${a.cantidad_abarcado ?? ""}">
@@ -76,7 +76,7 @@ export const UI = {
         DOM.resultadoDiv.querySelectorAll(".btn-row-edit").forEach(btn => {
             btn.addEventListener("click", () => {
                 UI.abrirModalEdicion({
-                    id:               Number(btn.dataset.id),
+                    id:               btn.dataset.id,
                     conductor:        btn.dataset.conductor,
                     fecha_asignado:   btn.dataset.fechaAsignado,
                     fecha_completado: btn.dataset.fechaCompletado,
