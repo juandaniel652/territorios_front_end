@@ -3,7 +3,6 @@ import { DOM } from "./dom.js";
 
 let chartInstance = null;
 
-// Callback global que script.js sobreescribe para refrescar la tabla tras editar/eliminar
 export let onAsignacionModificada = () => {};
 export function setOnAsignacionModificada(fn) { onAsignacionModificada = fn; }
 
@@ -25,7 +24,6 @@ export const UI = {
         setTimeout(() => { DOM.mensaje.textContent = ""; DOM.mensaje.className = ""; }, 4000);
     },
 
-    // ── renderAsignaciones: corregido + botones editar/eliminar ──────────────
     renderAsignaciones(numero, asignaciones) {
         if (!asignaciones.length) {
             DOM.resultadoDiv.innerHTML = `
@@ -33,9 +31,12 @@ export const UI = {
             return;
         }
 
-        // CAMPOS CORRECTOS según AsignacionDeTerritorioOut:
-        //   conductor, fecha_asignado, fecha_completado, cantidad_abarcado
-        const filas = asignaciones.map(a => `
+        const filas = asignaciones.map(a => {
+            // Verificar que el id exista — si no hay id el backend no lo está enviando
+            const id = a.id ?? null;
+            const tieneId = id !== null && id !== undefined;
+
+            return `
             <tr>
                 <td>${a.conductor         ?? "—"}</td>
                 <td>${a.fecha_asignado    ?? "—"}</td>
@@ -43,19 +44,24 @@ export const UI = {
                 <td>${a.cantidad_abarcado ?? "—"}</td>
                 <td>
                     <div class="row-actions">
-                        <button class="btn-row-edit"   data-id="${a.id ?? ""}"
+                        <button class="btn-row-edit"
+                            data-id="${id}"
                             data-conductor="${a.conductor ?? ""}"
                             data-fecha-asignado="${a.fecha_asignado ?? ""}"
                             data-fecha-completado="${a.fecha_completado ?? ""}"
-                            data-cantidad="${a.cantidad_abarcado ?? ""}">
+                            data-cantidad="${a.cantidad_abarcado ?? ""}"
+                            ${!tieneId ? "disabled title='ID no disponible'" : ""}>
                             Editar
                         </button>
-                        <button class="btn-row-delete" data-id="${a.id}">
+                        <button class="btn-row-delete"
+                            data-id="${id}"
+                            ${!tieneId ? "disabled title='ID no disponible'" : ""}>
                             Eliminar
                         </button>
                     </div>
                 </td>
-            </tr>`).join("");
+            </tr>`;
+        }).join("");
 
         DOM.resultadoDiv.innerHTML = `
             <p class="result-title">Territorio ${numero}</p>
@@ -72,11 +78,10 @@ export const UI = {
                 </table>
             </div>`;
 
-        // Delegar eventos a los botones recién insertados
-        DOM.resultadoDiv.querySelectorAll(".btn-row-edit").forEach(btn => {
+        DOM.resultadoDiv.querySelectorAll(".btn-row-edit:not([disabled])").forEach(btn => {
             btn.addEventListener("click", () => {
                 UI.abrirModalEdicion({
-                    id:               btn.dataset.id,
+                    id:               btn.dataset.id,       // string — se convierte en controller
                     conductor:        btn.dataset.conductor,
                     fecha_asignado:   btn.dataset.fechaAsignado,
                     fecha_completado: btn.dataset.fechaCompletado,
@@ -85,22 +90,20 @@ export const UI = {
             });
         });
 
-        DOM.resultadoDiv.querySelectorAll(".btn-row-delete").forEach(btn => {
+        DOM.resultadoDiv.querySelectorAll(".btn-row-delete:not([disabled])").forEach(btn => {
             btn.addEventListener("click", () => {
-                UI.confirmarEliminacion(Number(btn.dataset.id));
+                UI.confirmarEliminacion(btn.dataset.id);    // string — se convierte en controller
             });
         });
     },
 
-    // ── Modal de edición ─────────────────────────────────────────────────────
     abrirModalEdicion(asignacion) {
-        // Reutiliza el modal que vive en index.html
         const modal = document.getElementById("modalEdicion");
-        document.getElementById("editId").value             = asignacion.id;
-        document.getElementById("editConductor").value      = asignacion.conductor;
-        document.getElementById("editFechaAsignado").value  = asignacion.fecha_asignado;
+        document.getElementById("editId").value              = asignacion.id;
+        document.getElementById("editConductor").value       = asignacion.conductor;
+        document.getElementById("editFechaAsignado").value   = asignacion.fecha_asignado;
         document.getElementById("editFechaCompletado").value = asignacion.fecha_completado;
-        document.getElementById("editCantidad").value       = asignacion.cantidad_abarcado;
+        document.getElementById("editCantidad").value        = asignacion.cantidad_abarcado;
         modal.classList.remove("hidden");
         document.getElementById("editConductor").focus();
     },
@@ -109,7 +112,6 @@ export const UI = {
         document.getElementById("modalEdicion").classList.add("hidden");
     },
 
-    // ── Confirmación de eliminación ──────────────────────────────────────────
     confirmarEliminacion(id) {
         const modal = document.getElementById("modalConfirm");
         document.getElementById("confirmDeleteId").value = id;
@@ -120,7 +122,6 @@ export const UI = {
         document.getElementById("modalConfirm").classList.add("hidden");
     },
 
-    // ── Sugerencias (sin cambios funcionales, campo corregido) ───────────────
     renderSugerencias(sugerencias) {
         const container = DOM.resultadoSugerencias;
         if (!sugerencias?.length) {

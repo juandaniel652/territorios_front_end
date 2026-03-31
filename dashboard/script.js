@@ -62,20 +62,21 @@ DOM.inputs.fechaAsignado.addEventListener("change", () =>
     actualizarSemanaCompletado(DOM.inputs.fechaAsignado.value));
 llenarDomingos();
 
-// ── Consultar ─────────────────────────────────────────────────────────────────
-// Guardamos el último territorio consultado para poder refrescar tras editar/eliminar
+// ── Último territorio consultado (para refrescar tras editar/eliminar) ─────────
 let ultimoTerritorioConsultado = null;
 
-DOM.consultarBtn.addEventListener("click", () => {
-    ultimoTerritorioConsultado = DOM.territorioInput.value.trim();
-    consultarAsignaciones(ultimoTerritorioConsultado, UI);
-});
-
-// Callback para refrescar tabla automáticamente tras editar/eliminar
-setOnAsignacionModificada(() => {
+function refrescarTabla() {
     if (ultimoTerritorioConsultado) {
         consultarAsignaciones(ultimoTerritorioConsultado, UI);
     }
+}
+
+setOnAsignacionModificada(refrescarTabla);
+
+// ── Consultar ─────────────────────────────────────────────────────────────────
+DOM.consultarBtn.addEventListener("click", () => {
+    ultimoTerritorioConsultado = DOM.territorioInput.value.trim();
+    consultarAsignaciones(ultimoTerritorioConsultado, UI);
 });
 
 // ── Crear asignación ──────────────────────────────────────────────────────────
@@ -97,19 +98,29 @@ DOM.btnBuscarSugerencias.addEventListener("click", () =>
 // ── Modal edición: guardar ────────────────────────────────────────────────────
 document.getElementById("formEdicion").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const id = Number(document.getElementById("editId").value);
+
+    // El id viene como string del input hidden — convertir explícitamente
+    const idRaw = document.getElementById("editId").value;
+    const id    = Number(idRaw);
+
+    if (!id || isNaN(id)) {
+        UI.mostrarMensaje("ID de asignación inválido.", "error");
+        return;
+    }
+
     const campos = {
-        conductor:        document.getElementById("editConductor").value.trim(),
-        fecha_asignado:   document.getElementById("editFechaAsignado").value  || undefined,
-        fecha_completado: document.getElementById("editFechaCompletado").value || undefined,
-        cantidad_abarcado: document.getElementById("editCantidad").value.trim() || undefined,
+        conductor:         document.getElementById("editConductor").value.trim()        || undefined,
+        fecha_asignado:    document.getElementById("editFechaAsignado").value           || undefined,
+        fecha_completado:  document.getElementById("editFechaCompletado").value         || undefined,
+        cantidad_abarcado: document.getElementById("editCantidad").value.trim()         || undefined,
     };
-    // Limpiar undefined para no enviar campos vacíos
+
+    // Eliminar claves con valor undefined para no enviar campos vacíos
     Object.keys(campos).forEach(k => campos[k] === undefined && delete campos[k]);
 
     await editarAsignacion(id, campos, UI, () => {
         UI.cerrarModalEdicion();
-        onAsignacionModificada();
+        refrescarTabla();
     });
 });
 
@@ -118,10 +129,17 @@ document.getElementById("btnCancelEdit").addEventListener("click", () =>
 
 // ── Modal confirmación: eliminar ──────────────────────────────────────────────
 document.getElementById("btnConfirmDelete").addEventListener("click", async () => {
-    const id = Number(document.getElementById("confirmDeleteId").value);
+    const idRaw = document.getElementById("confirmDeleteId").value;
+    const id    = Number(idRaw);
+
+    if (!id || isNaN(id)) {
+        UI.mostrarMensaje("ID de asignación inválido.", "error");
+        return;
+    }
+
     await eliminarAsignacion(id, UI, () => {
         UI.cerrarModalConfirm();
-        onAsignacionModificada();
+        refrescarTabla();
     });
 });
 
@@ -133,10 +151,3 @@ document.getElementById("btnDashboard").addEventListener("click",   () => DOM.mo
 document.getElementById("btnAgregar").addEventListener("click",     () => DOM.mostrarSeccion("seccionAgregar"));
 document.getElementById("btnConsultar").addEventListener("click",   () => DOM.mostrarSeccion("seccionConsultar"));
 document.getElementById("btnSugerencias").addEventListener("click", () => DOM.mostrarSeccion("seccionSugerencias"));
-
-// Referencia para el callback (necesita estar en scope de módulo)
-function onAsignacionModificada() {
-    if (ultimoTerritorioConsultado) {
-        consultarAsignaciones(ultimoTerritorioConsultado, UI);
-    }
-}
