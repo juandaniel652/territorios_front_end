@@ -316,8 +316,13 @@
 
   <!-- Auth guard -->
   <script type="module">
-    import { AuthService } from "./infrastructure/auth/AuthService.js";
-    if (!AuthService.isAuthenticated()) window.location.href = "../login/index.html";
+  // Usamos una ruta relativa al archivo actual (dashboard/index.html)
+  import { AuthService } from "./infrastructure/auth/AuthService.js";
+  
+  if (!AuthService.isAuthenticated()) {
+    // Si falla el login, volvemos atrás una carpeta y entramos a login
+    window.location.href = "../login/index.html";
+  }
   </script>
   <script type="module" src="../dashboard/script.js"></script>
 
