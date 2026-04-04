@@ -324,43 +324,26 @@
   <!-- Nav & sidebar -->
   <script>
     const sidebar = document.getElementById("sidebar");
+    
+    // Abrir/Cerrar Sidebar Mobile
     document.getElementById("btnMobileSidebar").onclick = () =>
       sidebar.classList.toggle("-translate-x-full");
 
-    const navItems = [
-      { btn:"btnDashboard",   sec:"seccionDashboard",   title:"Dashboard",              sub:"Resumen general del sistema" },
-      { btn:"btnAgregar",     sec:"seccionAgregar",      title:"Agregar asignación",     sub:"Registrá una nueva asignación" },
-      { btn:"btnConsultar",   sec:"seccionConsultar",    title:"Consultar asignaciones", sub:"Buscá por número de territorio" },
-      { btn:"btnSugerencias", sec:"seccionSugerencias",  title:"Sugerir territorios",    sub:"Territorios prioritarios para asignar" },
-    ];
-
-    function mostrarSeccion(sec, title, sub) {
-      document.querySelectorAll("main section").forEach(s => {
-        s.classList.add("hidden"); s.classList.remove("animate-in");
-      });
-      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
-      const activa = document.getElementById(sec);
-      activa.classList.remove("hidden");
-      void activa.offsetWidth;
-      activa.classList.add("animate-in");
-      document.getElementById("headerTitle").textContent = title;
-      document.getElementById("headerSub").textContent   = sub;
-      if (window.innerWidth < 768) sidebar.classList.add("-translate-x-full");
-    }
-
-    navItems.forEach(({btn, sec, title, sub}) => {
-      document.getElementById(btn).addEventListener("click", () => {
-        document.getElementById(btn).classList.add("active");
-        mostrarSeccion(sec, title, sub);
+    // Manejo visual de botones del Nav (clase Active)
+    const navButtons = document.querySelectorAll(".nav-btn");
+    navButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        navButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        if (window.innerWidth < 768) sidebar.classList.add("-translate-x-full");
       });
     });
 
-    // Cerrar modales al hacer click fuera del card
-    document.getElementById("modalEdicion").addEventListener("click", e => {
-      if (e.target === e.currentTarget) e.currentTarget.classList.add("hidden");
-    });
-    document.getElementById("modalConfirm").addEventListener("click", e => {
-      if (e.target === e.currentTarget) e.currentTarget.classList.add("hidden");
+    // Cerrar modales al hacer click en el fondo (Overlay)
+    document.querySelectorAll(".modal-overlay").forEach(modal => {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.add("hidden");
+      });
     });
   </script>
 </body>
