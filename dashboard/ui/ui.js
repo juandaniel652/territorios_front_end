@@ -1,27 +1,31 @@
 // ui/ui.js
 import { DOM } from "./dom.js";
 
-let chartInstance  = null;
-let delegacionActiva = false;  // registrar delegación solo una vez
+let chartInstance = null;
+let delegacionActiva = false;
 
 export let onAsignacionModificada = () => {};
 export function setOnAsignacionModificada(fn) { onAsignacionModificada = fn; }
 
-// ── Event delegation: se registra UNA vez sobre el contenedor padre ───────────
-// No importa cuándo se inserten los botones — el listener siempre los captura.
+/**
+ * Registra la delegación de eventos una sola vez.
+ * Escucha clicks en el contenedor de resultados para capturar botones de Editar/Eliminar
+ * que se generan dinámicamente.
+ */
 function registrarDelegacion() {
     if (delegacionActiva) return;
     delegacionActiva = true;
 
     DOM.resultadoDiv.addEventListener("click", (e) => {
-        const btnEdit   = e.target.closest(".btn-row-edit");
+        const btnEdit = e.target.closest(".btn-row-edit");
         const btnDelete = e.target.closest(".btn-row-delete");
 
         if (btnEdit && !btnEdit.disabled) {
+            // Nota: dataset.fechaAsignado mapea automáticamente data-fecha-asignado
             UI.abrirModalEdicion({
-                id:               btnEdit.dataset.id,
-                conductor:        btnEdit.dataset.conductor,
-                fecha_asignado:   btnEdit.dataset.fechaAsignado,
+                id: btnEdit.dataset.id,
+                conductor: btnEdit.dataset.conductor,
+                fecha_asignado: btnEdit.dataset.fechaAsignado,
                 fecha_completado: btnEdit.dataset.fechaCompletado,
                 cantidad_abarcado: btnEdit.dataset.cantidad,
             });
@@ -47,12 +51,43 @@ export const UI = {
 
     mostrarMensaje(texto, tipo = "success") {
         DOM.mensaje.textContent = texto;
-        DOM.mensaje.className   = tipo === "success" ? "msg-success" : "msg-error";
-        setTimeout(() => { DOM.mensaje.textContent = ""; DOM.mensaje.className = ""; }, 4000);
+        DOM.mensaje.className = tipo === "success" ? "msg-success" : "msg-error";
+        setTimeout(() => { 
+            DOM.mensaje.textContent = ""; 
+            DOM.mensaje.className = ""; 
+        }, 4000);
     },
 
+    // ── Lógica de Modales ──────────────────────────────────────────────────
+
+    abrirModalEdicion(data) {
+        const modal = document.getElementById("modalEdicion");
+        document.getElementById("editId").value = data.id;
+        document.getElementById("editConductor").value = data.conductor;
+        document.getElementById("editFechaAsignado").value = data.fecha_asignado;
+        document.getElementById("editFechaCompletado").value = data.fecha_completado;
+        document.getElementById("editCantidad").value = data.cantidad_abarcado;
+        
+        modal.classList.remove("hidden");
+    },
+
+    cerrarModalEdicion() {
+        document.getElementById("modalEdicion").classList.add("hidden");
+        document.getElementById("formEdicion").reset();
+    },
+
+    confirmarEliminacion(id) {
+        document.getElementById("confirmDeleteId").value = id;
+        document.getElementById("modalConfirm").classList.remove("hidden");
+    },
+
+    cerrarModalConfirm() {
+        document.getElementById("modalConfirm").classList.add("hidden");
+    },
+
+    // ── Renderizado de Tablas ──────────────────────────────────────────────
+
     renderAsignaciones(numero, asignaciones) {
-        // Activar delegación la primera vez que se renderizan resultados
         registrarDelegacion();
 
         if (!asignaciones.length) {
@@ -62,14 +97,14 @@ export const UI = {
         }
 
         const filas = asignaciones.map(a => {
-            const id       = a.id ?? null;
-            const tieneId  = id !== null && id !== undefined && id !== "";
+            const id = a.id ?? null;
+            const tieneId = id !== null && id !== undefined && id !== "";
 
             return `
             <tr>
-                <td>${a.conductor         ?? "—"}</td>
-                <td>${a.fecha_asignado    ?? "—"}</td>
-                <td>${a.fecha_completado  ?? "—"}</td>
+                <td>${a.conductor ?? "—"}</td>
+                <td>${a.fecha_asignado ?? "—"}</td>
+                <td>${a.fecha_completado ?? "—"}</td>
                 <td>${a.cantidad_abarcado ?? "—"}</td>
                 <td>
                     <div class="row-actions">
@@ -93,92 +128,51 @@ export const UI = {
         }).join("");
 
         DOM.resultadoDiv.innerHTML = `
-            <p class="result-title">Territorio ${numero}</p>
+            <h4 class="result-title">Historial: Territorio ${numero}</h4>
             <div class="table-wrapper">
                 <table class="data-table">
-                    <thead><tr>
-                        <th>Conductor</th>
-                        <th>Asignado</th>
-                        <th>Completado</th>
-                        <th>Cantidad abarcada</th>
-                        <th>Acciones</th>
-                    </tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Conductor</th>
+                            <th>Asignado</th>
+                            <th>Completado</th>
+                            <th>Abarcado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
                     <tbody>${filas}</tbody>
                 </table>
             </div>`;
     },
 
-    abrirModalEdicion(asignacion) {
-        console.log("abrirModalEdicion llamado con:", asignacion);
-        const modal = document.getElementById("modalEdicion");
-        if (!modal) { console.error("Modal #modalEdicion no encontrado"); return; }
+    // ── Dashboard / Otros ─────────────────────────────────────────────────
 
-        document.getElementById("editId").value              = asignacion.id              ?? "";
-        document.getElementById("editConductor").value       = asignacion.conductor       ?? "";
-        document.getElementById("editFechaAsignado").value   = asignacion.fecha_asignado  ?? "";
-        document.getElementById("editFechaCompletado").value = asignacion.fecha_completado ?? "";
-        document.getElementById("editCantidad").value        = asignacion.cantidad_abarcado ?? "";
+    renderDashboard(stats) {
+        document.getElementById("totalAsignaciones").textContent = stats.total_asignaciones;
+        document.getElementById("territoriosActivos").textContent = stats.territorios_activos;
+        document.getElementById("asignacionesCompletadas").textContent = stats.asignaciones_completadas;
 
-        modal.classList.remove("hidden");
-        document.getElementById("editConductor").focus();
-    },
-
-    cerrarModalEdicion() {
-        document.getElementById("modalEdicion").classList.add("hidden");
-    },
-
-    confirmarEliminacion(id) {
-        console.log("confirmarEliminacion llamado con id:", id);
-        const modal = document.getElementById("modalConfirm");
-        if (!modal) { console.error("Modal #modalConfirm no encontrado"); return; }
-        document.getElementById("confirmDeleteId").value = id;
-        modal.classList.remove("hidden");
-    },
-
-    cerrarModalConfirm() {
-        document.getElementById("modalConfirm").classList.add("hidden");
-    },
-
-    renderSugerencias(sugerencias) {
-        const container = DOM.resultadoSugerencias;
-        if (!sugerencias?.length) {
-            container.innerHTML = `<p class="result-empty">No hay sugerencias disponibles.</p>`;
-            return;
-        }
-        container.innerHTML = sugerencias.map(s => `
-            <div class="sugerencia-card">
-                <span class="sugerencia-card__num">T-${s.numero}</span>
-                <div class="sugerencia-card__info">
-                    <p class="sugerencia-card__last">Última: ${s.ultima_fecha ?? "—"}</p>
-                    <p class="sugerencia-card__days">Sin asignar: <strong>${s.dias_atraso ?? "—"} días</strong></p>
-                    <p class="sugerencia-card__sev">Severidad: ${s.severidad}</p>
-                </div>
-            </div>`).join("");
-    },
-
-    renderGraficoSugerencias(sugerencias) {
-        const canvas = document.getElementById("asignacionesChart");
-        if (!canvas || !sugerencias?.length) return;
+        const ctx = document.getElementById("asignacionesChart").getContext("2d");
         if (chartInstance) chartInstance.destroy();
-        chartInstance = new Chart(canvas, {
-            type: "bar",
+
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
             data: {
-                labels: sugerencias.map(s => `T-${s.numero}`),
+                labels: stats.chart_data.labels,
                 datasets: [{
-                    label: "Días sin asignar",
-                    data: sugerencias.map(s => s.dias_atraso ?? 0),
-                    backgroundColor: "rgba(34, 197, 94, 0.2)",
-                    borderColor: "#16a34a",
-                    borderWidth: 2,
-                    borderRadius: 6,
+                    label: 'Asignaciones',
+                    data: stats.chart_data.values,
+                    backgroundColor: '#22c55e',
+                    borderRadius: 4
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { display: false } },
-                    y: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.04)" } }
+                    y: { beginAtZero: true, grid: { color: '#eef0f5' } },
+                    x: { grid: { display: false } }
                 }
             }
         });
