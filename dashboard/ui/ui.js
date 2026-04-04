@@ -14,24 +14,36 @@ export function setOnAsignacionModificada(fn) { onAsignacionModificada = fn; }
  */
 function registrarDelegacion() {
     if (delegacionActiva) return;
+    
+    const contenedor = document.getElementById("resultadoTerritorio");
+    if (!contenedor) return;
+
     delegacionActiva = true;
 
-    DOM.resultadoDiv.addEventListener("click", (e) => {
+    contenedor.addEventListener("click", (e) => {
+        // Buscamos el botón más cercano al click
         const btnEdit = e.target.closest(".btn-row-edit");
         const btnDelete = e.target.closest(".btn-row-delete");
 
-        if (btnEdit && !btnEdit.disabled) {
-            // Nota: dataset.fechaAsignado mapea automáticamente data-fecha-asignado
+        if (btnEdit) {
+            e.preventDefault(); // Evitamos cualquier acción por defecto
+            if (btnEdit.disabled) return;
+
+            // Debug log: Si ves esto en consola, el click funciona
+            console.log("Editando ID:", btnEdit.dataset.id);
+
             UI.abrirModalEdicion({
-                id: btnEdit.dataset.id,
-                conductor: btnEdit.dataset.conductor,
-                fecha_asignado: btnEdit.dataset.fechaAsignado,
-                fecha_completado: btnEdit.dataset.fechaCompletado,
+                id:                btnEdit.dataset.id,
+                conductor:         btnEdit.dataset.conductor,
+                fecha_asignado:    btnEdit.dataset.fechaAsignado,
+                fecha_completado:  btnEdit.dataset.fechaCompletado,
                 cantidad_abarcado: btnEdit.dataset.cantidad,
             });
         }
 
-        if (btnDelete && !btnDelete.disabled) {
+        if (btnDelete) {
+            e.preventDefault();
+            if (btnDelete.disabled) return;
             UI.confirmarEliminacion(btnDelete.dataset.id);
         }
     });
