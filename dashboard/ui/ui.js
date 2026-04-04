@@ -14,30 +14,24 @@ export function setOnAsignacionModificada(fn) { onAsignacionModificada = fn; }
  */
 function registrarDelegacion() {
     if (delegacionActiva) return;
-    
-    const contenedor = document.getElementById("resultadoTerritorio");
-    if (!contenedor) return;
-
     delegacionActiva = true;
 
-    contenedor.addEventListener("click", (e) => {
-        // Buscamos el botón más cercano al click
+    // Escuchamos en el document para que sea infalible
+    document.addEventListener("click", (e) => {
         const btnEdit = e.target.closest(".btn-row-edit");
         const btnDelete = e.target.closest(".btn-row-delete");
 
         if (btnEdit) {
-            e.preventDefault(); // Evitamos cualquier acción por defecto
+            e.preventDefault();
             if (btnEdit.disabled) return;
 
-            // Debug log: Si ves esto en consola, el click funciona
-            console.log("Editando ID:", btnEdit.dataset.id);
-
+            // IMPORTANTE: Asegúrate de que los nombres coincidan con los data-attributes
             UI.abrirModalEdicion({
-                id:                btnEdit.dataset.id,
-                conductor:         btnEdit.dataset.conductor,
-                fecha_asignado:    btnEdit.dataset.fechaAsignado,
-                fecha_completado:  btnEdit.dataset.fechaCompletado,
-                cantidad_abarcado: btnEdit.dataset.cantidad,
+                id: btnEdit.dataset.id,
+                conductor: btnEdit.dataset.conductor,
+                fecha_asignado: btnEdit.dataset.fechaAsignado, // data-fecha-asignado
+                fecha_completado: btnEdit.dataset.fechaCompletado, // data-fecha-completado
+                cantidad_abarcado: btnEdit.dataset.cantidad, // data-cantidad
             });
         }
 
@@ -100,11 +94,16 @@ export const UI = {
     // ── Renderizado de Tablas ──────────────────────────────────────────────
 
     renderAsignaciones(numero, asignaciones) {
+        // Llamamos a la delegación aquí para asegurar que se active 
+        // la primera vez que se muestra una tabla
         registrarDelegacion();
 
         if (!asignaciones.length) {
-            DOM.resultadoDiv.innerHTML = `
-                <p class="result-empty">Sin asignaciones para el territorio <strong>${numero}</strong>.</p>`;
+            // Usamos el ID directo para evitar problemas de referencia en el objeto DOM
+            const container = document.getElementById("resultadoTerritorio");
+            if (container) {
+                container.innerHTML = `<p class="result-empty">Sin asignaciones para el territorio <strong>${numero}</strong>.</p>`;
+            }
             return;
         }
 
@@ -139,22 +138,25 @@ export const UI = {
             </tr>`;
         }).join("");
 
-        DOM.resultadoDiv.innerHTML = `
-            <h4 class="result-title">Historial: Territorio ${numero}</h4>
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Conductor</th>
-                            <th>Asignado</th>
-                            <th>Completado</th>
-                            <th>Abarcado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>${filas}</tbody>
-                </table>
-            </div>`;
+        const container = document.getElementById("resultadoTerritorio");
+        if (container) {
+            container.innerHTML = `
+                <h4 class="result-title">Historial: Territorio ${numero}</h4>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Conductor</th>
+                                <th>Asignado</th>
+                                <th>Completado</th>
+                                <th>Abarcado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>${filas}</tbody>
+                    </table>
+                </div>`;
+        }
     },
 
     // ── Dashboard / Otros ─────────────────────────────────────────────────
