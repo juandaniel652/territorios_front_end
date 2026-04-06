@@ -67,7 +67,9 @@ export const UI = {
     // ── Lógica de Modales ──────────────────────────────────────────────────
 
     abrirModalEdicion(data) {
+        console.log("abrirModalEdicion llamado con:", data);
         const modal = document.getElementById("modalEdicion");
+        console.log("modal encontrado:", modal); 
         document.getElementById("editId").value = data.id;
         document.getElementById("editConductor").value = data.conductor;
         document.getElementById("editFechaAsignado").value = data.fecha_asignado;
@@ -94,6 +96,7 @@ export const UI = {
     // ── Renderizado de Tablas ──────────────────────────────────────────────
 
     renderAsignaciones(numero, asignaciones) {
+        console.log("Asignaciones recibidas:", asignaciones);
         // Llamamos a la delegación aquí para asegurar que se active 
         // la primera vez que se muestra una tabla
         registrarDelegacion();
