@@ -7,31 +7,23 @@ let delegacionActiva = false;
 export let onAsignacionModificada = () => {};
 export function setOnAsignacionModificada(fn) { onAsignacionModificada = fn; }
 
-/**
- * Registra la delegación de eventos una sola vez.
- * Escucha clicks en el contenedor de resultados para capturar botones de Editar/Eliminar
- * que se generan dinámicamente.
- */
 function registrarDelegacion() {
     if (delegacionActiva) return;
     delegacionActiva = true;
 
-    // Escuchamos en el document para que sea infalible
     document.addEventListener("click", (e) => {
-        const btnEdit = e.target.closest(".btn-row-edit");
+        const btnEdit   = e.target.closest(".btn-row-edit");
         const btnDelete = e.target.closest(".btn-row-delete");
 
         if (btnEdit) {
             e.preventDefault();
             if (btnEdit.disabled) return;
-
-            // IMPORTANTE: Asegúrate de que los nombres coincidan con los data-attributes
             UI.abrirModalEdicion({
-                id: btnEdit.dataset.id,
-                conductor: btnEdit.dataset.conductor,
-                fecha_asignado: btnEdit.dataset.fechaAsignado, // data-fecha-asignado
-                fecha_completado: btnEdit.dataset.fechaCompletado, // data-fecha-completado
-                cantidad_abarcado: btnEdit.dataset.cantidad, // data-cantidad
+                id:                btnEdit.dataset.id,
+                conductor:         btnEdit.dataset.conductor,
+                fecha_asignado:    btnEdit.dataset.fechaAsignado,
+                fecha_completado:  btnEdit.dataset.fechaCompletado,
+                cantidad_abarcado: btnEdit.dataset.cantidad,
             });
         }
 
@@ -57,65 +49,67 @@ export const UI = {
 
     mostrarMensaje(texto, tipo = "success") {
         DOM.mensaje.textContent = texto;
-        DOM.mensaje.className = tipo === "success" ? "msg-success" : "msg-error";
-        setTimeout(() => { 
-            DOM.mensaje.textContent = ""; 
-            DOM.mensaje.className = ""; 
+        DOM.mensaje.className   = tipo === "success" ? "msg-success" : "msg-error";
+        setTimeout(() => {
+            DOM.mensaje.textContent = "";
+            DOM.mensaje.className   = "";
         }, 4000);
     },
 
-    // ── Lógica de Modales ──────────────────────────────────────────────────
+    // ── Modales ───────────────────────────────────────────────────────────
 
     abrirModalEdicion(data) {
         const modal = document.getElementById("modalEdicion");
-        document.getElementById("editId").value             = data.id;
-        document.getElementById("editConductor").value      = data.conductor;
-        document.getElementById("editFechaAsignado").value  = data.fecha_asignado;
-        document.getElementById("editFechaCompletado").value= data.fecha_completado;
-        document.getElementById("editCantidad").value       = data.cantidad_abarcado;
-        modal.style.display = "flex";          // ← style directo, no classList
+        if (!modal) return;
+        document.getElementById("editId").value              = data.id              ?? "";
+        document.getElementById("editConductor").value       = data.conductor       ?? "";
+        document.getElementById("editFechaAsignado").value   = data.fecha_asignado  ?? "";
+        document.getElementById("editFechaCompletado").value = data.fecha_completado ?? "";
+        document.getElementById("editCantidad").value        = data.cantidad_abarcado ?? "";
+        // setProperty con "important" para pisar el display:none !important de Tailwind
+        modal.style.setProperty("display", "flex", "important");
+        document.getElementById("editConductor").focus();
     },
 
     cerrarModalEdicion() {
-        document.getElementById("modalEdicion").style.display = "none";
+        const modal = document.getElementById("modalEdicion");
+        if (modal) modal.style.setProperty("display", "none", "important");
         document.getElementById("formEdicion").reset();
     },
-    
+
     confirmarEliminacion(id) {
-        document.getElementById("confirmDeleteId").value    = id;
-        document.getElementById("modalConfirm").style.display = "flex";
-    },
-    
-    cerrarModalConfirm() {
-        document.getElementById("modalConfirm").style.display = "none";
+        const modal = document.getElementById("modalConfirm");
+        if (!modal) return;
+        document.getElementById("confirmDeleteId").value = id;
+        modal.style.setProperty("display", "flex", "important");
     },
 
-    // ── Renderizado de Tablas ──────────────────────────────────────────────
+    cerrarModalConfirm() {
+        const modal = document.getElementById("modalConfirm");
+        if (modal) modal.style.setProperty("display", "none", "important");
+    },
+
+    // ── Tablas ────────────────────────────────────────────────────────────
 
     renderAsignaciones(numero, asignaciones) {
-        console.log("Asignaciones recibidas:", asignaciones);
-        // Llamamos a la delegación aquí para asegurar que se active 
-        // la primera vez que se muestra una tabla
         registrarDelegacion();
 
+        const container = document.getElementById("resultadoTerritorio");
+        if (!container) return;
+
         if (!asignaciones.length) {
-            // Usamos el ID directo para evitar problemas de referencia en el objeto DOM
-            const container = document.getElementById("resultadoTerritorio");
-            if (container) {
-                container.innerHTML = `<p class="result-empty">Sin asignaciones para el territorio <strong>${numero}</strong>.</p>`;
-            }
+            container.innerHTML = `<p class="result-empty">Sin asignaciones para el territorio <strong>${numero}</strong>.</p>`;
             return;
         }
 
         const filas = asignaciones.map(a => {
-            const id = a.id ?? null;
+            const id      = a.id ?? null;
             const tieneId = id !== null && id !== undefined && id !== "";
-
             return `
             <tr>
-                <td>${a.conductor ?? "—"}</td>
-                <td>${a.fecha_asignado ?? "—"}</td>
-                <td>${a.fecha_completado ?? "—"}</td>
+                <td>${a.conductor         ?? "—"}</td>
+                <td>${a.fecha_asignado    ?? "—"}</td>
+                <td>${a.fecha_completado  ?? "—"}</td>
                 <td>${a.cantidad_abarcado ?? "—"}</td>
                 <td>
                     <div class="row-actions">
@@ -138,46 +132,43 @@ export const UI = {
             </tr>`;
         }).join("");
 
-        const container = document.getElementById("resultadoTerritorio");
-        if (container) {
-            container.innerHTML = `
-                <h4 class="result-title">Historial: Territorio ${numero}</h4>
-                <div class="table-wrapper">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Conductor</th>
-                                <th>Asignado</th>
-                                <th>Completado</th>
-                                <th>Abarcado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>${filas}</tbody>
-                    </table>
-                </div>`;
-        }
+        container.innerHTML = `
+            <h4 class="result-title">Historial: Territorio ${numero}</h4>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Conductor</th>
+                            <th>Asignado</th>
+                            <th>Completado</th>
+                            <th>Abarcado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                </table>
+            </div>`;
     },
 
-    // ── Dashboard / Otros ─────────────────────────────────────────────────
+    // ── Dashboard ─────────────────────────────────────────────────────────
 
     renderDashboard(stats) {
-        document.getElementById("totalAsignaciones").textContent = stats.total_asignaciones;
-        document.getElementById("territoriosActivos").textContent = stats.territorios_activos;
+        document.getElementById("totalAsignaciones").textContent      = stats.total_asignaciones;
+        document.getElementById("territoriosActivos").textContent     = stats.territorios_activos;
         document.getElementById("asignacionesCompletadas").textContent = stats.asignaciones_completadas;
 
         const ctx = document.getElementById("asignacionesChart").getContext("2d");
         if (chartInstance) chartInstance.destroy();
 
         chartInstance = new Chart(ctx, {
-            type: 'bar',
+            type: "bar",
             data: {
                 labels: stats.chart_data.labels,
                 datasets: [{
-                    label: 'Asignaciones',
+                    label: "Asignaciones",
                     data: stats.chart_data.values,
-                    backgroundColor: '#22c55e',
-                    borderRadius: 4
+                    backgroundColor: "#22c55e",
+                    borderRadius: 4,
                 }]
             },
             options: {
@@ -185,10 +176,57 @@ export const UI = {
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: '#eef0f5' } },
+                    y: { beginAtZero: true, grid: { color: "#eef0f5" } },
                     x: { grid: { display: false } }
                 }
             }
         });
-    }
+    },
+
+    // ── Sugerencias ───────────────────────────────────────────────────────
+
+    renderSugerencias(sugerencias) {
+        const container = DOM.resultadoSugerencias;
+        if (!sugerencias?.length) {
+            container.innerHTML = `<p class="result-empty">No hay sugerencias disponibles.</p>`;
+            return;
+        }
+        container.innerHTML = sugerencias.map(s => `
+            <div class="sugerencia-card">
+                <span class="sugerencia-card__num">T-${s.numero}</span>
+                <div class="sugerencia-card__info">
+                    <p class="sugerencia-card__last">Última: ${s.ultima_fecha ?? "—"}</p>
+                    <p class="sugerencia-card__days">Sin asignar: <strong>${s.dias_atraso ?? "—"} días</strong></p>
+                    <p class="sugerencia-card__sev">Severidad: ${s.severidad}</p>
+                </div>
+            </div>`).join("");
+    },
+
+    renderGraficoSugerencias(sugerencias) {
+        const canvas = document.getElementById("asignacionesChart");
+        if (!canvas || !sugerencias?.length) return;
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(canvas, {
+            type: "bar",
+            data: {
+                labels: sugerencias.map(s => `T-${s.numero}`),
+                datasets: [{
+                    label: "Días sin asignar",
+                    data: sugerencias.map(s => s.dias_atraso ?? 0),
+                    backgroundColor: "rgba(34, 197, 94, 0.2)",
+                    borderColor: "#16a34a",
+                    borderWidth: 2,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.04)" } }
+                }
+            }
+        });
+    },
 };
