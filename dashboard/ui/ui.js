@@ -1,9 +1,9 @@
 // ui/ui.js
-import { DOM } from "./dom.js";
-import { Tables } from "./tables.js";
-import { Modals } from "./modals.js";
-import { Charts } from "./charts.js";
-import { initGlobalEvents } from "./events.js";
+import { DOM } from "/dashboard/ui/dom.js";
+import { Tables } from "/dashboard/ui/tables.js";
+import { Modals } from "/dashboard/ui/modals.js";
+import { Charts } from "/dashboard/ui/charts.js";
+import { initGlobalEvents } from "/dashboard/ui/events.js";
 
 // --- ESTO ES LO QUE FALTA ---
 let onAsignacionModificadaCallback = () => {};

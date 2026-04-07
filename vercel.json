@@ -4,20 +4,12 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/dashboard/(.*)",
-      "destination": "/dashboard/$1"
-    },
-    {
-      "source": "/login/(.*)",
-      "destination": "/login/$1"
+      "source": "/dashboard",
+      "destination": "/dashboard/index.html"
     },
     {
       "source": "/",
       "destination": "/login/index.html"
-    },
-    {
-      "source": "/dashboard",
-      "destination": "/dashboard/index.html"
     }
   ]
 }
