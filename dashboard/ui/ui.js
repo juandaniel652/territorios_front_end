@@ -61,19 +61,22 @@ export const UI = {
     abrirModalEdicion(data) {
         const modal = document.getElementById("modalEdicion");
         if (!modal) return;
-        document.getElementById("editId").value              = data.id              ?? "";
-        document.getElementById("editConductor").value       = data.conductor       ?? "";
-        document.getElementById("editFechaAsignado").value   = data.fecha_asignado  ?? "";
+
+        document.getElementById("editId").value              = data.id ?? "";
+        document.getElementById("editConductor").value       = data.conductor ?? "";
+        document.getElementById("editFechaAsignado").value   = data.fecha_asignado ?? "";
         document.getElementById("editFechaCompletado").value = data.fecha_completado ?? "";
+        document.getElementById("editId").value              = data.id ?? "";
         document.getElementById("editCantidad").value        = data.cantidad_abarcado ?? "";
-        // setProperty con "important" para pisar el display:none !important de Tailwind
-        modal.style.setProperty("display", "flex", "important");
+
+        // CAMBIO: Usar classList en lugar de style
+        modal.classList.remove("hidden");
         document.getElementById("editConductor").focus();
     },
 
     cerrarModalEdicion() {
         const modal = document.getElementById("modalEdicion");
-        if (modal) modal.style.setProperty("display", "none", "important");
+        if (modal) modal.classList.add("hidden");
         document.getElementById("formEdicion").reset();
     },
 
@@ -81,12 +84,13 @@ export const UI = {
         const modal = document.getElementById("modalConfirm");
         if (!modal) return;
         document.getElementById("confirmDeleteId").value = id;
-        modal.style.setProperty("display", "flex", "important");
+        // CAMBIO: Usar classList
+        modal.classList.remove("hidden");
     },
 
     cerrarModalConfirm() {
         const modal = document.getElementById("modalConfirm");
-        if (modal) modal.style.setProperty("display", "none", "important");
+        if (modal) modal.classList.add("hidden");
     },
 
     // ── Tablas ────────────────────────────────────────────────────────────
