@@ -67,30 +67,27 @@ export const UI = {
     // ── Lógica de Modales ──────────────────────────────────────────────────
 
     abrirModalEdicion(data) {
-        console.log("abrirModalEdicion llamado con:", data);
         const modal = document.getElementById("modalEdicion");
-        console.log("modal encontrado:", modal); 
-        document.getElementById("editId").value = data.id;
-        document.getElementById("editConductor").value = data.conductor;
-        document.getElementById("editFechaAsignado").value = data.fecha_asignado;
-        document.getElementById("editFechaCompletado").value = data.fecha_completado;
-        document.getElementById("editCantidad").value = data.cantidad_abarcado;
-        
-        modal.classList.remove("hidden");
+        document.getElementById("editId").value             = data.id;
+        document.getElementById("editConductor").value      = data.conductor;
+        document.getElementById("editFechaAsignado").value  = data.fecha_asignado;
+        document.getElementById("editFechaCompletado").value= data.fecha_completado;
+        document.getElementById("editCantidad").value       = data.cantidad_abarcado;
+        modal.style.display = "flex";          // ← style directo, no classList
     },
 
     cerrarModalEdicion() {
-        document.getElementById("modalEdicion").classList.add("hidden");
+        document.getElementById("modalEdicion").style.display = "none";
         document.getElementById("formEdicion").reset();
     },
-
+    
     confirmarEliminacion(id) {
-        document.getElementById("confirmDeleteId").value = id;
-        document.getElementById("modalConfirm").classList.remove("hidden");
+        document.getElementById("confirmDeleteId").value    = id;
+        document.getElementById("modalConfirm").style.display = "flex";
     },
-
+    
     cerrarModalConfirm() {
-        document.getElementById("modalConfirm").classList.add("hidden");
+        document.getElementById("modalConfirm").style.display = "none";
     },
 
     // ── Renderizado de Tablas ──────────────────────────────────────────────

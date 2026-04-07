@@ -341,11 +341,10 @@
       });
     });
 
-    // Cerrar modales al hacer click en el fondo (Overlay)
     document.querySelectorAll(".modal-overlay").forEach(modal => {
-      modal.addEventListener("click", (e) => {
-        if (e.target === modal) modal.classList.add("hidden");
-      });
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) modal.style.display = "none";
+        });
     });
   </script>
 </body>
