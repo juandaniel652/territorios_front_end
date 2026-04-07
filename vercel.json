@@ -1,20 +1,15 @@
 {
-
+  "cleanUrls": true,
   "trailingSlash": false,
-  "headers": [
-    {
-      "source": "/(.*)\\.js",
-      "headers": [
-        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" }
-      ]
-    }
-  ],
   "rewrites": [
     { "source": "/", "destination": "/frontend/dashboard/index.html" },
     { "source": "/login", "destination": "/frontend/login/index.html" },
+    
+
     { "source": "/img/(.*)", "destination": "/frontend/img/$1" },
-    { "source": "/infrastructure/(.*)", "destination": "/frontend/dashboard/infrastructure/$1" },
-    { "source": "/ui/(.*)", "destination": "/frontend/dashboard/ui/$1" },
+
+    { "source": "/frontend/(.*)", "destination": "/frontend/$1" },
+
     { "source": "/(.*)", "destination": "/frontend/dashboard/$1" }
   ]
 }
