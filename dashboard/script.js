@@ -154,3 +154,8 @@ document.getElementById("btnDashboard").addEventListener("click",   () => DOM.mo
 document.getElementById("btnAgregar").addEventListener("click",     () => DOM.mostrarSeccion("seccionAgregar"));
 document.getElementById("btnConsultar").addEventListener("click",   () => DOM.mostrarSeccion("seccionConsultar"));
 document.getElementById("btnSugerencias").addEventListener("click", () => DOM.mostrarSeccion("seccionSugerencias"));
+
+// TEST — borrar después
+document.addEventListener("click", (e) => {
+    console.log("Click en:", e.target, "| clases:", e.target.className);
+});

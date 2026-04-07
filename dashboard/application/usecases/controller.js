@@ -12,7 +12,9 @@ export async function consultarAsignaciones(numero, ui) {
         const territorio = await Api.getTerritorio(numero);
         ui.renderAsignaciones(territorio.numero, territorio.asignaciones);
     } catch (error) {
-        console.error(error);
+        console.error("❌ ERROR COMPLETO:", error);
+        console.error("❌ TIPO:", typeof error);
+        console.error("❌ DETAIL:", error?.detail);
         ui.mostrarErrorResultados(error.detail || "Error al consultar el backend.");
     }
 }

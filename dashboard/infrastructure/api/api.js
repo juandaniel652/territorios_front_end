@@ -20,7 +20,9 @@ async function handleResponse(res) {
 export const Api = {
     async getTerritorio(numero) {
         const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/${numero}`, { headers: authHeaders() });
+        console.log("📡 status:", res.status);        // ← AGREGÁ
         const data = await handleResponse(res);
+        console.log("📡 data cruda del backend:", data); // ← AGREGÁ
         return new Territorio({ numero, asignaciones: data.asignaciones ?? [] });
     },
 
