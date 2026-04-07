@@ -5,15 +5,22 @@ import { Modals } from "./modals.js";
 import { Charts } from "./charts.js";
 import { initGlobalEvents } from "./events.js";
 
+// --- ESTO ES LO QUE FALTA ---
+let onAsignacionModificadaCallback = () => {};
+
+export const setOnAsignacionModificada = (fn) => {
+    onAsignacionModificadaCallback = fn;
+};
+// ----------------------------
+
 // Inicializamos los listeners globales una sola vez al cargar el módulo
 initGlobalEvents();
 
 console.log("🚀 UI.js cargado correctamente a las " + new Date().getTime());
+
 export const UI = {
-    // Exponemos las funciones de los módulos especializados
     renderAsignaciones: Tables.renderAsignaciones,
     
-    // Dashboard
     renderDashboard(stats) {
         document.getElementById("totalAsignaciones").textContent = stats.total_asignaciones;
         document.getElementById("territoriosActivos").textContent = stats.territorios_activos;
@@ -26,7 +33,6 @@ export const UI = {
         );
     },
 
-    // Sugerencias
     renderSugerencias(sugerencias) {
         const container = DOM.resultadoSugerencias;
         if (!sugerencias?.length) {
@@ -43,7 +49,6 @@ export const UI = {
                 </div>
             </div>`).join("");
         
-        // Si querés que el gráfico cambie al ver sugerencias:
         Charts.renderBarChart(
             DOM.canvasAsignaciones, 
             sugerencias.map(s => `T-${s.numero}`), 
@@ -52,11 +57,6 @@ export const UI = {
         );
     },
 
-    // Re-exportamos métodos de modales para el controlador
-    cerrarModalEdicion: Modals.cerrarEdicion,
-    cerrarModalConfirm: Modals.cerrarConfirmar,
-
-    // Utilidades
     mostrarMensaje(texto, tipo = "success") {
         DOM.mensaje.textContent = texto;
         DOM.mensaje.className = tipo === "success" ? "msg-success" : "msg-error";
@@ -79,12 +79,11 @@ export const UI = {
 
     cerrarModalEdicion() {
         Modals.cerrarEdicion();
-        onAsignacionModificadaCallback(); // Ejecuta el refresco al cerrar tras éxito
+        if (onAsignacionModificadaCallback) onAsignacionModificadaCallback();
     },
 
     cerrarModalConfirm() {
         Modals.cerrarConfirmar();
-        onAsignacionModificadaCallback(); // Ejecuta el refresco al cerrar tras éxito
+        if (onAsignacionModificadaCallback) onAsignacionModificadaCallback();
     }
-
 };
