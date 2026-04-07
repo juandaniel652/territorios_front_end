@@ -1,4 +1,3 @@
-// ui/dom.js
 export const DOM = {
     // Botones y Navegación
     consultarBtn:         document.getElementById("consultarBtn"),
@@ -10,11 +9,20 @@ export const DOM = {
     resultadoSugerencias: document.getElementById("resultadoSugerencias"),
     mensaje:              document.getElementById("mensaje"),
     
-    // Inputs Formulario Principal
+    // Formulario Principal (Agregamos el objeto inputs que falta)
     territorioInput:      document.getElementById("territorioInput"),
     rangoSelect:          document.getElementById("rangoSelect"),
-    formAsignacion:       document.getElementById("asignacionForm"),
+    form:                 document.getElementById("asignacionForm"),
     
+    // --- ESTO ES LO QUE ESTABA FALTANDO ---
+    inputs: {
+        numeroTerritorio: document.getElementById("numeroTerritorio"),
+        conductor:        document.getElementById("conductor"),
+        fechaAsignado:    document.getElementById("fechaAsignado"),
+        fechaCompletado:  document.getElementById("fechaCompletado"),
+        totalAbarcado:    document.getElementById("totalAbarcado")
+    },
+
     // Modal Edición
     modalEdicion:         document.getElementById("modalEdicion"),
     formEdicion:          document.getElementById("formEdicion"),
@@ -32,7 +40,7 @@ export const DOM = {
     btnConfirmDelete:     document.getElementById("btnConfirmDelete"),
 
     // Gráficos
-    canvasAsignaciones:   "asignacionesChart", // Solo el ID para Chart.js
+    canvasAsignaciones:   "asignacionesChart",
 
     mostrarSeccion(id) {
         document.querySelectorAll("main section").forEach(sec => {
@@ -42,7 +50,7 @@ export const DOM = {
         const activa = document.getElementById(id);
         if (activa) {
             activa.classList.remove("hidden");
-            void activa.offsetWidth; // Force reflow para la animación
+            void activa.offsetWidth;
             activa.classList.add("animate-in");
         }
     }
