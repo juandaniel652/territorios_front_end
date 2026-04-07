@@ -75,5 +75,16 @@ export const UI = {
             <div class="result-error">
                 <span>⚠</span><p>${msg}</p>
             </div>`;
+    },
+
+    cerrarModalEdicion() {
+        Modals.cerrarEdicion();
+        onAsignacionModificadaCallback(); // Ejecuta el refresco al cerrar tras éxito
+    },
+
+    cerrarModalConfirm() {
+        Modals.cerrarConfirmar();
+        onAsignacionModificadaCallback(); // Ejecuta el refresco al cerrar tras éxito
     }
+
 };
