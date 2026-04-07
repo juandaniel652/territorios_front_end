@@ -276,7 +276,7 @@
   <!-- ═══════════════════════════════════════════════════════════════════════
        MODAL: Editar asignación
        ═══════════════════════════════════════════════════════════════════════ -->
-  <div id="modalEdicion" class="modal-overlay">
+  <div id="modalEdicion" class="modal-overlay hidden">
     <div class="modal-card">
       <h3 class="modal-title">Editar asignación</h3>
       <form id="formEdicion">
@@ -310,7 +310,7 @@
   <!-- ═══════════════════════════════════════════════════════════════════════
        MODAL: Confirmar eliminación
        ═══════════════════════════════════════════════════════════════════════ -->
-  <div id="modalConfirm" class="modal-overlay" style="display:none;">
+  <div id="modalConfirm" class="modal-overlay hidden"> style="display:none;">
     <div class="modal-card" style="max-width:380px;">
       <h3 class="modal-title">Confirmar eliminación</h3>
       <input type="hidden" id="confirmDeleteId">
@@ -357,8 +357,6 @@
         });
     });
 
-    document.getElementById("btnCancelEdit").onclick = () => UI.cerrarModalEdicion();
-    document.getElementById("btnCancelDelete").onclick = () => UI.cerrarModalConfirm();
   </script>
 </body>
 </html>

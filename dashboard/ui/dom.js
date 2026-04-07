@@ -1,20 +1,38 @@
 // ui/dom.js
 export const DOM = {
+    // Botones y Navegación
     consultarBtn:         document.getElementById("consultarBtn"),
-    territorioInput:      document.getElementById("territorioInput"),
-    resultadoDiv:         document.getElementById("resultadoTerritorio"),
-    form:                 document.getElementById("asignacionForm"),
-    mensaje:              document.getElementById("mensaje"),
-    inputs: {
-        numeroTerritorio: document.getElementById("numero_territorio"),
-        conductor:        document.getElementById("conductor"),
-        fechaAsignado:    document.getElementById("fecha_asignado"),
-        fechaCompletado:  document.getElementById("fecha_completado"),
-        totalAbarcado:    document.getElementById("total_abarcado"),
-    },
     btnBuscarSugerencias: document.getElementById("btnBuscarSugerencias"),
-    rangoSelect:          document.getElementById("rangoSelect"),
+    btnLogout:            document.getElementById("btnLogout"),
+    
+    // Contenedores
+    resultadoDiv:         document.getElementById("resultadoTerritorio"),
     resultadoSugerencias: document.getElementById("resultadoSugerencias"),
+    mensaje:              document.getElementById("mensaje"),
+    
+    // Inputs Formulario Principal
+    territorioInput:      document.getElementById("territorioInput"),
+    rangoSelect:          document.getElementById("rangoSelect"),
+    formAsignacion:       document.getElementById("asignacionForm"),
+    
+    // Modal Edición
+    modalEdicion:         document.getElementById("modalEdicion"),
+    formEdicion:          document.getElementById("formEdicion"),
+    editInputs: {
+        id:               document.getElementById("editId"),
+        conductor:        document.getElementById("editConductor"),
+        fechaAsignado:    document.getElementById("editFechaAsignado"),
+        fechaCompletado:  document.getElementById("editFechaCompletado"),
+        cantidad:         document.getElementById("editCantidad"),
+    },
+
+    // Modal Confirmación
+    modalConfirm:         document.getElementById("modalConfirm"),
+    confirmDeleteId:      document.getElementById("confirmDeleteId"),
+    btnConfirmDelete:     document.getElementById("btnConfirmDelete"),
+
+    // Gráficos
+    canvasAsignaciones:   "asignacionesChart", // Solo el ID para Chart.js
 
     mostrarSeccion(id) {
         document.querySelectorAll("main section").forEach(sec => {
@@ -22,8 +40,10 @@ export const DOM = {
             sec.classList.remove("animate-in");
         });
         const activa = document.getElementById(id);
-        activa.classList.remove("hidden");
-        void activa.offsetWidth;
-        activa.classList.add("animate-in");
+        if (activa) {
+            activa.classList.remove("hidden");
+            void activa.offsetWidth; // Force reflow para la animación
+            activa.classList.add("animate-in");
+        }
     }
 };
