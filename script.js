@@ -1,14 +1,14 @@
 // script.js — Entry point
-import { UI, setOnAsignacionModificada } from "./ui/ui.js";
-import { DOM } from "./ui/dom.js";
-import { AuthService } from "./infrastructure/auth/AuthService.js";
+import { UI, setOnAsignacionModificada } from "./dashboard/ui/ui.js";
+import { DOM } from "./dashboard/ui/dom.js";
+import { AuthService } from "./dashboard/infrastructure/auth/AuthService.js";
 import {
     consultarAsignaciones,
     crearAsignacion,
     cargarSugerencias,
     editarAsignacion,
     eliminarAsignacion,
-} from "./application/usecases/controller.js";
+} from "./dashboard/application/usecases/controller.js";
 
 if (!AuthService.isAuthenticated()) window.location.href = "../login/index.html";
 document.getElementById("btnLogout").addEventListener("click", () => AuthService.logout());
