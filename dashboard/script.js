@@ -102,6 +102,7 @@ document.getElementById("formEdicion").addEventListener("submit", async (e) => {
     // El id viene como string del input hidden — convertir explícitamente
     const idRaw = document.getElementById("editId").value;
     const id    = Number(idRaw);
+    console.log("ID: ",id)
 
     if (!id || isNaN(id)) {
         UI.mostrarMensaje("ID de asignación inválido.", "error");
@@ -109,6 +110,8 @@ document.getElementById("formEdicion").addEventListener("submit", async (e) => {
     }
 
     const campos = {
+        idRaw:             idRaw,
+        id:                id,
         conductor:         document.getElementById("editConductor").value.trim()        || undefined,
         fecha_asignado:    document.getElementById("editFechaAsignado").value           || undefined,
         fecha_completado:  document.getElementById("editFechaCompletado").value         || undefined,
