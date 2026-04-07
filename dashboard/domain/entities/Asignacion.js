@@ -1,6 +1,7 @@
 // domain/entities/Asignacion.js
 export class Asignacion {
-    constructor({ numero_territorio, conductor, fecha_asignado, fecha_completado, cantidad_abarcado }) {
+    constructor({ id, numero_territorio, conductor, fecha_asignado, fecha_completado, cantidad_abarcado }) {
+        this.id               = id ?? null;  // ← agregar
         this.numero_territorio = numero_territorio;
         this.conductor         = conductor;
         this.fecha_asignado    = fecha_asignado;
