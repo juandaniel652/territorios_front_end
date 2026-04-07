@@ -8,6 +8,7 @@ import { initGlobalEvents } from "./events.js";
 // Inicializamos los listeners globales una sola vez al cargar el módulo
 initGlobalEvents();
 
+console.log("🚀 UI.js cargado correctamente a las " + new Date().getTime());
 export const UI = {
     // Exponemos las funciones de los módulos especializados
     renderAsignaciones: Tables.renderAsignaciones,
