@@ -12,6 +12,10 @@
       "destination": "/dashboard/index.html"
     },
     {
+      "source": "/login/(.*)",
+      "destination": "/login/$1"
+    },
+    {
       "source": "/dashboard/(.*)",
       "destination": "/dashboard/$1"
     }
