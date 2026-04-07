@@ -9,3 +9,4 @@ export class Asignacion {
         this.cantidad_abarcado = cantidad_abarcado ?? null;
     }
 }
+
