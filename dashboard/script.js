@@ -1,6 +1,6 @@
 // script.js — Entry point
-import { UI, setOnAsignacionModificada } from "/dashboard/ui/ui.js";
-import { DOM } from "/dashboard/ui/dom.js";
+import { UI, setOnAsignacionModificada } from "./ui/ui.js";
+import { DOM } from "./ui/dom.js";
 import { AuthService } from "./infrastructure/auth/AuthService.js";
 import {
     consultarAsignaciones,
