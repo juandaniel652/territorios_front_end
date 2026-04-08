@@ -5,6 +5,7 @@
   "rewrites": [
     { "source": "/", "destination": "/login/index.html" },
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
+    { "source": "/dashboard/script.js", "destination": "/script.js" },
     { "source": "/dashboard/(.*)", "destination": "/dashboard/$1" },
     { "source": "/login/(.*)", "destination": "/login/$1" }
   ]
