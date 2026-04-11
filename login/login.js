@@ -1,12 +1,16 @@
 // login/login.js
-import { CONFIG }      from "/dashboard/config.js";
-import { AuthService } from "/dashboard/infrastructure/auth/AuthService.js";
+// Usamos rutas relativas para evitar problemas de resolución en Vercel
+import { CONFIG }      from "../dashboard/config.js";
+import { AuthService } from "../dashboard/infrastructure/auth/AuthService.js";
 
 const loginForm    = document.getElementById("loginForm");
 const errorMessage = document.getElementById("errorMessage");
 
 loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    
+    // 1. Limpieza de estado previo
+    errorMessage.textContent = "";
     const email    = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
     
@@ -14,6 +18,12 @@ loginForm.addEventListener("submit", async (e) => {
         errorMessage.textContent = "Completá todos los campos."; 
         return; 
     }
+
+    // 2. Feedback visual (Opcional pero recomendado para "solidez")
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Cargando...";
 
     try {
         const formData = new URLSearchParams();
@@ -28,16 +38,23 @@ loginForm.addEventListener("submit", async (e) => {
 
         const data = await res.json();
         
-        if (!res.ok) throw new Error(data.detail || "Error en el login");
+        if (!res.ok) {
+            // Manejo específico de errores del backend (FastAPI suele mandar 'detail')
+            throw new Error(data.detail || "Credenciales incorrectas");
+        }
 
-        // Guardamos el token
+        // 3. Persistencia de Sesión
+        // Asegúrate de que AuthService.setToken use localStorage.setItem("token", ...)
         AuthService.setToken(data.access_token);
         
-        // REDIRECCIÓN LIMPIA: Vercel se encarga de servir /dashboard/index.html
-        window.location.href = "/dashboard";
+        // 4. Redirección
+        // Al usar "/dashboard", Vercel buscará la carpeta y el rewrite servirá el index.html
+        window.location.replace("/dashboard");
 
     } catch (err) {
-        console.error(err);
+        console.error("Login Error:", err);
         errorMessage.textContent = err.message;
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
     }
 });
