@@ -1,3 +1,5 @@
+import { DateFormatter } from "./utils.js";
+
 export const Tables = {
     renderAsignaciones(numero, asignaciones) {
         const container = document.getElementById("resultadoTerritorio");
@@ -10,14 +12,17 @@ export const Tables = {
 
         const filas = asignaciones.map(a => {
             const id = a.id ?? "";
-            // Si el ID es null o undefined, el botón quedará disabled
             const tieneId = id !== "" && id !== null;
+
+            // 2. Formatear las fechas para la vista
+            const fechaAsignadoAR = DateFormatter.toArgentina(a.fecha_asignado);
+            const fechaCompletadoAR = DateFormatter.toArgentina(a.fecha_completado);
 
             return `
             <tr>
                 <td>${a.conductor ?? "—"}</td>
-                <td>${a.fecha_asignado ?? "—"}</td>
-                <td>${a.fecha_completado ?? "—"}</td>
+                <td>${fechaAsignadoAR}</td> 
+                <td>${fechaCompletadoAR}</td>
                 <td>${a.cantidad_abarcado ?? "—"}</td>
                 <td>
                     <div class="row-actions">
