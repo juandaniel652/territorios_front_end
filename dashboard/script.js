@@ -9,6 +9,8 @@ import {
     editarAsignacion, 
     eliminarAsignacion 
 } from "./application/usecases/controller.js";
+import { DateFormatter } from "./ui/utils.js";
+
 
 if (!AuthService.isAuthenticated()) window.location.href = "../login/index.html";
 document.getElementById("btnLogout").addEventListener("click", () => AuthService.logout());
@@ -46,7 +48,10 @@ function obtenerSemanaCompletado(domingoISO) {
 function llenarDomingos() {
     const domingos = generarUltimosDomingos(10);
     DOM.inputs.fechaAsignado.innerHTML = domingos
-        .map(d => `<option value="${d.iso}">${d.dia} (${d.iso})</option>`).join("");
+        .map(d => {
+            const fechaAR = DateFormatter.toArgentina(d.iso); // <--- Formateo quirúrgico
+            return `<option value="${d.iso}">${d.dia} (${fechaAR})</option>`;
+        }).join("");
     DOM.inputs.fechaAsignado.value = domingos[0].iso;
     actualizarSemanaCompletado(domingos[0].iso);
 }
@@ -54,7 +59,10 @@ function llenarDomingos() {
 function actualizarSemanaCompletado(domingoISO) {
     const dias = obtenerSemanaCompletado(domingoISO);
     DOM.inputs.fechaCompletado.innerHTML = dias
-        .map(d => `<option value="${d.iso}">${d.dia} (${d.iso})</option>`).join("");
+        .map(d => {
+            const fechaAR = DateFormatter.toArgentina(d.iso); // <--- Formateo quirúrgico
+            return `<option value="${d.iso}">${d.dia} (${fechaAR})</option>`;
+        }).join("");
     DOM.inputs.fechaCompletado.value = dias[0].iso;
 }
 
@@ -158,4 +166,7 @@ document.getElementById("btnSugerencias").addEventListener("click", () => DOM.mo
 // TEST — borrar después
 document.addEventListener("click", (e) => {
     console.log("Click en:", e.target, "| clases:", e.target.className);
+
 });
+
+UI.initDatePickers();

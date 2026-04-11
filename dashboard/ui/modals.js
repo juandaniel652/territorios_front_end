@@ -5,9 +5,19 @@ export const Modals = {
         
         document.getElementById("editId").value = data.id || "";
         document.getElementById("editConductor").value = data.conductor || "";
-        document.getElementById("editFechaAsignado").value = data.fecha_asignado || "";
-        document.getElementById("editFechaCompletado").value = data.fecha_completado || "";
+        
+        // Seteamos el valor en los inputs
+        const inputAsignado = document.getElementById("editFechaAsignado");
+        const inputCompletado = document.getElementById("editFechaCompletado");
+        
+        inputAsignado.value = data.fecha_asignado || "";
+        inputCompletado.value = data.fecha_completado || "";
         document.getElementById("editCantidad").value = data.cantidad_abarcado || "";
+
+        // RE-INICIALIZAR FLATPICKR para que lea los nuevos valores
+        // Esto hace que el calendario se abra en la fecha correcta
+        inputAsignado._flatpickr.setDate(data.fecha_asignado);
+        inputCompletado._flatpickr.setDate(data.fecha_completado);
         
         modal.classList.remove("hidden");
         document.getElementById("editConductor").focus();

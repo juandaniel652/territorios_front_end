@@ -5,6 +5,10 @@ import { Modals }           from "./modals.js";
 import { Charts }           from "./charts.js";
 import { initGlobalEvents } from "./events.js";
 import { DateFormatter }    from "./utils.js";
+//------------------------------------
+import flatpickr from "flatpickr";
+import { Spanish } from "flatpickr/dist/l10n/es.js";
+import "flatpickr/dist/flatpickr.min.css";
 
 // --- ESTO ES LO QUE FALTA ---
 let onAsignacionModificadaCallback = () => {};
@@ -90,5 +94,19 @@ export const UI = {
     cerrarModalConfirm() {
         Modals.cerrarConfirmar();
         if (onAsignacionModificadaCallback) onAsignacionModificadaCallback();
+    },
+
+    initDatePickers() {
+        const config = {
+            locale: Spanish,
+            dateFormat: "d/m/Y", // Lo que ve el usuario (ARG)
+            altInput: true,
+            altFormat: "d/m/Y",
+            allowInput: true
+        };
+
+        flatpickr("#editFechaAsignado", config);
+        flatpickr("#editFechaCompletado", config);
+        // También para el de "Agregar" si tenés uno
     }
 };
