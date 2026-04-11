@@ -12,9 +12,7 @@ export async function consultarAsignaciones(numero, ui) {
         const territorio = await Api.getTerritorio(numero);
         ui.renderAsignaciones(territorio.numero, territorio.asignaciones);
     } catch (error) {
-        console.error("❌ ERROR COMPLETO:", error);
-        console.error("❌ TIPO:", typeof error);
-        console.error("❌ DETAIL:", error?.detail);
+        console.error("❌ Error en consulta:", error);
         ui.mostrarErrorResultados(error.detail || "Error al consultar el backend.");
     }
 }
@@ -29,7 +27,7 @@ export async function crearAsignacion(asignacionData, ui, onSuccess) {
         ui.mostrarMensaje(result.message || "Asignación guardada.", "success");
         if (onSuccess) onSuccess();
     } catch (error) {
-        console.error(error);
+        console.error("❌ Error al crear:", error);
         ui.mostrarMensaje(error.detail || "Error al guardar asignación.", "error");
     }
 }
@@ -37,26 +35,22 @@ export async function crearAsignacion(asignacionData, ui, onSuccess) {
 export async function cargarSugerencias(rango, ui) {
     try {
         const data = await Api.getSugerencias(rango);
+        // Llamamos solo a renderSugerencias. 
+        // El gráfico se dibuja automáticamente dentro de esa función en ui.js
         ui.renderSugerencias(data.sugerencias);
-        ui.renderGraficoSugerencias(data.sugerencias);
     } catch (error) {
-        console.error(error);
+        console.error("❌ Error en sugerencias:", error);
         ui.mostrarErrorResultados("Error al obtener sugerencias.");
     }
 }
 
-// ── NUEVO ────────────────────────────────────────────────────────────────────
 export async function editarAsignacion(id, campos, ui, onSuccess) {
-    /**
-     * campos: solo los campos modificados por el usuario en el modal.
-     * El backend aplica patch semántico.
-     */
     try {
         const result = await Api.editarAsignacion(id, campos);
         ui.mostrarMensaje(result.message || "Asignación actualizada.", "success");
         if (onSuccess) onSuccess();
     } catch (error) {
-        console.error(error);
+        console.error("❌ Error al editar:", error);
         ui.mostrarMensaje(error.detail || "Error al actualizar asignación.", "error");
     }
 }
@@ -67,8 +61,7 @@ export async function eliminarAsignacion(id, ui, onSuccess) {
         ui.mostrarMensaje(result.message || "Asignación eliminada.", "success");
         if (onSuccess) onSuccess();
     } catch (error) {
-        console.error(error);
+        console.error("❌ Error al eliminar:", error);
         ui.mostrarMensaje(error.detail || "Error al eliminar asignación.", "error");
     }
 }
-// ── FIN NUEVO ────────────────────────────────────────────────────────────────
