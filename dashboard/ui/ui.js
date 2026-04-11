@@ -4,6 +4,7 @@ import { Tables }           from "./tables.js";
 import { Modals }           from "./modals.js";
 import { Charts }           from "./charts.js";
 import { initGlobalEvents } from "./events.js";
+import { DateFormatter }    from "./utils.js";
 
 // --- ESTO ES LO QUE FALTA ---
 let onAsignacionModificadaCallback = () => {};
@@ -16,8 +17,7 @@ export const setOnAsignacionModificada = (fn) => {
 // Inicializamos los listeners globales una sola vez al cargar el módulo
 initGlobalEvents();
 
-console.log("🚀 UI.js cargado correctamente a las " + new Date().getTime());
-
+console.log("🚀 UI.js cargado: " + new Date().toLocaleTimeString('es-AR'));
 export const UI = {
     renderAsignaciones: Tables.renderAsignaciones,
     
@@ -39,15 +39,20 @@ export const UI = {
             container.innerHTML = `<p class="result-empty">No hay sugerencias disponibles.</p>`;
             return;
         }
-        container.innerHTML = sugerencias.map(s => `
+        container.innerHTML = sugerencias.map(s => {
+            // 2. Formatear la fecha de la sugerencia
+            const fechaSugerenciaAR = DateFormatter.toArgentina(s.ultima_fecha);
+
+            return `
             <div class="sugerencia-card">
                 <span class="sugerencia-card__num">T-${s.numero}</span>
                 <div class="sugerencia-card__info">
-                    <p class="sugerencia-card__last">Última: ${s.ultima_fecha ?? "—"}</p>
+                    <p class="sugerencia-card__last">Última: ${fechaSugerenciaAR}</p>
                     <p class="sugerencia-card__days">Sin asignar: <strong>${s.dias_atraso ?? "—"} días</strong></p>
                     <p class="sugerencia-card__sev">Severidad: ${s.severidad}</p>
                 </div>
-            </div>`).join("");
+            </div>`;
+        }).join("");
         
         Charts.renderBarChart(
             DOM.canvasAsignaciones, 

@@ -25,8 +25,14 @@ export function initGlobalEvents() {
 
         if (btnDelete) {
             e.preventDefault();
-            console.log("Click en Eliminar capturado, ID:", btnDelete.dataset.id);
-            Modals.abrirConfirmarEliminacion(btnDelete.dataset.id);
+            const id = btnDelete.dataset.id;
+            // Capturamos la fecha que ya está en la fila de la tabla
+            const fila = btnDelete.closest("tr");
+            const fechaTxt = fila.querySelectorAll("td")[1].innerText; // La columna 'Asignado'
+            const conductor = fila.querySelectorAll("td")[0].innerText;
+
+            console.log("Click en Eliminar capturado, ID:", id);
+            Modals.abrirConfirmarEliminacion(id, conductor, fechaTxt);
         }
 
         // --- CIERRE DE MODALES ---
