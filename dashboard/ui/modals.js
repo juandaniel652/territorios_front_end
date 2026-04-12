@@ -36,32 +36,20 @@ export const Modals = {
         if (modal) modal.classList.add("hidden");
     },
 
+    // Busca esta función en tu modals.js original
     abrirConfirmarEliminacion(id, conductor, fecha) {
         const modal = document.getElementById("modalConfirm");
-        if (!modal) return;
+        const infoText = document.getElementById("confirmInfoText"); 
+        const inputId = document.getElementById("confirmDeleteId");
+
+        if (inputId) inputId.value = id;
         
-        let info = modal.querySelector(".confirm-info");
-        if (!info) {
-            const p = document.createElement("p");
-            p.className = "confirm-info";
-            p.style.margin = "10px 0";
-            p.style.fontSize = "0.9em";
-            p.style.color = "#ccc";
-            const target = document.getElementById("confirmDeleteId")?.parentNode;
-            if (target) {
-                modal.querySelector(".modal-content").insertBefore(p, target);
-            } else {
-                modal.querySelector(".modal-content").appendChild(p);
-            }
-            info = p;
+        // Si encontrás el elemento p, ponés el texto detallado
+        if (infoText) {
+            infoText.innerHTML = `Vas a eliminar la asignación de <strong>${conductor || "N/A"}</strong> del día <strong>${fecha || "N/A"}</strong>.`;
         }
 
-        const inputDeleteId = document.getElementById("confirmDeleteId");
-        if (inputDeleteId) inputDeleteId.value = id;
-        
-        info.innerHTML = `Vas a eliminar la asignación de <strong>${conductor || 'N/A'}</strong> del día <strong>${fecha || 'N/A'}</strong>.`;
-        
-        modal.classList.remove("hidden");
+        if (modal) modal.classList.remove("hidden");
     },
 
     cerrarConfirmar() {

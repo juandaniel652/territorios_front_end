@@ -310,10 +310,13 @@
   <!-- ═══════════════════════════════════════════════════════════════════════
        MODAL: Confirmar eliminación
        ═══════════════════════════════════════════════════════════════════════ -->
- <div id="modalConfirm" class="modal-overlay hidden">
+  <div id="modalConfirm" class="modal-overlay hidden">
     <div class="modal-card" style="max-width:380px;">
       <h3 class="modal-title">Confirmar eliminación</h3>
       <input type="hidden" id="confirmDeleteId">
+
+      <p id="confirmInfoText" style="margin-bottom: 15px; font-size: 14px; color: var(--gray-700);"></p>
+
       <p class="modal-body">
         Esta acción no se puede deshacer. ¿Estás seguro de que querés eliminar esta asignación?
       </p>
