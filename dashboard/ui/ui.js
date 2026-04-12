@@ -98,20 +98,26 @@ export const UI = {
         if (onAsignacionModificadaCallback) onAsignacionModificadaCallback();
     },
 
-    initDatePickers() {
-    const config = {
-        locale: Spanish,
-        dateFormat: "Y-m-d", // Formato para el VALUE (ISO, lo que va al server)
-        altInput: true,      // Crea un segundo input visual
-        altFormat: "d/m/Y",  // Lo que VE el usuario (ARG)
-        allowInput: true,
-        monthSelectorType: 'static'
-    };
+    // dashboard/ui/ui.js
 
-    flatpickr("#fechaAsignado", config); // Agregá estos IDs si los usás en el form de alta
-    flatpickr("#fechaCompletado", config);
+    initDatePickers() {
+        const config = {
+            locale: Spanish,
+            dateFormat: "Y-m-d", 
+            altInput: true,      
+            altFormat: "d/m/Y",  
+            allowInput: true,
+            // Eliminamos configuraciones extrañas que puedan chocar con el "getter-only"
+        };
     
-    flatpickr("#editFechaAsignado", config);
-    flatpickr("#editFechaCompletado", config);
+        // Solo inicializamos si el elemento existe y NO tiene ya una instancia
+        const ids = ["#editFechaAsignado", "#editFechaCompletado"];
+        
+        ids.forEach(id => {
+            const el = document.querySelector(id);
+            if (el && !el._flatpickr) { // Evita reinicializar y romper el "type"
+                flatpickr(el, config);
+            }
+        });
     }
 };

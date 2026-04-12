@@ -3,24 +3,32 @@ export const Modals = {
         const modal = document.getElementById("modalEdicion");
         if (!modal) return;
         
-        document.getElementById("editId").value = data.id || "";
-        document.getElementById("editConductor").value = data.conductor || "";
+        // Seteamos valores básicos
+        const inputId = document.getElementById("editId");
+        const inputConductor = document.getElementById("editConductor");
+        const inputCantidad = document.getElementById("editCantidad");
         
-        // Seteamos el valor en los inputs
+        if (inputId) inputId.value = data.id || "";
+        if (inputConductor) inputConductor.value = data.conductor || "";
+        if (inputCantidad) inputCantidad.value = data.cantidad_abarcado || "";
+        
         const inputAsignado = document.getElementById("editFechaAsignado");
         const inputCompletado = document.getElementById("editFechaCompletado");
         
-        inputAsignado.value = data.fecha_asignado || "";
-        inputCompletado.value = data.fecha_completado || "";
-        document.getElementById("editCantidad").value = data.cantidad_abarcado || "";
+        // Actualizamos fechas de forma segura
+        if (inputAsignado) {
+            inputAsignado.value = data.fecha_asignado || "";
+            // Solo llamamos a setDate si flatpickr ya se inicializó sobre el elemento
+            inputAsignado._flatpickr?.setDate(data.fecha_asignado || "", false);
+        }
 
-        // RE-INICIALIZAR FLATPICKR para que lea los nuevos valores
-        // Esto hace que el calendario se abra en la fecha correcta
-        inputAsignado._flatpickr.setDate(data.fecha_asignado);
-        inputCompletado._flatpickr.setDate(data.fecha_completado);
+        if (inputCompletado) {
+            inputCompletado.value = data.fecha_completado || "";
+            inputCompletado._flatpickr?.setDate(data.fecha_completado || "", false);
+        }
         
         modal.classList.remove("hidden");
-        document.getElementById("editConductor").focus();
+        inputConductor?.focus();
     },
 
     cerrarEdicion() {
@@ -32,7 +40,6 @@ export const Modals = {
         const modal = document.getElementById("modalConfirm");
         if (!modal) return;
         
-        // Buscamos un elemento donde mostrar el resumen (si no existe, lo crea)
         let info = modal.querySelector(".confirm-info");
         if (!info) {
             const p = document.createElement("p");
@@ -40,12 +47,19 @@ export const Modals = {
             p.style.margin = "10px 0";
             p.style.fontSize = "0.9em";
             p.style.color = "#ccc";
-            modal.querySelector(".modal-content").insertBefore(p, document.getElementById("confirmDeleteId").parentNode);
+            const target = document.getElementById("confirmDeleteId")?.parentNode;
+            if (target) {
+                modal.querySelector(".modal-content").insertBefore(p, target);
+            } else {
+                modal.querySelector(".modal-content").appendChild(p);
+            }
             info = p;
         }
 
-        document.getElementById("confirmDeleteId").value = id;
-        info.innerHTML = `Vas a eliminar la asignación de <strong>${conductor}</strong> del día <strong>${fecha}</strong>.`;
+        const inputDeleteId = document.getElementById("confirmDeleteId");
+        if (inputDeleteId) inputDeleteId.value = id;
+        
+        info.innerHTML = `Vas a eliminar la asignación de <strong>${conductor || 'N/A'}</strong> del día <strong>${fecha || 'N/A'}</strong>.`;
         
         modal.classList.remove("hidden");
     },
