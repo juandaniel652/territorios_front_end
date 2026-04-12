@@ -99,16 +99,19 @@ export const UI = {
     },
 
     initDatePickers() {
-        const config = {
-            locale: Spanish,
-            dateFormat: "d/m/Y", // Lo que ve el usuario (ARG)
-            altInput: true,
-            altFormat: "d/m/Y",
-            allowInput: true
-        };
+    const config = {
+        locale: Spanish,
+        dateFormat: "Y-m-d", // Formato para el VALUE (ISO, lo que va al server)
+        altInput: true,      // Crea un segundo input visual
+        altFormat: "d/m/Y",  // Lo que VE el usuario (ARG)
+        allowInput: true,
+        monthSelectorType: 'static'
+    };
 
-        flatpickr("#editFechaAsignado", config);
-        flatpickr("#editFechaCompletado", config);
-        // También para el de "Agregar" si tenés uno
+    flatpickr("#fechaAsignado", config); // Agregá estos IDs si los usás en el form de alta
+    flatpickr("#fechaCompletado", config);
+    
+    flatpickr("#editFechaAsignado", config);
+    flatpickr("#editFechaCompletado", config);
     }
 };

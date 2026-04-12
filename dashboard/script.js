@@ -111,13 +111,30 @@ DOM.consultarBtn.addEventListener("click", () => {
 // ── Crear asignación ──────────────────────────────────────────────────────────
 DOM.form.addEventListener("submit", e => {
     e.preventDefault();
-    crearAsignacion({
-        numero_territorio: Number(DOM.inputs.numeroTerritorio.value),
-        conductor:         DOM.inputs.conductor.value.trim(),
-        fecha_asignado:    DOM.inputs.fechaAsignado.value,
-        fecha_completado:  DOM.inputs.fechaCompletado.value,
-        cantidad_abarcado: DOM.inputs.totalAbarcado.value.trim(),
-    }, UI, () => llenarDomingos());
+
+    // Captura manual ultra-segura
+    const numero = DOM.inputs.numeroTerritorio.value;
+    const conductor = DOM.inputs.conductor.value.trim();
+    const fAsignado = DOM.inputs.fechaAsignado.value;
+    const fCompletado = DOM.inputs.fechaCompletado.value;
+    const cantidad = DOM.inputs.totalAbarcado.value.trim();
+
+    // Log para que veas en consola si falta algo
+    console.log("Datos capturados:", { numero, conductor, fAsignado, fCompletado, cantidad });
+
+    const asignacionData = {
+        numero_territorio: Number(numero),
+        conductor: conductor,
+        fecha_asignado: fAsignado,
+        fecha_completado: fCompletado,
+        cantidad_abarcado: cantidad
+    };
+
+    // Llamamos al controller
+    crearAsignacion(asignacionData, UI, () => {
+        DOM.form.reset();
+        llenarDomingos(); // Esto resetea los select a valores válidos
+    });
 });
 
 // ── Sugerencias ───────────────────────────────────────────────────────────────

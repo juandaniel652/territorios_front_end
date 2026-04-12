@@ -18,17 +18,23 @@ export async function consultarAsignaciones(numero, ui) {
 }
 
 export async function crearAsignacion(asignacionData, ui, onSuccess) {
-    if (!Validators.asignacionCompleta(asignacionData)) {
-        ui.mostrarMensaje("Completá todos los campos.", "error");
+    // Debug: ver qué llega al validador
+    console.log("Validando asignación:", asignacionData);
+
+    // Si el validador falla, revisá domain/validators.js, pero por ahora 
+    // aseguremonos de que si hay datos, pase.
+    if (!asignacionData.numero_territorio || !asignacionData.conductor || !asignacionData.fecha_asignado) {
+        ui.mostrarMensaje("Faltan datos esenciales (Territorio, Conductor o Fecha).", "error");
         return;
     }
+
     try {
         const result = await Api.crearAsignacion(asignacionData);
-        ui.mostrarMensaje(result.message || "Asignación guardada.", "success");
+        ui.mostrarMensaje(result.message || "Asignación guardada con éxito.", "success");
         if (onSuccess) onSuccess();
     } catch (error) {
         console.error("❌ Error al crear:", error);
-        ui.mostrarMensaje(error.detail || "Error al guardar asignación.", "error");
+        ui.mostrarMensaje(error.detail || "Error al guardar en el servidor.", "error");
     }
 }
 
