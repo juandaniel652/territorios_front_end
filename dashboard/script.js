@@ -11,6 +11,25 @@ import {
 } from "./application/usecases/controller.js";
 import { DateFormatter } from "./ui/utils.js";
 
+// --- Control de Acceso Visual ---
+if (AuthService.isAuthenticated() && !AuthService.isAdmin()) {
+    console.warn("⚠️ Acceso como Usuario: Restringiendo acciones de edición.");
+    
+    // Inyectamos CSS para ocultar botones de acción en las tablas y el sidebar
+    const style = document.createElement('style');
+    style.innerHTML = `
+        #btnAgregar, #btnSugerencias, 
+        .btn-row-edit, .btn-row-delete,
+        #sectionAgregar, #sectionSugerencias { 
+            display: none !important; 
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Redirección de seguridad interna si intenta entrar a secciones prohibidas
+    document.getElementById("btnAgregar")?.remove();
+    document.getElementById("btnSugerencias")?.remove();
+}
 
 if (!AuthService.isAuthenticated()) window.location.href = "../login/index.html";
 document.getElementById("btnLogout").addEventListener("click", () => AuthService.logout());
