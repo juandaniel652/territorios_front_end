@@ -64,10 +64,13 @@ function obtenerSemanaCompletado(domingoISO) {
 }
 
 function llenarDomingos() {
+    // Si el input no existe en el DOM, salimos de la función sin tirar error
+    if (!DOM.inputs.fechaAsignado) return; 
+
     const domingos = generarUltimosDomingos(10);
     DOM.inputs.fechaAsignado.innerHTML = domingos
         .map(d => {
-            const fechaAR = DateFormatter.toArgentina(d.iso); // <--- Formateo quirúrgico
+            const fechaAR = DateFormatter.toArgentina(d.iso);
             return `<option value="${d.iso}">${d.dia} (${fechaAR})</option>`;
         }).join("");
     DOM.inputs.fechaAsignado.value = domingos[0].iso;
@@ -122,29 +125,26 @@ DOM.btnBuscarSugerencias.addEventListener("click", () =>
     cargarSugerencias(DOM.rangoSelect.value, UI));
 
 // ── Modal edición: guardar ────────────────────────────────────────────────────
-document.getElementById("formEdicion").addEventListener("submit", async (e) => {
+// ── Modal edición: guardar ────────────────────────────────────────────────────
+// Usamos "?" para que si el formulario no existe (User), no tire error
+document.getElementById("formEdicion")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    // El id viene como string del input hidden — convertir explícitamente
     const idRaw = document.getElementById("editId").value;
-    const id    = Number(idRaw);
-    console.log("ID: ",id)
-
+    const id = Number(idRaw);
+    
     if (!id || isNaN(id)) {
         UI.mostrarMensaje("ID de asignación inválido.", "error");
         return;
     }
 
     const campos = {
-        idRaw:             idRaw,
-        id:                id,
-        conductor:         document.getElementById("editConductor").value.trim()        || undefined,
-        fecha_asignado:    document.getElementById("editFechaAsignado").value           || undefined,
-        fecha_completado:  document.getElementById("editFechaCompletado").value         || undefined,
-        cantidad_abarcado: document.getElementById("editCantidad").value.trim()         || undefined,
+        id,
+        conductor: document.getElementById("editConductor").value.trim() || undefined,
+        fecha_asignado: document.getElementById("editFechaAsignado").value || undefined,
+        fecha_completado: document.getElementById("editFechaCompletado").value || undefined,
+        cantidad_abarcado: document.getElementById("editCantidad").value.trim() || undefined,
     };
 
-    // Eliminar claves con valor undefined para no enviar campos vacíos
     Object.keys(campos).forEach(k => campos[k] === undefined && delete campos[k]);
 
     await editarAsignacion(id, campos, UI, () => {
@@ -153,18 +153,14 @@ document.getElementById("formEdicion").addEventListener("submit", async (e) => {
     });
 });
 
-document.getElementById("btnCancelEdit").addEventListener("click", () =>
-    UI.cerrarModalEdicion());
+// Botones de cancelar con "?"
+document.getElementById("btnCancelEdit")?.addEventListener("click", () => UI.cerrarModalEdicion());
 
 // ── Modal confirmación: eliminar ──────────────────────────────────────────────
-document.getElementById("btnConfirmDelete").addEventListener("click", async () => {
+document.getElementById("btnConfirmDelete")?.addEventListener("click", async () => {
     const idRaw = document.getElementById("confirmDeleteId").value;
-    const id    = Number(idRaw);
-
-    if (!id || isNaN(id)) {
-        UI.mostrarMensaje("ID de asignación inválido.", "error");
-        return;
-    }
+    const id = Number(idRaw);
+    if (!id || isNaN(id)) return;
 
     await eliminarAsignacion(id, UI, () => {
         UI.cerrarModalConfirm();
@@ -172,14 +168,14 @@ document.getElementById("btnConfirmDelete").addEventListener("click", async () =
     });
 });
 
-document.getElementById("btnCancelDelete").addEventListener("click", () =>
-    UI.cerrarModalConfirm());
+document.getElementById("btnCancelDelete")?.addEventListener("click", () => UI.cerrarModalConfirm());
 
-// ── Sidebar ───────────────────────────────────────────────────────────────────
-document.getElementById("btnDashboard").addEventListener("click",   () => DOM.mostrarSeccion("seccionDashboard"));
-document.getElementById("btnAgregar").addEventListener("click",     () => DOM.mostrarSeccion("seccionAgregar"));
-document.getElementById("btnConsultar").addEventListener("click",   () => DOM.mostrarSeccion("seccionConsultar"));
-document.getElementById("btnSugerencias").addEventListener("click", () => DOM.mostrarSeccion("seccionSugerencias"));
+// ── Sidebar con "?" ───────────────────────────────────────────────────────────
+// Esto asegura que la navegación no se rompa si falta algún botón
+document.getElementById("btnDashboard")?.addEventListener("click", () => DOM.mostrarSeccion("seccionDashboard"));
+document.getElementById("btnAgregar")?.addEventListener("click", () => DOM.mostrarSeccion("seccionAgregar"));
+document.getElementById("btnConsultar")?.addEventListener("click", () => DOM.mostrarSeccion("seccionConsultar"));
+document.getElementById("btnSugerencias")?.addEventListener("click", () => DOM.mostrarSeccion("seccionSugerencias"));
 
 // TEST — borrar después
 document.addEventListener("click", (e) => {
