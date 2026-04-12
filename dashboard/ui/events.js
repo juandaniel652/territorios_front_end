@@ -41,9 +41,13 @@ export function initGlobalEvents() {
             Modals.cerrarConfirmar();
         }
 
-        
-        if (btnCancelEdit) btnCancelEdit.onclick = () => Modals.cerrarEdicion();  
+        // CAMBIO AQUÍ: Usamos verificación para evitar el error de "null"
+        if (btnCancelEdit) {
+            btnCancelEdit.onclick = () => Modals.cerrarEdicion();
+        }
 
-        if (btnCancelDelete) btnCancelDelete.onclick = () => Modals.cerrarConfirmar();
+        if (btnCancelDelete) {
+            btnCancelDelete.onclick = () => Modals.cerrarConfirmar();
+        }
     });
 }

@@ -39,6 +39,8 @@ export const UI = {
 
     renderSugerencias(sugerencias) {
         const container = DOM.resultadoSugerencias;
+        if (!container) return; // Protección extra por si el elemento no existe en el DOM actual
+
         if (!sugerencias?.length) {
             container.innerHTML = `<p class="result-empty">No hay sugerencias disponibles.</p>`;
             return;

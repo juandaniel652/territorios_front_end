@@ -15,20 +15,19 @@ import { DateFormatter } from "./ui/utils.js";
 if (AuthService.isAuthenticated() && !AuthService.isAdmin()) {
     console.warn("⚠️ Acceso como Usuario: Restringiendo acciones de edición.");
     
-    // Inyectamos CSS para ocultar botones de acción en las tablas y el sidebar
     const style = document.createElement('style');
     style.innerHTML = `
-        #btnAgregar, #btnSugerencias, 
+        #btnAgregar, 
         .btn-row-edit, .btn-row-delete,
-        #sectionAgregar, #sectionSugerencias { 
+        #sectionAgregar { 
             display: none !important; 
         }
     `;
     document.head.appendChild(style);
 
-    // Redirección de seguridad interna si intenta entrar a secciones prohibidas
+    // Quitamos la eliminación de sugerencias para que el User las pueda usar
     document.getElementById("btnAgregar")?.remove();
-    document.getElementById("btnSugerencias")?.remove();
+    // document.getElementById("btnSugerencias")?.remove(); <-- COMENTÁ O BORRÁ ESTA LÍNEA
 }
 
 if (!AuthService.isAuthenticated()) window.location.href = "../login/index.html";
