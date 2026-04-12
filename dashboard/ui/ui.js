@@ -99,23 +99,18 @@ export const UI = {
     },
 
     // dashboard/ui/ui.js
-
     initDatePickers() {
         const config = {
             locale: Spanish,
-            dateFormat: "Y-m-d", 
-            altInput: true,      
-            altFormat: "d/m/Y",  
-            allowInput: true,
-            // Eliminamos configuraciones extrañas que puedan chocar con el "getter-only"
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d/m/Y",
+            allowInput: true
         };
     
-        // Solo inicializamos si el elemento existe y NO tiene ya una instancia
-        const ids = ["#editFechaAsignado", "#editFechaCompletado"];
-        
-        ids.forEach(id => {
-            const el = document.querySelector(id);
-            if (el && !el._flatpickr) { // Evita reinicializar y romper el "type"
+        // Usamos una clase o chequeamos si ya existe la instancia
+        document.querySelectorAll("#editFechaAsignado, #editFechaCompletado").forEach(el => {
+            if (el && !el._flatpickr) { // <--- ESTA ES LA CLAVE
                 flatpickr(el, config);
             }
         });
