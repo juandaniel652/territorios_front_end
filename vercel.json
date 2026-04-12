@@ -3,17 +3,15 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/", "destination": "/login/index.html" },
+    { "source": "/login", "destination": "/login/index.html" },
+    { "source": "/register", "destination": "/login/register.html" },
+    { "source": "/dashboard", "destination": "/dashboard/index.html" }
+  ],
+  "headers": [
     {
-      "source": "/",
-      "destination": "/login/index.html"
-    },
-    {
-      "source": "/login",
-      "destination": "/login/index.html"
-    },
-    {
-      "source": "/dashboard",
-      "destination": "/dashboard/index.html"
+      "source": "/(.*).js",
+      "headers": [{ "key": "Content-Type", "value": "application/javascript" }]
     }
   ]
 }
