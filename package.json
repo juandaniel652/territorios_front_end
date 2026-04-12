@@ -14,10 +14,8 @@
     "type": "git",
     "url": "git+https://github.com/juandaniel652/territorios_front_end.git"
   },
-  "devDependencies": {
-    "vite": "^5.0.0"
-  },
   "dependencies": {
+    "vite": "^5.4.11",
     "flatpickr": "^4.6.13"
   }
 }

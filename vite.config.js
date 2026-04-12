@@ -1,11 +1,13 @@
-// vite.config.js
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  root: './', // Asegúrate de que apunte a la raíz de tu frontend
+  // Forzamos que la raíz sea el directorio actual
+  root: resolve(__dirname, './'),
+  base: '/', 
   build: {
     outDir: 'dist',
+    emptyOutDir: true, // Limpia la carpeta dist antes de buildear
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
