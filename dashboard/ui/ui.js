@@ -68,6 +68,22 @@ export const UI = {
         );
     },
 
+    mostrarCarga: (estado) => {
+        // Esto busca el botón y le cambia el texto o lo deshabilita
+        const btn = document.getElementById("btnGenerarPropuesta");
+        if (!btn) return;
+        
+        if (estado) {
+            btn.disabled = true;
+            btn.innerHTML = "Generando..."; // O un spinner
+            btn.style.opacity = "0.7";
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = "Generar Propuesta";
+            btn.style.opacity = "1";
+        }
+    },
+
     mostrarMensaje(texto, tipo = "success") {
         DOM.mensaje.textContent = texto;
         DOM.mensaje.className = tipo === "success" ? "msg-success" : "msg-error";
