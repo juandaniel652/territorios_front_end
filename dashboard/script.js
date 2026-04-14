@@ -7,7 +7,9 @@ import {
     crearAsignacion, 
     cargarSugerencias, 
     editarAsignacion, 
-    eliminarAsignacion 
+    eliminarAsignacion,
+    prepararAgendaQuincenal, 
+    confirmarAgendaDefinitiva  
 } from "./application/usecases/controller.js";
 import { DateFormatter } from "./ui/utils.js";
 
