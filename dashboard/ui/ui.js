@@ -27,11 +27,10 @@ export const UI = {
         return (UI._tables || Tables).renderAsignaciones(territorio, asignaciones);
     },
 
-    renderVistaPreviaAgenda(plan) {
-        // 2. Aquí es donde fallaba: usamos el fallback de window si todo lo demás falla
+    renderVistaPreviaAgenda(plan, conductores = []) {
         const t = UI._tables || Tables || window.Tables;
         if (t && t.renderVistaPreviaAgenda) {
-            t.renderVistaPreviaAgenda(plan);
+            t.renderVistaPreviaAgenda(plan, conductores);
         } else {
             console.error("❌ Error: No se pudo encontrar el módulo Tables");
         }
@@ -134,22 +133,22 @@ export const UI = {
             this.mostrarMensaje("Selecciona una fecha", "error");
             return;
         }
-    
+
         // 1. Primero calculamos la fecha
         const fechaLunes = obtenerLunes(input.value);
         console.log(`🚀 Mandando al controlador: ${fechaLunes}`);
-    
+
         // 2. Mostramos el estado de carga
         this.mostrarCarga(true);
-    
+
         try {
             // 3. Llamamos al proceso (prepararAgendaQuincenal se encarga de llamar a la API
             // y de invocar a UI.renderVistaPreviaAgenda internamente)
             await prepararAgendaQuincenal(fechaLunes, this);
-            
+
             // 4. Si por alguna razón prepararAgendaQuincenal NO llama al render, 
             // lo podés forzar acá, pero normalmente el controlador ya lo hace.
-            
+
         } catch (error) {
             console.error("Error al generar agenda:", error);
             this.mostrarMensaje("Error al procesar la agenda", "error");

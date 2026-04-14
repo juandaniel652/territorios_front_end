@@ -54,18 +54,15 @@ export const Tables = {
     },
 
 
-   renderVistaPreviaAgenda(plan, conductoresConocidos) {
+   renderVistaPreviaAgenda(plan, conductoresConocidos = []) {
         const container = document.getElementById("containerPropuesta");
         if (!container) return;
     
-        // --- EL FIX AQUÍ ---
-        // Si conductoresConocidos es null, undefined o no es un Array, usamos []
         const listaConductores = Array.isArray(conductoresConocidos) ? conductoresConocidos : [];
     
         const datalistHTML = `
             <datalist id="listaConductores">
                 ${listaConductores.map(c => {
-                    // Si c es un objeto usamos c.nombre_completo, si es un string usamos c
                     const nombre = (typeof c === 'object') ? (c.nombre_completo || c.nombre) : c;
                     return `<option value="${nombre}">`;
                 }).join("")}
@@ -73,62 +70,72 @@ export const Tables = {
         `;
             
         if (!Array.isArray(plan)) {
-            console.error("❌ El plan no es un array:", plan);
             container.innerHTML = "<p class='text-red-500'>Error: El formato del plan es inválido.</p>";
             return;
         }
     
         const semanas = this.agruparPorSemana(plan);
-        let html = datalistHTML + `<div class="agenda-container shadow-xl rounded-lg overflow-hidden border border-gray-200">`;
-
+        let html = datalistHTML + `<div class="agenda-container space-y-8">`;
+    
         Object.keys(semanas).forEach(lunesKey => {
             const items = semanas[lunesKey];
-            // ... (lógica de encabezado de semana igual a la anterior) ...
-
             html += `
-                <table class="w-full text-sm text-left border-collapse bg-white">
-                    <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
-                        <tr>
-                            <th class="p-3 border-b" style="width: 25%">Día y Horario</th>
-                            <th class="p-3 border-b" style="width: 30%">Encuentro (Lugar)</th>
-                            <th class="p-3 border-b text-center" style="width: 15%">Territorio</th>
-                            <th class="p-3 border-b" style="width: 30%">Conductor</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        ${items.map(item => {
-                            const [iy, im, id] = item.fecha.split('-').map(Number);
-                            const fechaObj = new Date(iy, im - 1, id);
-                            const diaNombre = fechaObj.toLocaleString('es-AR', {weekday: 'long'});
-                            const horaSugerida = item.turno === "AM" ? "09:30hs" : "16:30hs";
-
-                            return `
-                            <tr class="hover:bg-gray-50 transition-colors" data-fecha="${item.fecha}" data-id-territorio="${item.territorio_id}" data-turno="${item.turno}">
-                                <td class="p-3 font-semibold text-gray-700">
-                                    <span class="capitalize">${diaNombre}</span> 
-                                    <span class="text-gray-400 font-normal ml-2">${horaSugerida}</span>
-                                </td>
-                                
-                                <td class="p-3 editable-cell encounter-cell italic text-gray-400 focus:text-gray-800 focus:not-italic" 
-                                    contenteditable="true" 
-                                    data-placeholder="Ej: Casa de Juan..."></td>
-                                
-                                <td class="p-3 text-center font-bold text-green-700 text-lg">${item.numero}</td>
-                                
-                                <td class="p-3">
-                                    <input type="text" 
-                                           list="listaConductores" 
-                                           class="w-full bg-transparent border-none focus:ring-0 italic text-gray-400 focus:text-gray-800 focus:not-italic" 
-                                           placeholder="Asignar conductor..." />
-                                </td>
-                            </tr>`;
-                        }).join("")}
-                    </tbody>
-                </table>`;
+                <div class="shadow-xl rounded-lg overflow-hidden border border-gray-200">
+                    <div class="bg-green-700 text-white p-4 font-bold">Semana del ${lunesKey}</div>
+                    <table class="w-full text-sm text-left border-collapse bg-white">
+                        <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                            <tr>
+                                <th class="p-3 border-b" style="width: 25%">Día y Horario</th>
+                                <th class="p-3 border-b" style="width: 30%">Encuentro (Lugar)</th>
+                                <th class="p-3 border-b text-center" style="width: 15%">Territorio</th>
+                                <th class="p-3 border-b" style="width: 30%">Conductor</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            ${items.map(item => {
+                                const [iy, im, id] = item.fecha.split('-').map(Number);
+                                const fechaObj = new Date(iy, im - 1, id);
+                                const diaNombre = fechaObj.toLocaleString('es-AR', {weekday: 'long'});
+                                const horaSugerida = item.turno === "AM" ? "09:30hs" : "16:30hs";
+                                return `
+                                <tr class="hover:bg-gray-50 transition-colors" data-fecha="${item.fecha}" data-id-territorio="${item.territorio_id}" data-turno="${item.turno}">
+                                    <td class="p-3 font-semibold text-gray-700">
+                                        <span class="capitalize">${diaNombre}</span> 
+                                        <span class="text-gray-400 font-normal ml-2">${horaSugerida}</span>
+                                    </td>
+                                    <td class="p-3 editable-cell encounter-cell italic text-gray-400 focus:text-gray-800 focus:not-italic" 
+                                        contenteditable="true" 
+                                        data-placeholder="Ej: Casa de Juan..."></td>
+                                    <td class="p-3 text-center font-bold text-green-700 text-lg">${item.numero}</td>
+                                    <td class="p-3">
+                                        <input type="text" list="listaConductores" 
+                                               class="w-full bg-transparent border-none focus:ring-0 italic text-gray-400 focus:text-gray-800 focus:not-italic" 
+                                               placeholder="Asignar conductor..." />
+                                    </td>
+                                </tr>`;
+                            }).join("")}
+                        </tbody>
+                    </table>
+                </div>`;
         });
-
-        html += `</div>... (botón de confirmar) ...`;
+    
+        // --- EL BOTÓN QUE FALTABA ---
+        html += `
+            <div class="mt-8 flex justify-end p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                <button id="btnConfirmarAgendaFinal" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-all transform hover:scale-105 flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Confirmar y Guardar Agenda
+                </button>
+            </div>
+        </div>`;
+    
         container.innerHTML = html;
+    
+        // Asignar el evento al botón recién creado
+        setTimeout(() => {
+            const btn = document.getElementById("btnConfirmarAgendaFinal");
+            if (btn) btn.onclick = () => UI.manejarConfirmarAgenda();
+        }, 0);
     },
 
 
