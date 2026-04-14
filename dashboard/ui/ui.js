@@ -137,3 +137,8 @@ export const UI = {
         });
     }
 };
+
+setTimeout(() => {
+    initGlobalEvents();
+    console.log("✅ Eventos vinculados tras carga de módulos");
+}, 0);

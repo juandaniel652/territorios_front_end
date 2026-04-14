@@ -1,5 +1,5 @@
 // frontend/dashboard/ui/events.js
-import { Modals } from "/dashboard/ui/modals.js";
+import { Modals } from "./modals.js";
 
 export function initGlobalEvents() {
     console.log("Sistema de eventos UI inicializado");
