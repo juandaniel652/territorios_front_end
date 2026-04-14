@@ -1,38 +1,38 @@
 // ui/ui.js
 import { DOM }              from "./dom.js";
-import { Tables }    from "./tables.js";
+import { Tables }           from "./tables.js";
 import { Modals }           from "./modals.js";
 import { Charts }           from "./charts.js";
 import { initGlobalEvents } from "./events.js";
 import { DateFormatter }    from "./utils.js";
-//------------------------------------
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
 import "flatpickr/dist/flatpickr.min.css";
 
-// --- ESTO ES LO QUE FALTA ---
 let onAsignacionModificadaCallback = () => {};
 
 export const setOnAsignacionModificada = (fn) => {
     onAsignacionModificadaCallback = fn;
 };
-// ----------------------------
-
-// Inicializamos los listeners globales una sola vez al cargar el módulo
-initGlobalEvents();
 
 console.log("🚀 UI.js cargado: " + new Date().toLocaleTimeString('es-AR'));
+
 export const UI = {
-    _tables: Tables,
-    renderAsignaciones: (territorio, asignaciones) => Tables.renderAsignaciones(territorio, asignaciones),
+    // 1. Definimos la propiedad interna pero no la asignamos todavía
+    _tables: null, 
+
+    renderAsignaciones: (territorio, asignaciones) => {
+        // Usamos la referencia inyectada
+        return (UI._tables || Tables).renderAsignaciones(territorio, asignaciones);
+    },
 
     renderVistaPreviaAgenda(plan) {
-        // Usamos la referencia interna segura
-        if (this._tables && this._tables.renderVistaPreviaAgenda) {
-            this._tables.renderVistaPreviaAgenda(plan);
+        // 2. Aquí es donde fallaba: usamos el fallback de window si todo lo demás falla
+        const t = UI._tables || Tables || window.Tables;
+        if (t && t.renderVistaPreviaAgenda) {
+            t.renderVistaPreviaAgenda(plan);
         } else {
-            // Si por algún milagro falló, intentamos el import directo
-            Tables.renderVistaPreviaAgenda(plan);
+            console.error("❌ Error: No se pudo encontrar el módulo Tables");
         }
     },
 
@@ -50,16 +50,14 @@ export const UI = {
 
     renderSugerencias(sugerencias) {
         const container = DOM.resultadoSugerencias;
-        if (!container) return; // Protección extra por si el elemento no existe en el DOM actual
+        if (!container) return;
 
         if (!sugerencias?.length) {
             container.innerHTML = `<p class="result-empty">No hay sugerencias disponibles.</p>`;
             return;
         }
         container.innerHTML = sugerencias.map(s => {
-            // 2. Formatear la fecha de la sugerencia
             const fechaSugerenciaAR = DateFormatter.toArgentina(s.ultima_fecha);
-
             return `
             <div class="sugerencia-card">
                 <span class="sugerencia-card__num">T-${s.numero}</span>
@@ -79,20 +77,12 @@ export const UI = {
         );
     },
 
-    mostrarCarga: (estado) => {
-        // Esto busca el botón y le cambia el texto o lo deshabilita
+    mostrarCarga(estado) {
         const btn = document.getElementById("btnGenerarPropuesta");
         if (!btn) return;
-        
-        if (estado) {
-            btn.disabled = true;
-            btn.innerHTML = "Generando..."; // O un spinner
-            btn.style.opacity = "0.7";
-        } else {
-            btn.disabled = false;
-            btn.innerHTML = "Generar Propuesta";
-            btn.style.opacity = "1";
-        }
+        btn.disabled = !!estado;
+        btn.innerHTML = estado ? "Generando..." : "Generar Propuesta";
+        btn.style.opacity = estado ? "0.7" : "1";
     },
 
     mostrarMensaje(texto, tipo = "success") {
@@ -109,10 +99,7 @@ export const UI = {
     },
 
     mostrarErrorResultados(msg) {
-        DOM.resultadoDiv.innerHTML = `
-            <div class="result-error">
-                <span>⚠</span><p>${msg}</p>
-            </div>`;
+        DOM.resultadoDiv.innerHTML = `<div class="result-error"><span>⚠</span><p>${msg}</p></div>`;
     },
 
     cerrarModalEdicion() {
@@ -125,7 +112,6 @@ export const UI = {
         if (onAsignacionModificadaCallback) onAsignacionModificadaCallback();
     },
 
-    // dashboard/ui/ui.js
     initDatePickers() {
         const config = {
             locale: Spanish,
@@ -134,17 +120,21 @@ export const UI = {
             altFormat: "d/m/Y",
             allowInput: true
         };
-    
-        // Usamos una clase o chequeamos si ya existe la instancia
         document.querySelectorAll("#editFechaAsignado, #editFechaCompletado").forEach(el => {
-            if (el && !el._flatpickr) { // <--- ESTA ES LA CLAVE
-                flatpickr(el, config);
-            }
+            if (el && !el._flatpickr) flatpickr(el, config);
         });
     }
 };
 
+// --- EL TRUCO PARA VERCEL ---
+// 1. Asignación manual
+UI._tables = Tables;
+// 2. Exposición global por si Vite "esconde" los módulos
+window.UI = UI; 
+window.Tables = Tables; 
+
+// 3. Inicialización retardada: SOLAMENTE UNA VEZ
 setTimeout(() => {
     initGlobalEvents();
-    console.log("✅ Eventos vinculados tras carga de módulos");
-}, 0);
+    console.log("✅ Sistema inicializado y dependencias inyectadas");
+}, 100);
