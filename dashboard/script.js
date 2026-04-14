@@ -188,16 +188,39 @@ document.getElementById("btnConfirmDelete")?.addEventListener("click", async () 
 document.getElementById("btnCancelDelete")?.addEventListener("click", () => UI.cerrarModalConfirm());
 
 // ── Sidebar con "?" ───────────────────────────────────────────────────────────
-// Esto asegura que la navegación no se rompa si falta algún botón
+// ... (después de los otros botones del sidebar)
+
+// ── Navegación Sidebar ──
 document.getElementById("btnDashboard")?.addEventListener("click", () => DOM.mostrarSeccion("seccionDashboard"));
 document.getElementById("btnAgregar")?.addEventListener("click", () => DOM.mostrarSeccion("seccionAgregar"));
 document.getElementById("btnConsultar")?.addEventListener("click", () => DOM.mostrarSeccion("seccionConsultar"));
 document.getElementById("btnSugerencias")?.addEventListener("click", () => DOM.mostrarSeccion("seccionSugerencias"));
+document.getElementById("btnAgenda")?.addEventListener("click", () => DOM.mostrarSeccion("seccionAgenda")); // <-- AGREGAR ESTO
 
-// TEST — borrar después
-document.addEventListener("click", (e) => {
-    console.log("Click en:", e.target, "| clases:", e.target.className);
-
+// ── Lógica de Agenda ──
+document.getElementById("btnGenerarPropuesta")?.addEventListener("click", async () => {
+    const fecha = document.getElementById("fechaInicioAgenda").value;
+    if (!fecha) {
+        UI.mostrarMensaje("Por favor, selecciona una fecha de inicio", "error");
+        return;
+    }
+    
+    // Llamada a la lógica (aseguráte que prepararAgendaQuincenal esté importada)
+    await prepararAgendaQuincenal(fecha, {
+        ...UI,
+        renderVistaPreviaAgenda: (plan) => {
+            Tables.renderVistaPreviaAgenda(plan, () => {
+                // Callback de confirmación
+                confirmarAgendaDefinitiva(plan, "Juan Daniel", UI, () => {
+                    document.getElementById("containerPropuesta").innerHTML = `
+                        <div style="padding: 40px; text-align: center; color: var(--green-600);" class="animate-in">
+                            <p style="font-size: 40px;">✅</p>
+                            <p style="font-weight: 600;">Agenda confirmada con éxito.</p>
+                        </div>`;
+                });
+            });
+        }
+    });
 });
 
 UI.initDatePickers();

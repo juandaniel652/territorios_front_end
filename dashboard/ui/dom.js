@@ -39,6 +39,11 @@ export const DOM = {
     confirmDeleteId:      document.getElementById("confirmDeleteId"),
     btnConfirmDelete:     document.getElementById("btnConfirmDelete"),
 
+    btnAgenda:            document.getElementById("btnAgenda"), // El botón del sidebar
+    btnGenerarPropuesta:  document.getElementById("btnGenerarPropuesta"),
+    fechaInicioAgenda:    document.getElementById("fechaInicioAgenda"),
+    containerPropuesta:   document.getElementById("containerPropuesta"),
+
     // Gráficos
     canvasAsignaciones:   "asignacionesChart",
 

@@ -1,6 +1,7 @@
 // application/usecases/controller.js
 import { Api }        from "../../infrastructure/api/api.js";
 import { Validators } from "../../domain/validators.js";
+import { prepararAgendaQuincenal, confirmarAgendaDefinitiva } from "./application/usecases/controller.js";
 
 export async function consultarAsignaciones(numero, ui) {
     ui.limpiarResultados();
@@ -69,5 +70,42 @@ export async function eliminarAsignacion(id, ui, onSuccess) {
     } catch (error) {
         console.error("❌ Error al eliminar:", error);
         ui.mostrarMensaje(error.detail || "Error al eliminar asignación.", "error");
+    }
+}
+
+// Agregá estos exports al final del archivo
+
+export async function prepararAgendaQuincenal(fechaInicio, ui) {
+    ui.mostrarCarga(true); // Si tenés un spinner
+    try {
+        const plan = await Api.generarPlanQuincenal(fechaInicio);
+        // El plan es un array de {fecha, turno, territorio_id, numero, zona}
+        ui.renderVistaPreviaAgenda(plan); 
+    } catch (error) {
+        console.error("❌ Error generando plan:", error);
+        ui.mostrarMensaje("Error al generar la propuesta de agenda.", "error");
+    } finally {
+        ui.mostrarCarga(false);
+    }
+}
+
+export async function confirmarAgendaDefinitiva(planRecibido, conductorDefault, ui, onSuccess) {
+    try {
+        // Mapeamos el plan al formato que espera el backend (AgendaConfirmar)
+        const payload = {
+            conductor_default: conductorDefault || "Sin Asignar",
+            items: planRecibido.map(item => ({
+                territorio_id: item.territorio_id,
+                fecha_asignado: item.fecha, // 'fecha' viene del backend como YYYY-MM-DD
+                turno: item.turno
+            }))
+        };
+
+        const result = await Api.confirmarAgenda(payload);
+        ui.mostrarMensaje(result.message, "success");
+        if (onSuccess) onSuccess();
+    } catch (error) {
+        console.error("❌ Error confirmando agenda:", error);
+        ui.mostrarMensaje(error.detail || "Error al impactar la agenda en la DB.", "error");
     }
 }

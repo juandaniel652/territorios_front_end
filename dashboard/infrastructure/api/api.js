@@ -62,5 +62,23 @@ export const Api = {
     async getSugerencias(rango) {
         const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/sugerencias?rango=${rango}`, { headers: authHeaders() });
         return handleResponse(res);
-    }
+    },
+
+    async generarPlanQuincenal(fechaInicio) {
+        // GET /territorios/generar-plan?fecha_inicio=2026-04-20
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/generar-plan?fecha_inicio=${fechaInicio}`, { 
+            headers: authHeaders() 
+        });
+        return handleResponse(res);
+    },
+
+    async confirmarAgenda(datosAgenda) {
+        // POST /asignaciones/confirmar-agenda
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/confirmar-agenda`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(datosAgenda)
+        });
+        return handleResponse(res);
+    },
 };
