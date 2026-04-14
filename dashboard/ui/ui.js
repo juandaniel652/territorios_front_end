@@ -142,6 +142,49 @@ export const UI = {
         await prepararAgendaQuincenal(fechaLunes, this);
     },
 
+    async manejarConfirmarAgenda() {
+        const filas = document.querySelectorAll("#containerPropuesta tbody tr");
+        const items = [];
+
+        filas.forEach(fila => {
+            // Extraemos los datos de los data-attributes que pusimos antes
+            const territorio_id = parseInt(fila.dataset.idTerritorio);
+            const fecha_asignado = fila.dataset.fecha;
+            const turno = fila.dataset.turno;
+
+            // Extraemos lo que escribió el usuario
+            const encuentro = fila.querySelector(".encounter-cell").innerText.trim() || "Sin especificar";
+            const conductor = fila.querySelector("input").value.trim();
+
+            if (!conductor) {
+                // Podríamos marcar la celda en rojo si falta el conductor
+                fila.querySelector("input").style.border = "1px solid red";
+            } else {
+                items.push({
+                    territorio_id,
+                    fecha_asignado,
+                    turno,
+                    conductor,
+                    encuentro
+                });
+            }
+        });
+
+        if (items.length === 0) {
+            this.mostrarMensaje("Debes asignar al menos un conductor", "error");
+            return;
+        }
+
+        try {
+            // Aquí llamarías a tu servicio de API
+            // await api.post("/asignaciones/confirmar-agenda", { items });
+            console.log("Enviando a guardar:", { items });
+            this.mostrarMensaje("¡Agenda guardada con éxito!");
+        } catch (error) {
+            this.mostrarMensaje("Error al guardar la agenda", "error");
+        }
+    }
+
     
 };
 

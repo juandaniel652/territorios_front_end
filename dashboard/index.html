@@ -123,6 +123,25 @@
       background: var(--white);
     }
 
+    /* Placeholder para celdas contenteditable */
+    .editable-cell[contenteditable="true"]:empty:before {
+        content: attr(data-placeholder);
+        color: #9ca3af; /* gray-400 */
+        cursor: text;
+    }
+    
+    .editable-cell:focus {
+        outline: none;
+        background-color: #fefce8; /* Un amarillo muy tenue para saber qué estás editando */
+    }
+    
+    /* Limpiar estilos de inputs en la tabla */
+    .agenda-container input {
+        outline: none;
+        padding: 0;
+        margin: 0;
+    }
+
     .modal-overlay.hidden {
     display: none !important;
     }
