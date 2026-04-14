@@ -14,3 +14,19 @@ export const DateFormatter = {
         }).format(date);
     }
 };
+
+export const agruparPorSemana = (plan) => {
+    const semanas = {};
+    plan.forEach(item => {
+        const fecha = new Date(item.fecha + "T00:00:00");
+        // Calcular el lunes de esa semana
+        const diaSemana = fecha.getDay(); // 0 es domingo
+        const diff = fecha.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
+        const lunes = new Date(fecha.setDate(diff));
+        const semanaKey = lunes.toISOString().split('T')[0];
+    
+        if (!semanas[semanaKey]) semanas[semanaKey] = [];
+        semanas[semanaKey].push(item);
+    });
+    return semanas;
+};
