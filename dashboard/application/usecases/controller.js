@@ -1,7 +1,7 @@
 // application/usecases/controller.js
 import { Api }        from "../../infrastructure/api/api.js";
 import { Validators } from "../../domain/validators.js";
-import { prepararAgendaQuincenal, confirmarAgendaDefinitiva } from "./application/usecases/controller.js";
+
 
 export async function consultarAsignaciones(numero, ui) {
     ui.limpiarResultados();
