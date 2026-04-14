@@ -54,64 +54,90 @@ export const Tables = {
     },
 
 
-    // dashboard/ui/tables.js
-    renderVistaPreviaAgenda(plan, onConfirmar) {
+   renderVistaPreviaAgenda(plan) {
         const container = document.getElementById("containerPropuesta");
         if (!container) return;
-    
-        const semanas = agruparPorSemana(plan);
+
+        // 1. Obtenemos la fecha de inicio real (el lunes del primer item)
+        // Esto asegura que la UI pinte desde el lunes aunque el plan empiece otro día
+        const semanas = this.agruparPorSemana(plan);
+
         let html = `<div class="agenda-container shadow-xl rounded-lg overflow-hidden border border-gray-200">`;
-    
+
         Object.keys(semanas).forEach(lunesKey => {
             const items = semanas[lunesKey];
-            const inicio = new Date(lunesKey + "T00:00:00");
+            
+            // Creamos el objeto fecha para el título de la semana
+            const [y, m, d] = lunesKey.split('-').map(Number);
+            const inicio = new Date(y, m - 1, d);
             const fin = new Date(inicio);
             fin.setDate(fin.getDate() + 6);
-        
-            // Formateador de rango: "Del 27 de Abril al 03 de Mayo de 2026"
+
             const rangoTexto = `Semana del ${inicio.getDate()} de ${inicio.toLocaleString('es-AR', {month: 'long'})} al ${fin.getDate()} de ${fin.toLocaleString('es-AR', {month: 'long'})} de ${fin.getFullYear()}`;
-        
+
             html += `
                 <div class="semana-header bg-green-700 text-white px-4 py-2 font-bold text-center uppercase tracking-wider">
                     ${rangoTexto}
                 </div>
-                <table class="w-full text-sm text-left border-collapse">
+                <table class="w-full text-sm text-left border-collapse bg-white">
                     <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
                         <tr>
-                            <th class="p-3 border-b w-1/4">Horarios (Día/Hora)</th>
-                            <th class="p-3 border-b w-1/4">Encuentro</th>
-                            <th class="p-3 border-b w-1/4 text-center">Territorio</th>
-                            <th class="p-3 border-b w-1/4">Conductor</th>
+                            <th class="p-3 border-b">Día y Horario</th>
+                            <th class="p-3 border-b">Encuentro</th>
+                            <th class="p-3 border-b text-center">Territorio</th>
+                            <th class="p-3 border-b">Conductor</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         ${items.map(item => {
-                            const diaNombre = new Date(item.fecha + "T00:00:00").toLocaleString('es-AR', {weekday: 'long'});
+                            // Formateo de día (Lunes, Martes...)
+                            const [iy, im, id] = item.fecha.split('-').map(Number);
+                            const fechaObj = new Date(iy, im - 1, id);
+                            const diaNombre = fechaObj.toLocaleString('es-AR', {weekday: 'long'});
                             const horaSugerida = item.turno === "AM" ? "09:30hs" : "16:30hs";
+
                             return `
-                            <tr class="hover:bg-gray-50 transition-colors bg-white">
+                            <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="p-3 font-semibold text-gray-700">
                                     <span class="capitalize">${diaNombre}</span> 
                                     <span class="text-gray-400 font-normal ml-2">${horaSugerida}</span>
                                 </td>
-                                <td class="p-3 text-gray-400 italic">—</td>
-                                <td class="p-3 text-center font-bold text-green-700">${item.numero}</td>
-                                <td class="p-3 text-gray-400 italic">—</td>
+                                <td class="p-3 text-gray-800 italic border-x bg-yellow-50/30" contenteditable="true">Sugerir casa...</td>
+                                <td class="p-3 text-center font-bold text-green-700 text-lg">${item.numero}</td>
+                                <td class="p-3 text-gray-800 italic bg-yellow-50/30" contenteditable="true">Asignar conductor...</td>
                             </tr>`;
                         }).join("")}
                     </tbody>
                 </table>
             `;
         });
-    
+
         html += `</div>
-            <div class="mt-6 flex justify-end p-4 bg-gray-50 rounded-b-lg">
-                 <button id="btnConfirmarAgendaFinal" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-bold shadow-md transition-all">
-                    Confirmar Agenda Profesional
+            <div class="mt-6 flex justify-end p-4">
+                 <button id="btnConfirmarAgendaFinal" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold shadow-lg transition-all transform hover:scale-105">
+                    Confirmar y Guardar Agenda
                  </button>
             </div>`;
-    
+
         container.innerHTML = html;
-        document.getElementById("btnConfirmarAgendaFinal").onclick = onConfirmar;
-    }
+    },
+
+    agruparPorSemana(plan) {
+        const semanas = {};
+        plan.forEach(item => {
+            const [y, m, d] = item.fecha.split('-').map(Number);
+            const fecha = new Date(y, m - 1, d);
+            const diaSemana = fecha.getDay(); 
+            const diff = (diaSemana === 0 ? -6 : 1 - diaSemana);
+            
+            const lunes = new Date(fecha);
+            lunes.setDate(fecha.getDate() + diff);
+            
+            const semanaKey = `${lunes.getFullYear()}-${String(lunes.getMonth() + 1).padStart(2, '0')}-${String(lunes.getDate()).padStart(2, '0')}`;
+
+            if (!semanas[semanaKey]) semanas[semanaKey] = [];
+            semanas[semanaKey].push(item);
+        });
+        return semanas;
+    }, 
 };
