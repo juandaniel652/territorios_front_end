@@ -4,16 +4,21 @@ import { Modals } from "./modals.js";
 export function initGlobalEvents() {
     console.log("Sistema de eventos UI inicializado");
 
+    // Delegación de eventos para clicks
     document.addEventListener("click", (e) => {
+        // --- NUEVO: Capturar el botón de generar ---
+        const btnGenerar = e.target.closest("#btnGenerarPropuesta");
+        if (btnGenerar) {
+            window.UI.manejarGenerarAgenda(); // Usamos window.UI para ir sobre seguro con Vite
+            return;
+        }
+
         const btnEdit = e.target.closest(".btn-row-edit");
         const btnDelete = e.target.closest(".btn-row-delete");
-        const btnCancelEdit = document.getElementById("btnCancelEdit");
-        const btnCancelDelete = document.getElementById("btnCancelDelete");
         
-        // --- BOTONES DE LA TABLA ---
+        // --- LÓGICA DE EDICIÓN ---
         if (btnEdit) {
             e.preventDefault();
-            console.log("Click en Editar capturado", btnEdit.dataset);
             Modals.abrirEdicion({
                 id: btnEdit.dataset.id,
                 conductor: btnEdit.dataset.conductor,
@@ -23,15 +28,13 @@ export function initGlobalEvents() {
             });
         }
 
+        // --- LÓGICA DE ELIMINACIÓN ---
         if (btnDelete) {
             e.preventDefault();
             const id = btnDelete.dataset.id;
-            // Capturamos la fecha que ya está en la fila de la tabla
             const fila = btnDelete.closest("tr");
-            const fechaTxt = fila.querySelectorAll("td")[1].innerText; // La columna 'Asignado'
+            const fechaTxt = fila.querySelectorAll("td")[1].innerText;
             const conductor = fila.querySelectorAll("td")[0].innerText;
-
-            console.log("Click en Eliminar capturado, ID:", id);
             Modals.abrirConfirmarEliminacion(id, conductor, fechaTxt);
         }
 
@@ -40,20 +43,12 @@ export function initGlobalEvents() {
             Modals.cerrarEdicion();
             Modals.cerrarConfirmar();
         }
-
-        // CAMBIO AQUÍ: Usamos verificación para evitar el error de "null"
-        if (btnCancelEdit) {
-    btnCancelEdit.onclick = (e) => {
-        e.preventDefault();
-        Modals.cerrarEdicion();
-    };
-    }
-
-    if (btnCancelDelete) {
-        btnCancelDelete.onclick = (e) => {
-            e.preventDefault();
-            Modals.cerrarConfirmar();
-        };
-    }
     });
+
+    // --- LÓGICA DE CANCELACIÓN (Aislada) ---
+    const btnCancelEdit = document.getElementById("btnCancelEdit");
+    if (btnCancelEdit) btnCancelEdit.onclick = (e) => { e.preventDefault(); Modals.cerrarEdicion(); };
+
+    const btnCancelDelete = document.getElementById("btnCancelDelete");
+    if (btnCancelDelete) btnCancelDelete.onclick = (e) => { e.preventDefault(); Modals.cerrarConfirmar(); };
 }

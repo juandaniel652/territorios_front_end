@@ -30,3 +30,26 @@ export const agruparPorSemana = (plan) => {
     });
     return semanas;
 };
+
+
+export function obtenerLunes(fechaStr) {
+    // Usamos split y new Date(y, m, d) para evitar problemas de zona horaria de JS
+    const [year, month, day] = fechaStr.split('-').map(Number);
+    const fecha = new Date(year, month - 1, day);
+    
+    const diaSemana = fecha.getDay(); // 0=Dom, 1=Lun...
+    
+    // Calculamos la diferencia para llegar al lunes
+    // Si es domingo (0), restamos 6. Si es lunes (1), restamos 0.
+    const diff = (diaSemana === 0 ? -6 : 1 - diaSemana);
+    
+    const lunes = new Date(fecha);
+    lunes.setDate(fecha.getDate() + diff);
+    
+    // Devolvemos en formato YYYY-MM-DD
+    const y = lunes.getFullYear();
+    const m = String(lunes.getMonth() + 1).padStart(2, '0');
+    const d = String(lunes.getDate()).padStart(2, '0');
+    
+    return `${y}-${m}-${d}`;
+}

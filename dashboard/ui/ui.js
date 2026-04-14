@@ -4,7 +4,8 @@ import { Tables }           from "./tables.js";
 import { Modals }           from "./modals.js";
 import { Charts }           from "./charts.js";
 import { initGlobalEvents } from "./events.js";
-import { DateFormatter }    from "./utils.js";
+import { DateFormatter, obtenerLunes } from "./utils.js";
+import { prepararAgendaQuincenal } from "../application/usecases/controller.js";
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
 import "flatpickr/dist/flatpickr.min.css";
@@ -120,10 +121,36 @@ export const UI = {
             altFormat: "d/m/Y",
             allowInput: true
         };
-        document.querySelectorAll("#editFechaAsignado, #editFechaCompletado").forEach(el => {
+        // AGREGAMOS #fechaInicioAgenda a la lista de selectores
+        document.querySelectorAll("#editFechaAsignado, #editFechaCompletado, #fechaInicioAgenda").forEach(el => {
             if (el && !el._flatpickr) flatpickr(el, config);
         });
-    }
+    },
+
+    // --- NUEVO MÉTODO PARA EL PUNTO 1 ---
+    async manejarGenerarAgenda() {
+        const input = document.getElementById("fechaInicioAgenda");
+        if (!input || !input.value) {
+            this.mostrarMensaje("Selecciona una fecha para iniciar", "error");
+            return;
+        }
+
+        try {
+            // Ya no usamos 'await import', usamos las funciones directamente
+            const fechaLunes = obtenerLunes(input.value);
+            
+            console.log(`📅 Fecha seleccionada: ${input.value} -> Ajustada a Lunes: ${fechaLunes}`);
+
+            // Llamamos al controlador (esta función sí es async porque va a la API)
+            await prepararAgendaQuincenal(fechaLunes, this);
+            
+        } catch (error) {
+            console.error("Error al generar agenda:", error);
+            this.mostrarMensaje("Error al procesar la agenda", "error");
+        }
+    },
+
+    
 };
 
 // --- EL TRUCO PARA VERCEL ---
