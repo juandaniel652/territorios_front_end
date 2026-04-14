@@ -1,6 +1,6 @@
 // ui/ui.js
 import { DOM }              from "./dom.js";
-import { Tables as Tbl }    from "./tables.js";
+import { Tables }    from "./tables.js";
 import { Modals }           from "./modals.js";
 import { Charts }           from "./charts.js";
 import { initGlobalEvents } from "./events.js";
@@ -23,8 +23,8 @@ initGlobalEvents();
 
 console.log("🚀 UI.js cargado: " + new Date().toLocaleTimeString('es-AR'));
 export const UI = {
-    _tables: Tbl,
-    renderAsignaciones: (territorio, asignaciones) => Tbl.renderAsignaciones(territorio, asignaciones),
+    _tables: Tables,
+    renderAsignaciones: (territorio, asignaciones) => Tables.renderAsignaciones(territorio, asignaciones),
 
     renderVistaPreviaAgenda(plan) {
         // Usamos la referencia interna segura
@@ -32,7 +32,7 @@ export const UI = {
             this._tables.renderVistaPreviaAgenda(plan);
         } else {
             // Si por algún milagro falló, intentamos el import directo
-            Tbl.renderVistaPreviaAgenda(plan);
+            Tables.renderVistaPreviaAgenda(plan);
         }
     },
 
