@@ -54,17 +54,30 @@ export const Tables = {
     },
 
 
-   renderVistaPreviaAgenda(plan, conductoresConocidos = []) {
+   renderVistaPreviaAgenda(plan, conductoresConocidos) {
         const container = document.getElementById("containerPropuesta");
         if (!container) return;
-
-        // Creamos el datalist para los conductores (se crea una sola vez)
+    
+        // --- EL FIX AQUÍ ---
+        // Si conductoresConocidos es null, undefined o no es un Array, usamos []
+        const listaConductores = Array.isArray(conductoresConocidos) ? conductoresConocidos : [];
+    
         const datalistHTML = `
             <datalist id="listaConductores">
-                ${conductoresConocidos.map(c => `<option value="${c.nombre}">`).join("")}
+                ${listaConductores.map(c => {
+                    // Si c es un objeto usamos c.nombre_completo, si es un string usamos c
+                    const nombre = (typeof c === 'object') ? (c.nombre_completo || c.nombre) : c;
+                    return `<option value="${nombre}">`;
+                }).join("")}
             </datalist>
         `;
-
+            
+        if (!Array.isArray(plan)) {
+            console.error("❌ El plan no es un array:", plan);
+            container.innerHTML = "<p class='text-red-500'>Error: El formato del plan es inválido.</p>";
+            return;
+        }
+    
         const semanas = this.agruparPorSemana(plan);
         let html = datalistHTML + `<div class="agenda-container shadow-xl rounded-lg overflow-hidden border border-gray-200">`;
 
