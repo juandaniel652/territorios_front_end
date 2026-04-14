@@ -131,23 +131,15 @@ export const UI = {
     async manejarGenerarAgenda() {
         const input = document.getElementById("fechaInicioAgenda");
         if (!input || !input.value) {
-            this.mostrarMensaje("Selecciona una fecha para iniciar", "error");
+            this.mostrarMensaje("Selecciona una fecha", "error");
             return;
         }
 
-        try {
-            // Ya no usamos 'await import', usamos las funciones directamente
-            const fechaLunes = obtenerLunes(input.value);
-            
-            console.log(`📅 Fecha seleccionada: ${input.value} -> Ajustada a Lunes: ${fechaLunes}`);
+        const fechaLunes = obtenerLunes(input.value);
+        console.log(`🚀 Mandando al controlador: ${fechaLunes}`);
 
-            // Llamamos al controlador (esta función sí es async porque va a la API)
-            await prepararAgendaQuincenal(fechaLunes, this);
-            
-        } catch (error) {
-            console.error("Error al generar agenda:", error);
-            this.mostrarMensaje("Error al procesar la agenda", "error");
-        }
+        // IMPORTANTE: Aquí mandamos fechaLunes, NO input.value
+        await prepararAgendaQuincenal(fechaLunes, this);
     },
 
     

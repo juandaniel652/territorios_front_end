@@ -123,21 +123,34 @@ export const Tables = {
     },
 
     agruparPorSemana(plan) {
+        if (!plan || plan.length === 0) return {};
+        
         const semanas = {};
+        
         plan.forEach(item => {
+            // Normalizamos la fecha del item para encontrar su lunes
             const [y, m, d] = item.fecha.split('-').map(Number);
             const fecha = new Date(y, m - 1, d);
             const diaSemana = fecha.getDay(); 
             const diff = (diaSemana === 0 ? -6 : 1 - diaSemana);
             
-            const lunes = new Date(fecha);
-            lunes.setDate(fecha.getDate() + diff);
+            const lunesObj = new Date(fecha);
+            lunesObj.setDate(fecha.getDate() + diff);
             
-            const semanaKey = `${lunes.getFullYear()}-${String(lunes.getMonth() + 1).padStart(2, '0')}-${String(lunes.getDate()).padStart(2, '0')}`;
+            const semanaKey = `${lunesObj.getFullYear()}-${String(lunesObj.getMonth() + 1).padStart(2, '0')}-${String(lunesObj.getDate()).padStart(2, '0')}`;
 
             if (!semanas[semanaKey]) semanas[semanaKey] = [];
             semanas[semanaKey].push(item);
         });
+
+        // Ordenamos los items dentro de cada semana por fecha y turno
+        Object.keys(semanas).forEach(key => {
+            semanas[key].sort((a, b) => {
+                if (a.fecha !== b.fecha) return a.fecha.localeCompare(b.fecha);
+                return a.turno === "AM" ? -1 : 1;
+            });
+        });
+
         return semanas;
-    }, 
+    }
 };
