@@ -23,8 +23,13 @@ initGlobalEvents();
 
 console.log("🚀 UI.js cargado: " + new Date().toLocaleTimeString('es-AR'));
 export const UI = {
-    renderAsignaciones: Tables.renderAsignaciones,
-    
+    renderAsignaciones: (territorio, asignaciones) => Tables.renderAsignaciones(territorio, asignaciones),
+
+    renderVistaPreviaAgenda(plan) {
+        // Si Tables tiene el método, usalo así:
+        Tables.renderVistaPreviaAgenda(plan);
+    },
+
     renderDashboard(stats) {
         document.getElementById("totalAsignaciones").textContent = stats.total_asignaciones;
         document.getElementById("territoriosActivos").textContent = stats.territorios_activos;
