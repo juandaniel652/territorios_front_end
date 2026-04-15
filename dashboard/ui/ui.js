@@ -34,6 +34,7 @@ export const UI = {
         } else {
             console.error("❌ Error: No se pudo encontrar el módulo Tables");
         }
+        
     },
 
     renderDashboard(stats) {
@@ -203,19 +204,28 @@ export const UI = {
         }
 
         try {
-            console.log("🚀 Enviando Agenda con intercambios:", items);
-            
-            // Aquí llamarás a tu API.confirmarAgenda(items)
-            // this.mostrarCarga(true);
-            // await API.confirmarAgenda(items);
-            
-            this.mostrarMensaje("¡Agenda guardada y archivada con éxito!");
-            // Opcional: limpiar la tabla después de guardar
-            // document.getElementById("containerPropuesta").innerHTML = "";
-            
+            console.log("🚀 Enviando Agenda al servidor...", items);
+
+            // Cambiá esta URL por la de tu backend en Render
+            const response = await fetch("https://backend-territorios.onrender.com/api/v1/territorios/confirmar-agenda", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(items)
+            });
+        
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Error al guardar");
+            }
+        
+            this.mostrarMensaje("✅ Agenda guardada y archivada con éxito");
+
+            // Limpiamos la tabla para que no la vuelvan a guardar por error
+            document.getElementById("containerPropuesta").innerHTML = "";
+
         } catch (error) {
             console.error("Error al guardar:", error);
-            this.mostrarMensaje("Error al conectar con el servidor", "error");
+            this.mostrarMensaje("Error: " + error.message, "error");
         }
     }
 

@@ -13,6 +13,12 @@ export function initGlobalEvents() {
             return;
         }
 
+        const btnConfirmar = e.target.closest("#btnConfirmarAgenda");
+        if (btnConfirmar) {
+            window.UI.manejarConfirmarAgenda();
+            return;
+        }
+
         const btnEdit = e.target.closest(".btn-row-edit");
         const btnDelete = e.target.closest(".btn-row-delete");
         
