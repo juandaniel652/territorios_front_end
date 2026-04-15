@@ -59,10 +59,10 @@ export const Tables = {
         const semana2 = plan.slice(10, 20);
         
         let html = `
-            <div class="space-y-12">
-                <div class="border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-white">
-                    <div class="bg-white py-6 border-b border-gray-100 text-center">
-                        <h3 class="text-gray-800 font-medium tracking-wide uppercase text-sm italic">
+            <div class="space-y-10">
+                <div class="border-2 border-green-100 rounded-xl overflow-hidden shadow-sm bg-white">
+                    <div class="bg-green-600 px-5 py-4 text-center">
+                        <h3 class="text-white font-bold tracking-widest uppercase text-sm">
                             ${this._formatearRangoSemana(semana1)}
                         </h3>
                     </div>
@@ -71,9 +71,9 @@ export const Tables = {
                     </div>
                 </div>
         
-                <div class="border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-white">
-                    <div class="bg-white py-6 border-b border-gray-100 text-center">
-                        <h3 class="text-gray-800 font-medium tracking-wide uppercase text-sm italic">
+                <div class="border-2 border-green-100 rounded-xl overflow-hidden shadow-sm bg-white">
+                    <div class="bg-green-600 px-5 py-4 text-center">
+                        <h3 class="text-white font-bold tracking-widest uppercase text-sm">
                             ${this._formatearRangoSemana(semana2)}
                         </h3>
                     </div>
@@ -82,10 +82,10 @@ export const Tables = {
                     </div>
                 </div>
         
-                <div class="flex justify-center pt-6">
+                <div class="flex justify-center pt-4">
                     <button id="btnConfirmarAgenda" 
-                            class="bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded shadow-md transition-all duration-200 uppercase text-xs tracking-widest">
-                        Confirmar y Archivar Agenda
+                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-12 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center gap-2 uppercase text-xs tracking-widest">
+                        <span>💾</span> Confirmar y Archivar Agenda Completa
                     </button>
                 </div>
             </div>
@@ -102,8 +102,7 @@ export const Tables = {
         };
 
         const fechaInicio = parse(items[0].fecha);
-        // Calculamos el domingo (fin de semana) sumando los días necesarios
-        // Si el inicio es lunes, el domingo es inicio + 6 días
+        // Calculamos el domingo sumando 6 días al lunes de inicio
         const fechaFin = new Date(fechaInicio);
         fechaFin.setDate(fechaInicio.getDate() + 6);
 
@@ -116,19 +115,19 @@ export const Tables = {
     },
 
     _generarTablaSemana(items, claseSemana) {
-        if (!items || items.length === 0) return '<p class="p-4 text-gray-400 italic text-center">No hay registros disponibles.</p>';
+        if (!items || items.length === 0) return '<p class="p-4 text-gray-400 italic text-center">No hay registros para esta semana.</p>';
 
         return `
             <table class="w-full text-left border-collapse">
-                <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider font-semibold">
+                <thead class="bg-green-50 text-green-800 text-[10px] uppercase tracking-wider font-bold border-b border-green-100">
                     <tr>
-                        <th class="p-4 border-b">Día / Turno</th>
-                        <th class="p-4 border-b">Punto de Encuentro</th>
-                        <th class="p-4 border-b text-center">Territorio</th>
-                        <th class="p-4 border-b">Conductor</th>
+                        <th class="p-4">Día / Turno</th>
+                        <th class="p-4">Punto de Encuentro</th>
+                        <th class="p-4 text-center">Territorio</th>
+                        <th class="p-4">Conductor</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50">
+                <tbody class="divide-y divide-gray-100">
                     ${items.map(item => this._renderFilaAgenda(item, claseSemana)).join('')}
                 </tbody>
             </table>
@@ -141,12 +140,12 @@ export const Tables = {
         const diaNombre = fechaObj.toLocaleDateString('es-AR', { weekday: 'long' });
 
         return `
-        <tr class="hover:bg-gray-50/50 transition-colors ${claseSemana}" 
+        <tr class="hover:bg-green-50/30 transition-colors ${claseSemana}" 
             data-fecha="${item.fecha}" 
             data-turno="${item.turno}">
-            <td class="p-4 text-sm text-gray-600">
-                <span class="capitalize font-medium text-gray-900">${diaNombre}</span> 
-                <span class="text-[10px] text-gray-400 ml-1 bg-gray-100 px-1.5 py-0.5 rounded">${item.turno}</span>
+            <td class="p-4">
+                <span class="capitalize font-bold text-gray-700">${diaNombre}</span> 
+                <span class="text-[10px] text-green-600 font-bold ml-1 bg-green-50 px-2 py-0.5 rounded border border-green-100">${item.turno}</span>
             </td>
             <td class="p-4 editable-cell encounter-cell text-sm text-gray-400 italic focus:text-gray-800 focus:not-italic outline-none" 
                 contenteditable="true" 
@@ -154,7 +153,7 @@ export const Tables = {
             <td class="p-4 text-center">
                 <input type="number" 
                        value="${item.numero}" 
-                       class="w-12 text-center font-semibold text-green-700 bg-green-50/50 border-b border-transparent focus:border-green-500 outline-none territory-input" />
+                       class="w-12 text-center font-bold text-green-700 bg-green-50/50 rounded border border-transparent focus:border-green-500 outline-none territory-input shadow-inner" />
             </td>
             <td class="p-4">
                 <input type="text" list="listaConductores" 
