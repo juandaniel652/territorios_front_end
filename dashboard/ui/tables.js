@@ -57,9 +57,9 @@ export const Tables = {
    renderVistaPreviaAgenda(plan, conductoresConocidos = []) {
         const container = document.getElementById("containerPropuesta");
         if (!container) return;
-    
+
         const listaConductores = Array.isArray(conductoresConocidos) ? conductoresConocidos : [];
-    
+
         const datalistHTML = `
             <datalist id="listaConductores">
                 ${listaConductores.map(c => {
@@ -68,15 +68,15 @@ export const Tables = {
                 }).join("")}
             </datalist>
         `;
-            
+
         if (!Array.isArray(plan)) {
             container.innerHTML = "<p class='text-red-500'>Error: El formato del plan es inválido.</p>";
             return;
         }
-    
+
         const semanas = this.agruparPorSemana(plan);
         let html = datalistHTML + `<div class="agenda-container space-y-8">`;
-    
+
         Object.keys(semanas).forEach(lunesKey => {
             const items = semanas[lunesKey];
             html += `
@@ -97,8 +97,13 @@ export const Tables = {
                                 const fechaObj = new Date(iy, im - 1, id);
                                 const diaNombre = fechaObj.toLocaleString('es-AR', {weekday: 'long'});
                                 const horaSugerida = item.turno === "AM" ? "09:30hs" : "16:30hs";
+                                const claseSemana = esSegundaSemana ? "semana-2" : "semana-1";
+
                                 return `
-                                <tr class="hover:bg-gray-50 transition-colors" data-fecha="${item.fecha}" data-id-territorio="${item.territorio_id}" data-turno="${item.turno}">
+                                <tr class="hover:bg-gray-50 transition-colors ${claseSemana}" 
+                                    data-fecha="${item.fecha}" 
+                                    data-id-territorio="${item.territorio_id}" 
+                                    data-turno="${item.turno}">
                                     <td class="p-3 font-semibold text-gray-700">
                                         <span class="capitalize">${diaNombre}</span> 
                                         <span class="text-gray-400 font-normal ml-2">${horaSugerida}</span>
@@ -106,7 +111,14 @@ export const Tables = {
                                     <td class="p-3 editable-cell encounter-cell italic text-gray-400 focus:text-gray-800 focus:not-italic" 
                                         contenteditable="true" 
                                         data-placeholder="Ej: Casa de Juan..."></td>
-                                    <td class="p-3 text-center font-bold text-green-700 text-lg">${item.numero}</td>
+                                                            
+                                    <td class="p-3 text-center">
+                                        <input type="number" 
+                                               value="${item.numero}" 
+                                               class="w-16 text-center font-bold text-green-700 text-lg bg-green-50 rounded-md border border-transparent focus:border-green-500 focus:bg-white outline-none territory-input"
+                                               data-id-original="${item.territorio_id}" />
+                                    </td>
+                                                            
                                     <td class="p-3">
                                         <input type="text" list="listaConductores" 
                                                class="w-full bg-transparent border-none focus:ring-0 italic text-gray-400 focus:text-gray-800 focus:not-italic" 
@@ -118,7 +130,7 @@ export const Tables = {
                     </table>
                 </div>`;
         });
-    
+
         // --- EL BOTÓN QUE FALTABA ---
         html += `
             <div class="mt-8 flex justify-end p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
@@ -128,9 +140,9 @@ export const Tables = {
                 </button>
             </div>
         </div>`;
-    
+
         container.innerHTML = html;
-    
+
         // Asignar el evento al botón recién creado
         setTimeout(() => {
             const btn = document.getElementById("btnConfirmarAgendaFinal");

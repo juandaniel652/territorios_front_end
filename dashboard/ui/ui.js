@@ -160,23 +160,30 @@ export const UI = {
     async manejarConfirmarAgenda() {
         const filas = document.querySelectorAll("#containerPropuesta tbody tr");
         const items = [];
+        let errorValidacion = false;
 
         filas.forEach(fila => {
-            // Extraemos los datos de los data-attributes que pusimos antes
-            const territorio_id = parseInt(fila.dataset.idTerritorio);
+            // 1. Extraemos el número del "Input Inteligente"
+            const inputNum = fila.querySelector(".territory-input");
+            const nuevoNumero = inputNum ? parseInt(inputNum.value) : null;
+            
+            // 2. Extraemos los metadatos de la fila (Fecha y Turno no cambian)
             const fecha_asignado = fila.dataset.fecha;
             const turno = fila.dataset.turno;
 
-            // Extraemos lo que escribió el usuario
+            // 3. Extraemos Conductor y Encuentro
+            const inputConductor = fila.querySelector("input[list='listaConductores']");
+            const conductor = inputConductor ? inputConductor.value.trim() : "";
             const encuentro = fila.querySelector(".encounter-cell").innerText.trim() || "Sin especificar";
-            const conductor = fila.querySelector("input").value.trim();
 
-            if (!conductor) {
-                // Podríamos marcar la celda en rojo si falta el conductor
-                fila.querySelector("input").style.border = "1px solid red";
-            } else {
+            // Validación: Si hay número pero no hay conductor
+            if (nuevoNumero && !conductor) {
+                inputConductor.style.border = "1px solid red";
+                errorValidacion = true;
+            } else if (nuevoNumero && conductor) {
+                inputConductor.style.border = "none";
                 items.push({
-                    territorio_id,
+                    numero_territorio: nuevoNumero, // Mandamos el número editado
                     fecha_asignado,
                     turno,
                     conductor,
@@ -185,18 +192,30 @@ export const UI = {
             }
         });
 
+        if (errorValidacion) {
+            this.mostrarMensaje("Faltan conductores en algunas salidas", "error");
+            return;
+        }
+
         if (items.length === 0) {
-            this.mostrarMensaje("Debes asignar al menos un conductor", "error");
+            this.mostrarMensaje("No hay datos para guardar", "error");
             return;
         }
 
         try {
-            // Aquí llamarías a tu servicio de API
-            // await api.post("/asignaciones/confirmar-agenda", { items });
-            console.log("Enviando a guardar:", { items });
-            this.mostrarMensaje("¡Agenda guardada con éxito!");
+            console.log("🚀 Enviando Agenda con intercambios:", items);
+            
+            // Aquí llamarás a tu API.confirmarAgenda(items)
+            // this.mostrarCarga(true);
+            // await API.confirmarAgenda(items);
+            
+            this.mostrarMensaje("¡Agenda guardada y archivada con éxito!");
+            // Opcional: limpiar la tabla después de guardar
+            // document.getElementById("containerPropuesta").innerHTML = "";
+            
         } catch (error) {
-            this.mostrarMensaje("Error al guardar la agenda", "error");
+            console.error("Error al guardar:", error);
+            this.mostrarMensaje("Error al conectar con el servidor", "error");
         }
     }
 
