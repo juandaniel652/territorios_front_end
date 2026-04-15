@@ -55,40 +55,37 @@ export const Tables = {
         const container = document.getElementById("containerPropuesta");
         if (!container) return;
         
-        // Dividimos el plan: 10 salidas por semana
         const semana1 = plan.slice(0, 10);
         const semana2 = plan.slice(10, 20);
         
         let html = `
-            <div class="space-y-10">
-                <div class="border-2 border-green-100 rounded-xl overflow-hidden shadow-sm">
-                    <div class="bg-green-600 px-5 py-3">
-                        <h3 class="text-white font-bold text-lg flex flex-col">
-                            <span>📅 SEMANA 1</span>
-                            <span class="text-xs font-normal opacity-90">${this._formatearRangoSemana(semana1)}</span>
+            <div class="space-y-12">
+                <div class="border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-white">
+                    <div class="bg-white py-6 border-b border-gray-100 text-center">
+                        <h3 class="text-gray-800 font-medium tracking-wide uppercase text-sm italic">
+                            ${this._formatearRangoSemana(semana1)}
                         </h3>
                     </div>
-                    <div class="bg-white">
+                    <div class="p-1">
                         ${this._generarTablaSemana(semana1, "semana-1")}
                     </div>
                 </div>
         
-                <div class="border-2 border-green-100 rounded-xl overflow-hidden shadow-sm">
-                    <div class="bg-green-600 px-5 py-3">
-                        <h3 class="text-white font-bold text-lg flex flex-col">
-                            <span>📅 SEMANA 2</span>
-                            <span class="text-xs font-normal opacity-90">${this._formatearRangoSemana(semana2)}</span>
+                <div class="border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-white">
+                    <div class="bg-white py-6 border-b border-gray-100 text-center">
+                        <h3 class="text-gray-800 font-medium tracking-wide uppercase text-sm italic">
+                            ${this._formatearRangoSemana(semana2)}
                         </h3>
                     </div>
-                    <div class="bg-white">
+                    <div class="p-1">
                         ${this._generarTablaSemana(semana2, "semana-2")}
                     </div>
                 </div>
         
-                <div class="flex justify-center pt-4">
+                <div class="flex justify-center pt-6">
                     <button id="btnConfirmarAgenda" 
-                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center gap-2">
-                        <span>💾</span> Confirmar y Archivar Agenda Completa
+                            class="bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-12 rounded shadow-md transition-all duration-200 uppercase text-xs tracking-widest">
+                        Confirmar y Archivar Agenda
                     </button>
                 </div>
             </div>
@@ -99,33 +96,39 @@ export const Tables = {
     _formatearRangoSemana(items) {
         if (!items || items.length === 0) return "";
         
-        const f = (dateStr) => {
+        const parse = (dateStr) => {
             const [y, m, d] = dateStr.split('-').map(Number);
-            const date = new Date(y, m - 1, d);
-            return date.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
+            return new Date(y, m - 1, d);
         };
-    
-        const inicio = f(items[0].fecha);
-        const fin = f(items[items.length - 1].fecha);
-        const año = items[0].fecha.split('-')[0];
-    
-        return `Del ${inicio} al ${fin} de ${año}`;
+
+        const fechaInicio = parse(items[0].fecha);
+        // Calculamos el domingo (fin de semana) sumando los días necesarios
+        // Si el inicio es lunes, el domingo es inicio + 6 días
+        const fechaFin = new Date(fechaInicio);
+        fechaFin.setDate(fechaInicio.getDate() + 6);
+
+        const opciones = { day: 'numeric', month: 'long' };
+        const inicioStr = fechaInicio.toLocaleDateString('es-AR', opciones);
+        const finStr = fechaFin.toLocaleDateString('es-AR', opciones);
+        const año = fechaInicio.getFullYear();
+
+        return `Del ${inicioStr} al ${finStr} de ${año}`;
     },
 
     _generarTablaSemana(items, claseSemana) {
-        if (!items || items.length === 0) return '<p class="p-4 text-gray-400 italic">No hay salidas programadas para esta semana.</p>';
+        if (!items || items.length === 0) return '<p class="p-4 text-gray-400 italic text-center">No hay registros disponibles.</p>';
 
         return `
             <table class="w-full text-left border-collapse">
-                <thead class="bg-green-50 text-green-800 text-xs uppercase font-bold border-b border-green-100">
+                <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider font-semibold">
                     <tr>
-                        <th class="p-4">Día / Turno</th>
-                        <th class="p-4">Punto de Encuentro</th>
-                        <th class="p-4 text-center">Territorio</th>
-                        <th class="p-4">Conductor Responsable</th>
+                        <th class="p-4 border-b">Día / Turno</th>
+                        <th class="p-4 border-b">Punto de Encuentro</th>
+                        <th class="p-4 border-b text-center">Territorio</th>
+                        <th class="p-4 border-b">Conductor</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-50">
                     ${items.map(item => this._renderFilaAgenda(item, claseSemana)).join('')}
                 </tbody>
             </table>
@@ -133,31 +136,30 @@ export const Tables = {
     },
 
     _renderFilaAgenda(item, claseSemana) {
-        // CORRECCIÓN FECHA: Evitamos desfase horario dividiendo el string
         const [y, m, d] = item.fecha.split('-').map(Number);
         const fechaObj = new Date(y, m - 1, d);
         const diaNombre = fechaObj.toLocaleDateString('es-AR', { weekday: 'long' });
 
         return `
-        <tr class="hover:bg-gray-50 transition-colors ${claseSemana}" 
+        <tr class="hover:bg-gray-50/50 transition-colors ${claseSemana}" 
             data-fecha="${item.fecha}" 
             data-turno="${item.turno}">
-            <td class="p-4 font-semibold text-gray-700">
-                <span class="capitalize">${diaNombre}</span> 
-                <span class="text-xs text-gray-400 ml-2">${item.turno}</span>
+            <td class="p-4 text-sm text-gray-600">
+                <span class="capitalize font-medium text-gray-900">${diaNombre}</span> 
+                <span class="text-[10px] text-gray-400 ml-1 bg-gray-100 px-1.5 py-0.5 rounded">${item.turno}</span>
             </td>
-            <td class="p-4 editable-cell encounter-cell italic text-gray-400 focus:text-gray-800 focus:not-italic" 
+            <td class="p-4 editable-cell encounter-cell text-sm text-gray-400 italic focus:text-gray-800 focus:not-italic outline-none" 
                 contenteditable="true" 
-                data-placeholder="Punto de encuentro..."></td>
+                data-placeholder="Definir encuentro..."></td>
             <td class="p-4 text-center">
                 <input type="number" 
                        value="${item.numero}" 
-                       class="w-16 text-center font-bold text-green-700 text-lg bg-green-50 rounded border border-transparent focus:border-green-500 territory-input" />
+                       class="w-12 text-center font-semibold text-green-700 bg-green-50/50 border-b border-transparent focus:border-green-500 outline-none territory-input" />
             </td>
             <td class="p-4">
                 <input type="text" list="listaConductores" 
-                       class="w-full bg-transparent border-b border-gray-100 focus:border-green-500 outline-none" 
-                       placeholder="Asignar..." />
+                       class="w-full bg-transparent text-sm border-b border-gray-100 focus:border-green-600 outline-none placeholder:text-gray-300" 
+                       placeholder="Nombre del conductor" />
             </td>
         </tr>`;
     }
