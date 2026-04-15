@@ -13,8 +13,6 @@ export const Tables = {
         const filas = asignaciones.map(a => {
             const id = a.id ?? "";
             const tieneId = id !== "" && id !== null;
-
-            // 2. Formatear las fechas para la vista
             const fechaAsignadoAR = DateFormatter.toArgentina(a.fecha_asignado);
             const fechaCompletadoAR = DateFormatter.toArgentina(a.fecha_completado);
 
@@ -53,43 +51,40 @@ export const Tables = {
             </div>`;
     },
 
-
-   // dashboard/ui/tables.js
-
-    // dashboard/ui/tables.js
-
     renderVistaPreviaAgenda(plan, conductores = []) {
         const container = document.getElementById("containerPropuesta");
         if (!container) return;
-    
-        // Dividimos el plan en dos semanas (asumiendo 10 salidas por semana: 5 días x 2 turnos)
+        
+        // Dividimos el plan: 10 salidas por semana
         const semana1 = plan.slice(0, 10);
         const semana2 = plan.slice(10, 20);
-    
+        
         let html = `
             <div class="space-y-10">
                 <div class="border-2 border-green-100 rounded-xl overflow-hidden shadow-sm">
                     <div class="bg-green-600 px-5 py-3">
-                        <h3 class="text-white font-bold text-lg flex items-center">
-                            <span class="mr-2">📅</span> SEMANA 1: Propuesta Sugerida
+                        <h3 class="text-white font-bold text-lg flex flex-col">
+                            <span>📅 SEMANA 1</span>
+                            <span class="text-xs font-normal opacity-90">${this._formatearRangoSemana(semana1)}</span>
                         </h3>
                     </div>
                     <div class="bg-white">
                         ${this._generarTablaSemana(semana1, "semana-1")}
                     </div>
                 </div>
-    
+        
                 <div class="border-2 border-green-100 rounded-xl overflow-hidden shadow-sm">
                     <div class="bg-green-600 px-5 py-3">
-                        <h3 class="text-white font-bold text-lg flex items-center">
-                            <span class="mr-2">📅</span> SEMANA 2: Propuesta Sugerida
+                        <h3 class="text-white font-bold text-lg flex flex-col">
+                            <span>📅 SEMANA 2</span>
+                            <span class="text-xs font-normal opacity-90">${this._formatearRangoSemana(semana2)}</span>
                         </h3>
                     </div>
                     <div class="bg-white">
                         ${this._generarTablaSemana(semana2, "semana-2")}
                     </div>
                 </div>
-    
+        
                 <div class="flex justify-center pt-4">
                     <button id="btnConfirmarAgenda" 
                             class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center gap-2">
@@ -98,13 +93,28 @@ export const Tables = {
                 </div>
             </div>
         `;
-    
         container.innerHTML = html;
     },
     
+    _formatearRangoSemana(items) {
+        if (!items || items.length === 0) return "";
+        
+        const f = (dateStr) => {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const date = new Date(y, m - 1, d);
+            return date.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
+        };
+    
+        const inicio = f(items[0].fecha);
+        const fin = f(items[items.length - 1].fecha);
+        const año = items[0].fecha.split('-')[0];
+    
+        return `Del ${inicio} al ${fin} de ${año}`;
+    },
+
     _generarTablaSemana(items, claseSemana) {
         if (!items || items.length === 0) return '<p class="p-4 text-gray-400 italic">No hay salidas programadas para esta semana.</p>';
-    
+
         return `
             <table class="w-full text-left border-collapse">
                 <thead class="bg-green-50 text-green-800 text-xs uppercase font-bold border-b border-green-100">
@@ -122,65 +132,33 @@ export const Tables = {
         `;
     },
 
-    
-
     _renderFilaAgenda(item, claseSemana) {
-        const diaNombre = new Date(item.fecha).toLocaleDateString('es-AR', { weekday: 'long' });
+        // CORRECCIÓN FECHA: Evitamos desfase horario dividiendo el string
+        const [y, m, d] = item.fecha.split('-').map(Number);
+        const fechaObj = new Date(y, m - 1, d);
+        const diaNombre = fechaObj.toLocaleDateString('es-AR', { weekday: 'long' });
 
         return `
         <tr class="hover:bg-gray-50 transition-colors ${claseSemana}" 
             data-fecha="${item.fecha}" 
             data-turno="${item.turno}">
-            <td class="p-3 font-semibold text-gray-700">
+            <td class="p-4 font-semibold text-gray-700">
                 <span class="capitalize">${diaNombre}</span> 
                 <span class="text-xs text-gray-400 ml-2">${item.turno}</span>
             </td>
-            <td class="p-3 editable-cell encounter-cell italic text-gray-400 focus:text-gray-800 focus:not-italic" 
+            <td class="p-4 editable-cell encounter-cell italic text-gray-400 focus:text-gray-800 focus:not-italic" 
                 contenteditable="true" 
-                data-placeholder="Casa de..."></td>
-            <td class="p-3 text-center">
+                data-placeholder="Punto de encuentro..."></td>
+            <td class="p-4 text-center">
                 <input type="number" 
                        value="${item.numero}" 
                        class="w-16 text-center font-bold text-green-700 text-lg bg-green-50 rounded border border-transparent focus:border-green-500 territory-input" />
             </td>
-            <td class="p-3">
+            <td class="p-4">
                 <input type="text" list="listaConductores" 
                        class="w-full bg-transparent border-b border-gray-100 focus:border-green-500 outline-none" 
-                       placeholder="Nombre..." />
+                       placeholder="Asignar..." />
             </td>
         </tr>`;
-    },
-
-
-    agruparPorSemana(plan) {
-        if (!plan || plan.length === 0) return {};
-        
-        const semanas = {};
-        
-        plan.forEach(item => {
-            // Normalizamos la fecha del item para encontrar su lunes
-            const [y, m, d] = item.fecha.split('-').map(Number);
-            const fecha = new Date(y, m - 1, d);
-            const diaSemana = fecha.getDay(); 
-            const diff = (diaSemana === 0 ? -6 : 1 - diaSemana);
-            
-            const lunesObj = new Date(fecha);
-            lunesObj.setDate(fecha.getDate() + diff);
-            
-            const semanaKey = `${lunesObj.getFullYear()}-${String(lunesObj.getMonth() + 1).padStart(2, '0')}-${String(lunesObj.getDate()).padStart(2, '0')}`;
-
-            if (!semanas[semanaKey]) semanas[semanaKey] = [];
-            semanas[semanaKey].push(item);
-        });
-
-        // Ordenamos los items dentro de cada semana por fecha y turno
-        Object.keys(semanas).forEach(key => {
-            semanas[key].sort((a, b) => {
-                if (a.fecha !== b.fecha) return a.fecha.localeCompare(b.fecha);
-                return a.turno === "AM" ? -1 : 1;
-            });
-        });
-
-        return semanas;
     }
 };
