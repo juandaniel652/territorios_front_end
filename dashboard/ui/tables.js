@@ -56,48 +56,73 @@ export const Tables = {
 
    // dashboard/ui/tables.js
 
+    // dashboard/ui/tables.js
+
     renderVistaPreviaAgenda(plan, conductores = []) {
         const container = document.getElementById("containerPropuesta");
         if (!container) return;
-
-        // Agrupamos por semana para que no se mezclen
-        // Asumiendo que el plan viene ordenado por fecha
+    
+        // Dividimos el plan en dos semanas (asumiendo 10 salidas por semana: 5 días x 2 turnos)
+        const semana1 = plan.slice(0, 10);
+        const semana2 = plan.slice(10, 20);
+    
         let html = `
-            <div class="space-y-8">
-                ${this._generarTablaSemana(plan.slice(0, 10), "Semana 1", "semana-1")}
-                ${this._generarTablaSemana(plan.slice(10), "Semana 2", "semana-2")}
-            </div>
-            <div class="mt-6 flex justify-end">
-                <button id="btnConfirmarAgenda" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-all font-bold">
-                    Confirmar y Archivar Agenda
-                </button>
+            <div class="space-y-10">
+                <div class="border-2 border-green-100 rounded-xl overflow-hidden shadow-sm">
+                    <div class="bg-green-600 px-5 py-3">
+                        <h3 class="text-white font-bold text-lg flex items-center">
+                            <span class="mr-2">📅</span> SEMANA 1: Propuesta Sugerida
+                        </h3>
+                    </div>
+                    <div class="bg-white">
+                        ${this._generarTablaSemana(semana1, "semana-1")}
+                    </div>
+                </div>
+    
+                <div class="border-2 border-green-100 rounded-xl overflow-hidden shadow-sm">
+                    <div class="bg-green-600 px-5 py-3">
+                        <h3 class="text-white font-bold text-lg flex items-center">
+                            <span class="mr-2">📅</span> SEMANA 2: Propuesta Sugerida
+                        </h3>
+                    </div>
+                    <div class="bg-white">
+                        ${this._generarTablaSemana(semana2, "semana-2")}
+                    </div>
+                </div>
+    
+                <div class="flex justify-center pt-4">
+                    <button id="btnConfirmarAgenda" 
+                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95 flex items-center gap-2">
+                        <span>💾</span> Confirmar y Archivar Agenda Completa
+                    </button>
+                </div>
             </div>
         `;
+    
         container.innerHTML = html;
     },
-
-    _generarTablaSemana(items, titulo, claseSemana) {
+    
+    _generarTablaSemana(items, claseSemana) {
+        if (!items || items.length === 0) return '<p class="p-4 text-gray-400 italic">No hay salidas programadas para esta semana.</p>';
+    
         return `
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-800">${titulo}</h3>
-                </div>
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
-                        <tr>
-                            <th class="p-3">Día / Turno</th>
-                            <th class="p-3">Punto de Encuentro</th>
-                            <th class="p-3 text-center">Territorio</th>
-                            <th class="p-3">Conductor</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${items.map(item => this._renderFilaAgenda(item, claseSemana)).join('')}
-                    </tbody>
-                </table>
-            </div>
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-green-50 text-green-800 text-xs uppercase font-bold border-b border-green-100">
+                    <tr>
+                        <th class="p-4">Día / Turno</th>
+                        <th class="p-4">Punto de Encuentro</th>
+                        <th class="p-4 text-center">Territorio</th>
+                        <th class="p-4">Conductor Responsable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${items.map(item => this._renderFilaAgenda(item, claseSemana)).join('')}
+                </tbody>
+            </table>
         `;
     },
+
+    
 
     _renderFilaAgenda(item, claseSemana) {
         const diaNombre = new Date(item.fecha).toLocaleDateString('es-AR', { weekday: 'long' });
