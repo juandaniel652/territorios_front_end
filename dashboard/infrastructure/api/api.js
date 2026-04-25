@@ -81,4 +81,17 @@ export const Api = {
         });
         return handleResponse(res);
     },
+
+    async actualizarSalida(id, datos) {
+        const response = await fetch(`${BASE_URL}/salidas/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Si usas auth
+            },
+            body: JSON.stringify(datos)
+        });
+        if (!response.ok) throw new Error("Error al actualizar");
+        return await response.json();
+    }
 };

@@ -162,7 +162,6 @@ export const UI = {
     async manejarConfirmarAgenda() {
         const filas = document.querySelectorAll("#containerPropuesta tbody tr");
         const items = [];
-        let errorValidacion = false;
 
         filas.forEach(fila => {
             const inputNum = fila.querySelector(".territory-input");
@@ -171,61 +170,83 @@ export const UI = {
             const turno = fila.dataset.turno;
             const inputConductor = fila.querySelector("input[list='listaConductores']");
             const conductor = inputConductor ? inputConductor.value.trim() : "";
-            const encuentro = fila.querySelector(".encounter-cell")?.innerText.trim() || "Sin especificar";
+            const encuentro = fila.querySelector(".encounter-cell")?.innerText.trim() || "";
 
-            if (nuevoNumero && !conductor) {
-                inputConductor.style.border = "2px solid red";
-                errorValidacion = true;
-            } else if (nuevoNumero && conductor) {
-                inputConductor.style.border = "none";
+            if (nuevoNumero && conductor) {
                 items.push({
                     territorio_id: nuevoNumero,
-                    fecha_asignado,
-                    turno,
-                    conductor,
-                    encuentro
+                    fecha_asignado: fecha_asignado,
+                    turno: turno,
+                    conductor: conductor,
+                    encuentro: encuentro
                 });
             }
         });
 
-        if (errorValidacion) {
-            this.mostrarMensaje("Faltan conductores en algunas salidas", "error");
-            return;
-        }
-
-        if (items.length === 0) {
-            this.mostrarMensaje("No hay datos para guardar", "error");
-            return;
-        }
+        if (items.length === 0) return;
 
         try {
-            console.log("🚀 Enviando Agenda al servidor...", items);
             this.mostrarCarga(true);
-
-            // USAMOS LA API CENTRALIZADA PARA EVITAR EL 405
-            // El backend espera un objeto AgendaConfirmar que contiene una lista 'items'
-            const payload = { 
+            
+            // Enviamos al endpoint que ahora solo guarda Salidas
+            const result = await Api.confirmarAgenda({ 
                 items: items,
                 conductor_default: "Varios" 
-            };
-
-            const result = await Api.confirmarAgenda(payload);
+            });
             
-            this.mostrarMensaje("✅ Agenda guardada y archivada con éxito", "success");
+            // Mostramos el éxito con el conteo real del backend
+            this.mostrarMensaje(`✅ Agenda guardada: ${result.total_programado} salidas programadas.`, "success");
 
-            // LIMPIEZA DE UI
-            const container = document.getElementById("containerPropuesta");
-            if (container) container.innerHTML = "";
+            // Limpiamos la propuesta ya procesada
+            document.getElementById("containerPropuesta").innerHTML = "";
             
-            const inputFecha = document.getElementById("fechaInicioAgenda");
-            if (inputFecha) inputFecha.value = "";
-
         } catch (error) {
-            console.error("Error al guardar:", error);
-            this.mostrarMensaje("Error: " + (error.detail || error.message || "Error al guardar"), "error");
+            console.error("Error:", error);
+            this.mostrarMensaje("Error al guardar la agenda", "error");
         } finally {
             this.mostrarCarga(false);
         }
+    },
+
+    async verAgendaGuardada() {
+        try {
+            const agenda = await Api.obtenerSalidasQuincena(); // Debes crear este método en tu api.js
+            this.renderizarTablaHistorial(agenda);
+        } catch (error) {
+            this.mostrarMensaje("No se pudo cargar la agenda", "error");
+        }
+    },
+
+    renderizarTablaHistorial(agenda) {
+        const contenedor = document.getElementById("containerHistorial");
+        let html = `
+            <table class="table w-full bg-base-100 shadow-xl">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Turno</th>
+                        <th>Territorio</th>
+                        <th>Conductor</th>
+                        <th>Encuentro</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        agenda.forEach(item => {
+            html += `
+                <tr>
+                    <td>${item.fecha}</td>
+                    <td>${item.turno}</td>
+                    <td>${item.territorio_id}</td>
+                    <td>${item.conductor?.nombre || 'Sin asignar'}</td>
+                    <td>${item.punto_encuentro || '-'}</td>
+                </tr>
+            `;
+        });
+    
+        html += `</tbody></table>`;
+        contenedor.innerHTML = html;
     }
 
     
