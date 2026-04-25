@@ -164,27 +164,21 @@ export const UI = {
         let errorValidacion = false;
 
         filas.forEach(fila => {
-            // 1. Extraemos el número del "Input Inteligente"
             const inputNum = fila.querySelector(".territory-input");
             const nuevoNumero = inputNum ? parseInt(inputNum.value) : null;
-            
-            // 2. Extraemos los metadatos de la fila (Fecha y Turno no cambian)
             const fecha_asignado = fila.dataset.fecha;
             const turno = fila.dataset.turno;
-
-            // 3. Extraemos Conductor y Encuentro
             const inputConductor = fila.querySelector("input[list='listaConductores']");
             const conductor = inputConductor ? inputConductor.value.trim() : "";
-            const encuentro = fila.querySelector(".encounter-cell").innerText.trim() || "Sin especificar";
+            const encuentro = fila.querySelector(".encounter-cell")?.innerText.trim() || "Sin especificar";
 
-            // Validación: Si hay número pero no hay conductor
             if (nuevoNumero && !conductor) {
-                inputConductor.style.border = "1px solid red";
+                inputConductor.style.border = "2px solid red";
                 errorValidacion = true;
             } else if (nuevoNumero && conductor) {
                 inputConductor.style.border = "none";
                 items.push({
-                    numero_territorio: nuevoNumero, // Mandamos el número editado
+                    numero_territorio: nuevoNumero,
                     fecha_asignado,
                     turno,
                     conductor,
@@ -205,27 +199,31 @@ export const UI = {
 
         try {
             console.log("🚀 Enviando Agenda al servidor...", items);
+            this.mostrarCarga(true);
 
-            // Cambiá esta URL por la de tu backend en Render
-            const response = await fetch("https://backend-territorios.onrender.com/api/v1/territorios/confirmar-agenda", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(items)
-            });
-        
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || "Error al guardar");
-            }
-        
-            this.mostrarMensaje("✅ Agenda guardada y archivada con éxito");
+            // USAMOS LA API CENTRALIZADA PARA EVITAR EL 405
+            // El backend espera un objeto AgendaConfirmar que contiene una lista 'items'
+            const payload = { 
+                items: items,
+                conductor_default: "Varios" 
+            };
 
-            // Limpiamos la tabla para que no la vuelvan a guardar por error
-            document.getElementById("containerPropuesta").innerHTML = "";
+            const result = await Api.confirmarAgenda(payload);
+            
+            this.mostrarMensaje("✅ Agenda guardada y archivada con éxito", "success");
+
+            // LIMPIEZA DE UI
+            const container = document.getElementById("containerPropuesta");
+            if (container) container.innerHTML = "";
+            
+            const inputFecha = document.getElementById("fechaInicioAgenda");
+            if (inputFecha) inputFecha.value = "";
 
         } catch (error) {
             console.error("Error al guardar:", error);
-            this.mostrarMensaje("Error: " + error.message, "error");
+            this.mostrarMensaje("Error: " + (error.detail || error.message || "Error al guardar"), "error");
+        } finally {
+            this.mostrarCarga(false);
         }
     }
 
