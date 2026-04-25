@@ -4,6 +4,7 @@ import { Tables }           from "./tables.js";
 import { Modals }           from "./modals.js";
 import { Charts }           from "./charts.js";
 import { initGlobalEvents } from "./events.js";
+import { Api } from "../infrastructure/api/api.js";
 import { DateFormatter, obtenerLunes } from "./utils.js";
 import { prepararAgendaQuincenal } from "../application/usecases/controller.js";
 import flatpickr from "flatpickr";
