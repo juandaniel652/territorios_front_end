@@ -74,7 +74,7 @@ export async function prepararAgendaQuincenal(fechaInicio, uiInterface) {
     try {
         const plan = await Api.generarPlanQuincenal(fechaInicio);
         // Aquí uiInterface llamará a renderVistaPreviaAgenda que ya tiene el fix de _tables
-        uiInterface.renderVistaPreviaAgenda(plan); 
+        uiInterface.renderVistaPreviaAgenda(plan.ok);
     } catch (error) {
         console.error("❌ Error generando plan:", error);
         uiInterface.mostrarMensaje("Error al generar la propuesta de agenda.", "error");
