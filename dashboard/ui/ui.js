@@ -179,7 +179,7 @@ export const UI = {
             } else if (nuevoNumero && conductor) {
                 inputConductor.style.border = "none";
                 items.push({
-                    numero_territorio: nuevoNumero,
+                    territorio_id: nuevoNumero,
                     fecha_asignado,
                     turno,
                     conductor,
