@@ -83,21 +83,19 @@ export const Api = {
     },
 
     async actualizarSalida(id, datos) {
-        const response = await fetch(`${BASE_URL}/salidas/${id}`, {
+        // Usamos CONFIG.BASE_URL y authHeaders() para ser consistentes
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/salidas/${id}`, {
             method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Si usas auth
-            },
+            headers: authHeaders(),
             body: JSON.stringify(datos)
         });
-        if (!response.ok) throw new Error("Error al actualizar");
-        return await response.json();
+        return handleResponse(res);
     },
 
     async obtenerAgendaGuardada() {
-        const response = await fetch(`${BASE_URL}/api/v1/salida/quincena`);
-        if (!response.ok) throw new Error("Error al obtener la agenda");
-        return await response.json();
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/salidas/quincena`, { 
+            headers: authHeaders() 
+        });
+        return handleResponse(res);
     }
 };

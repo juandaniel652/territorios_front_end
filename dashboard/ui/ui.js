@@ -338,6 +338,20 @@ export const UI = {
         } catch (error) {
             this.mostrarMensaje("Error al guardar", "error");
         }
+    }, 
+
+    async desactivarSalida(id) {
+        if (!confirm("¿Estás seguro de quitar esta salida de la agenda?")) return;
+        
+        try {
+            // Hacemos un patch enviando activo: false
+            await Api.actualizarSalida(id, { activo: false });
+            
+            this.mostrarMensaje("Salida removida del historial", "success");
+            this.cargarYMostrarAgenda(); // Refrescamos la tabla y ya no aparecerá
+        } catch (error) {
+            this.mostrarMensaje("Error al intentar desactivar", "error");
+        }
     }
 
     
