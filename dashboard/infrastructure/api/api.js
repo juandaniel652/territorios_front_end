@@ -93,5 +93,11 @@ export const Api = {
         });
         if (!response.ok) throw new Error("Error al actualizar");
         return await response.json();
+    },
+
+    async obtenerAgendaGuardada() {
+        const response = await fetch(`${BASE_URL}/api/v1/salida/quincena`);
+        if (!response.ok) throw new Error("Error al obtener la agenda");
+        return await response.json();
     }
 };

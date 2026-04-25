@@ -22,6 +22,7 @@ console.log("🚀 UI.js cargado: " + new Date().toLocaleTimeString('es-AR'));
 export const UI = {
     // 1. Definimos la propiedad interna pero no la asignamos todavía
     _tables: null, 
+    
 
     renderAsignaciones: (territorio, asignaciones) => {
         // Usamos la referencia inyectada
@@ -218,35 +219,125 @@ export const UI = {
     },
 
     renderizarTablaHistorial(agenda) {
-        const contenedor = document.getElementById("containerHistorial");
-        let html = `
-            <table class="table w-full bg-base-100 shadow-xl">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Turno</th>
-                        <th>Territorio</th>
-                        <th>Conductor</th>
-                        <th>Encuentro</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        
-        agenda.forEach(item => {
-            html += `
-                <tr>
-                    <td>${item.fecha}</td>
-                    <td>${item.turno}</td>
-                    <td>${item.territorio_id}</td>
-                    <td>${item.conductor?.nombre || 'Sin asignar'}</td>
-                    <td>${item.punto_encuentro || '-'}</td>
-                </tr>
+            const contenedor = document.getElementById("containerHistorial");
+            let html = `
+                <table class="table w-full bg-base-100 shadow-xl">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Turno</th>
+                            <th>Territorio</th>
+                            <th>Conductor</th>
+                            <th>Encuentro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
             `;
-        });
-    
-        html += `</tbody></table>`;
-        contenedor.innerHTML = html;
+
+            agenda.forEach(item => {
+                html += `
+                    <tr>
+                        <td>${item.fecha}</td>
+                        <td>${item.turno}</td>
+                        <td>${item.territorio_id}</td>
+                        <td>${item.conductor?.nombre || 'Sin asignar'}</td>
+                        <td>${item.punto_encuentro || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            contenedor.innerHTML = html;
+        },
+
+        async cargarYMostrarAgenda() {
+        try {
+            const agenda = await Api.obtenerAgendaGuardada();
+            const contenedor = document.getElementById("containerAgendaGuardada");
+
+            if (agenda.length === 0) {
+                contenedor.innerHTML = "<p class='text-center'>No hay agenda guardada aún.</p>";
+                return;
+            }
+
+            let html = `
+                <div class="overflow-x-auto">
+                    <table class="table w-full bg-base-200 shadow-xl rounded-lg">
+                        <thead>
+                            <tr class="bg-primary text-white">
+                                <th>Fecha</th>
+                                <th>Turno</th>
+                                <th>Territorio</th>
+                                <th>Conductor</th>
+                                <th>Punto de Encuentro</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            agenda.forEach(item => {
+                html += `
+                    <tr data-id="${item.id}">
+                        <td>${item.fecha}</td>
+                        <td><span class="badge badge-ghost">${item.turno}</span></td>
+                        <td><strong>#${item.territorio_id}</strong></td>
+                        <td class="editable-conductor">${item.conductor}</td>
+                        <td class="editable-encuentro">${item.punto_encuentro || '---'}</td>
+                        <td>
+                            <button onclick="ui.activarEdicion(${item.id})" class="btn btn-sm btn-outline btn-info">✏️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table></div>`;
+            contenedor.innerHTML = html;
+
+        } catch (error) {
+            console.error("Error al cargar agenda:", error);
+        }
+    },
+
+    activarEdicion(id) {
+        const fila = document.querySelector(`tr[data-id="${id}"]`);
+        const celdaCond = fila.querySelector(".editable-conductor");
+        const celdaEnc = fila.querySelector(".editable-encuentro");
+
+        // Guardamos valores para no perderlos
+        const condActual = celdaCond.innerText;
+        const encActual = celdaEnc.innerText === '---' ? '' : celdaEnc.innerText;
+
+        // Convertimos a inputs
+        celdaCond.innerHTML = `<input type="text" class="form-input text-sm" value="${condActual}">`;
+        celdaEnc.innerHTML = `<input type="text" class="form-input text-sm" value="${encActual}">`;
+
+        // Cambiamos el botón de Editar por Guardar y Cancelar
+        const celdaAcciones = fila.querySelector("td:last-child");
+        celdaAcciones.innerHTML = `
+            <div class="flex gap-2">
+                <button onclick="UI.guardarCambios(${id})" class="btn-primary-sm" style="padding:4px 8px">💾</button>
+                <button onclick="UI.cargarYMostrarAgenda()" class="btn-secondary-sm" style="padding:4px 8px">❌</button>
+            </div>
+        `;
+    },
+
+    async guardarCambios(id) {
+        const fila = document.querySelector(`tr[data-id="${id}"]`);
+        const nuevoCond = fila.querySelector(".editable-conductor input").value;
+        const nuevoEnc = fila.querySelector(".editable-encuentro input").value;
+
+        try {
+            // Este método debe estar en tu infrastructure/api/api.js
+            await Api.actualizarSalida(id, {
+                conductor: nuevoCond,
+                punto_encuentro: nuevoEnc
+            });
+            this.mostrarMensaje("Cambios guardados", "success");
+            this.cargarYMostrarAgenda(); // Recargar tabla
+        } catch (error) {
+            this.mostrarMensaje("Error al guardar", "error");
+        }
     }
 
     

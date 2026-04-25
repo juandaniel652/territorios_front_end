@@ -225,4 +225,9 @@ document.getElementById("btnGenerarPropuesta")?.addEventListener("click", async 
     });
 });
 
+document.getElementById("btnAgenda")?.addEventListener("click", () => {
+    DOM.mostrarSeccion("seccionAgenda");
+    UI.cargarYMostrarAgenda(); // <--- AGREGAR ESTO
+});
+
 UI.initDatePickers();
