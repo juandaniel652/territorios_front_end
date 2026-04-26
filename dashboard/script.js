@@ -230,4 +230,35 @@ document.getElementById("btnAgenda")?.addEventListener("click", () => {
     UI.cargarYMostrarAgenda(); // <--- AGREGAR ESTO
 });
 
+window.agendaActual = [];
+
+window.gestionarEdicion = (id) => {
+    const salida = window.agendaActual.find(a => a.id === id);
+    if (!salida) return;
+
+    // Usamos el modal de edición existente pero con enfoque serio
+    document.getElementById("editId").value = salida.id;
+    document.getElementById("editConductor").value = salida.conductor || "";
+    document.getElementById("editCantidad").value = salida.punto_encuentro || "";
+    
+    // Cambiamos fechas si el modal las pide (están en tu HTML)
+    if(document.getElementById("editFechaAsignado")) {
+        document.getElementById("editFechaAsignado").value = salida.fecha;
+    }
+
+    const modalTitle = document.querySelector("#modalEdicion .modal-title");
+    modalTitle.innerHTML = `<span class="text-xs text-gray-400 uppercase tracking-widest">Orden de Cambio</span><br>Territorio #${salida.territorio_id}`;
+    
+    document.getElementById("modalEdicion").classList.remove("hidden");
+};
+
+window.confirmarBaja = (id) => {
+    const salida = window.agendaActual.find(a => a.id === id);
+    if (!salida) return;
+
+    document.getElementById("confirmDeleteId").value = salida.id;
+    document.getElementById("confirmInfoText").innerText = `Vas a dar de baja la salida del territorio #${salida.territorio_id}`;
+    document.getElementById("modalConfirm").classList.remove("hidden");
+};
+
 UI.initDatePickers();

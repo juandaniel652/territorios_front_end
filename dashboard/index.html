@@ -158,6 +158,89 @@
     display: block;   /* Asegura que ocupe su propia línea */
     }
 
+    /* Estilo para las etiquetas de turno en la tabla */
+    .badge-turno {
+        background: var(--gray-100);
+        color: var(--gray-600);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    /* Para resaltar el territorio */
+    .territorio-id {
+        font-family: var(--font-mono);
+        font-weight: 600;
+        color: var(--green-600);
+    }
+
+    /* Efecto suave para la tabla de historial */
+    #containerAgendaGuardada table {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        /* Botones de gestión corporativos */
+    .btn-gestion-outline {
+        background: #ffffff;
+        border: 1px solid var(--gray-200);
+        color: var(--gray-700);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-gestion-outline:hover {
+        background: var(--gray-50);
+        border-color: var(--gray-400);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* Badge de territorio */
+    .territorio-badge {
+        font-family: var(--font-mono);
+        color: var(--green-700);
+        background: var(--green-50);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+    
+    }
+
+        /* Tabla de Historial Estilo Reporte */
+    .data-table {
+        border-spacing: 0;
+        width: 100%;
+    }
+
+    .data-table th {
+        background: #f8fafc; /* Gris muy suave */
+        color: #64748b;
+        border-bottom: 2px solid #edf2f7;
+    }
+
+    .data-table td {
+        border-bottom: 1px solid #f1f5f9;
+        padding: 14px 16px;
+    }
+
+    /* Botones de acción minimalistas */
+    .btn-gestion-outline {
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #475569;
+    }
+
+    .btn-gestion-outline:hover {
+        border-color: #94a3b8;
+        color: #1e293b;
+    }
+
   </style>
 </head>
 <body class="min-h-screen flex">
@@ -306,46 +389,50 @@
         <div id="resultadoSugerencias" class="sugerencias-grid"></div>
       </section>
 
+      <!-- Sección Agenda Unificada y Mejorada -->
       <section id="seccionAgenda" class="section-base hidden">
-        <div class="form-card">
-          <h3 class="section-title">Planificación Quincenal</h3>
-          <div class="search-bar" style="margin-bottom: 24px; flex-wrap: wrap;">
+        <!-- Card de Planificación (Arriba) -->
+        <div class="form-card mb-6">
+          <h3 class="section-title flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            Planificación Quincenal
+          </h3>
+
+          <div class="search-bar flex flex-wrap items-end gap-4 mb-6">
             <div class="form-group">
-              <label class="form-label">Fecha de Inicio</label>
+              <label class="form-label">Fecha de Inicio (Lunes o Domingo)</label>
               <input type="date" id="fechaInicioAgenda" class="form-input" style="max-width:200px;">
             </div>
-            <button id="btnGenerarPropuesta" class="btn-primary-sm" style="align-self: flex-end;">
-              Generar Propuesta
+            <button id="btnGenerarPropuesta" class="btn-primary-sm flex items-center gap-2">
+              <span>Generar Propuesta</span>
             </button>
           </div>
-
-          <div id="containerPropuesta" class="table-wrapper">
+        
+          <!-- Contenedor de Propuesta Nueva -->
+          <div id="containerPropuesta" class="table-wrapper min-h-[100px] border-dashed border-2 border-gray-200">
             <div style="padding: 40px; text-align: center; color: var(--gray-400);">
               <p>Seleccioná una fecha de inicio para ver la sugerencia del sistema.</p>
             </div>
           </div>
         </div>
+      
+        <!-- Card de Historial (Abajo) -->
+        <div class="form-card">
+          <h3 class="section-title flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Historial de Agendas Guardadas
+          </h3>
 
-        <h3 class="section-title">Agendas Guardadas (Historial)</h3>
-        <div id="containerAgendaGuardada" class="table-wrapper">
-            <div style="padding: 20px; text-align: center; color: var(--gray-400);">
-                Cargando historial de planificación...
+          <div id="containerAgendaGuardada" class="table-wrapper">
+            <!-- Este es el único contenedor que quedará para el JS -->
+            <div class="py-10 text-center text-gray-400">
+              <div class="animate-pulse">Cargando historial de planificación...</div>
             </div>
+          </div>
         </div>
       </section>
 
     </main>
-  </div>
-
-
-  <div class="form-card" style="margin-top: 24px;">
-    <h3 class="section-title">Agendas Guardadas (Historial)</h3>
-    <div id="containerHistorialAgenda" class="table-wrapper">
-      <!-- Aquí se cargará la tabla de Supabase -->
-      <div style="padding: 20px; text-align: center; color: var(--gray-400);">
-        Cargando historial...
-      </div>
-    </div>
   </div>
 
 

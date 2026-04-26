@@ -250,59 +250,80 @@ export const UI = {
             contenedor.innerHTML = html;
         },
 
-        async cargarYMostrarAgenda() {
+    async cargarYMostrarAgenda() {
         try {
             const agenda = await Api.obtenerAgendaGuardada();
             const contenedor = document.getElementById("containerAgendaGuardada");
 
-            if (agenda.length === 0) {
-                contenedor.innerHTML = "<p class='text-center'>No hay agenda guardada aún.</p>";
+            // IMPORTANTE: Guardamos en la variable global que definimos en script.js
+            window.agendaActual = agenda; 
+
+            if (!agenda || agenda.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="py-12 text-center border-2 border-dashed border-gray-100 rounded-xl">
+                        <p class="text-gray-400 font-medium">No se registran planificaciones activas.</p>
+                    </div>`;
                 return;
             }
 
             let html = `
-                <div class="overflow-x-auto">
-                    <table class="table w-full bg-base-200 shadow-xl rounded-lg">
-                        <thead>
-                            <tr class="bg-primary text-white">
-                                <th>Fecha</th>
-                                <th>Turno</th>
-                                <th>Territorio</th>
-                                <th>Conductor</th>
-                                <th>Punto de Encuentro</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Territorio</th>
+                            <th>Fecha</th>
+                            <th>Turno</th>
+                            <th>Responsable</th>
+                            <th>Punto de Encuentro</th>
+                            <th class="text-right">Gestión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
             `;
 
             agenda.forEach(item => {
+                // Formateo de fecha simple y serio
+                const fechaVal = item.fecha.includes('T') ? item.fecha.split('T')[0] : item.fecha;
+
                 html += `
-                    <tr data-id="${item.id}">
-                        <td>${item.fecha}</td>
-                        <td><span class="badge badge-ghost">${item.turno}</span></td>
-                        <td><strong>#${item.territorio_id}</strong></td>
-                        <td class="editable-conductor">${item.conductor}</td>
-                        <td class="editable-encuentro">${item.punto_encuentro || '---'}</td>
+                    <tr class="hover:bg-gray-50 transition-colors">
                         <td>
-                            <div class="flex gap-2">
-                                <!-- Cambiado ui a UI para que coincida con el objeto global -->
-                                <button onclick="UI.activarEdicion(${item.id})" class="btn btn-sm btn-outline btn-info">✏️</button>
-                                <!-- Agregamos el botón de Soft Delete -->
-                                <button onclick="UI.desactivarSalida(${item.id})" class="btn btn-sm btn-outline btn-error">🗑️</button>
+                            <span class="font-mono font-bold text-green-700 bg-green-50 px-2 py-1 rounded">
+                                #${String(item.territorio_id).padStart(2, '0')}
+                            </span>
+                        </td>
+                        <td class="text-gray-600">${fechaVal}</td>
+                        <td>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-gray-200 text-gray-500">
+                                ${item.turno}
+                            </span>
+                        </td>
+                        <td class="font-medium text-gray-900">${item.conductor || '---'}</td>
+                        <td class="text-gray-500 text-xs">${item.punto_encuentro || 'A coordinar'}</td>
+                        <td class="text-right">
+                            <div class="flex justify-end gap-2">
+                                <button onclick="gestionarEdicion(${item.id})" 
+                                        class="text-xs font-semibold text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-md border border-gray-200 bg-white hover:border-gray-400 transition-all">
+                                    Gestionar
+                                </button>
+                                <button onclick="confirmarBaja(${item.id})" 
+                                        class="text-xs font-semibold text-red-600 hover:text-white px-3 py-1.5 rounded-md hover:bg-red-600 transition-all">
+                                    Dar de baja
+                                </button>
                             </div>
                         </td>
                     </tr>
                 `;
             });
 
-            html += `</tbody></table></div>`;
+            html += `</tbody></table>`;
             contenedor.innerHTML = html;
 
         } catch (error) {
             console.error("Error al cargar agenda:", error);
+            contenedor.innerHTML = `<p class="text-red-500 text-sm p-4">Error de conexión con el servidor.</p>`;
         }
-    },
+    },    
 
     activarEdicion(id) {
         const fila = document.querySelector(`tr[data-id="${id}"]`);
@@ -360,6 +381,71 @@ export const UI = {
     }
 
     
+};
+
+export const AgendaUI = {
+    renderHistorial: (container, datos) => {
+        if (!datos || datos.length === 0) {
+            container.innerHTML = `
+                <div class="py-20 text-center">
+                    <p class="text-gray-400 font-medium">No hay registros de planificación en este período.</p>
+                </div>`;
+            return;
+        }
+
+        let html = `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Territorio</th>
+                        <th>Fecha</th>
+                        <th>Turno</th>
+                        <th>Responsable / Conductor</th>
+                        <th>Punto de Encuentro</th>
+                        <th class="text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        datos.forEach(s => {
+            // Formatear fecha de ISO a algo legible: 25 Abr, 2026
+            const fechaLegible = new Date(s.fecha).toLocaleDateString('es-AR', {
+                day: '2-digit', month: 'short'
+            });
+
+            html += `
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td>
+                        <span class="font-mono font-bold text-green-700 bg-green-50 px-2 py-1 rounded">
+                            #${String(s.territorio_id).padStart(2, '0')}
+                        </span>
+                    </td>
+                    <td class="text-gray-600 font-medium">${fechaLegible}</td>
+                    <td>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-gray-200 text-gray-500">
+                            ${s.turno}
+                        </span>
+                    </td>
+                    <td class="font-medium text-gray-900">${s.conductor || 'Sin asignar'}</td>
+                    <td class="text-gray-500 text-xs italic">${s.punto_encuentro || 'A coordinar'}</td>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-2">
+                            <button onclick="gestionarEdicion(${s.id})" class="text-xs font-semibold text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-md border border-gray-200 bg-white hover:border-gray-400 transition-all">
+                                Gestionar
+                            </button>
+                            <button onclick="confirmarBaja(${s.id})" class="text-xs font-semibold text-red-600 hover:text-white px-3 py-1.5 rounded-md hover:bg-red-600 transition-all">
+                                Dar de baja
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    }
 };
 
 // --- EL TRUCO PARA VERCEL ---
