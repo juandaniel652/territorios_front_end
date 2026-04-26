@@ -151,17 +151,19 @@ document.getElementById("formEdicion")?.addEventListener("submit", async (e) => 
     
     const id = Number(document.getElementById("editId").value);
     const modalTitle = document.querySelector("#modalEdicion .modal-title").innerText;
-    
-    // DETECTAMOS: ¿Estamos editando una Salida de la Agenda o una Asignación histórica?
-    const esAgenda = modalTitle.includes("Territorio #"); 
+    const esAgenda = modalTitle.includes("Planificación") || modalTitle.includes("Territorio #"); 
 
-    const campos = {
-        conductor: document.getElementById("editConductor").value.trim(),
-        punto_encuentro: document.getElementById("editCantidad").value.trim(), // 'editCantidad' es el ID en tu HTML para el encuentro
-    };
+    const conductor = document.getElementById("editConductor").value.trim();
+    const valorVariable = document.getElementById("editCantidad").value.trim();
 
     if (esAgenda) {
-        // --- CASO A: GUARDAR EN AGENDA (SALIDAS) ---
+        // --- MODO PLANIFICACIÓN ---
+        // Aquí 'valorVariable' se interpreta como Punto de Encuentro
+        const payload = {
+            conductor: conductor,
+            punto_encuentro: valorVariable 
+        };
+
         try {
             const res = await fetch(`https://backend-territorios.onrender.com/api/v1/salidas/${id}`, {
                 method: 'PATCH',
@@ -169,33 +171,30 @@ document.getElementById("formEdicion")?.addEventListener("submit", async (e) => 
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem("token")}`
                 },
-                body: JSON.stringify(campos)
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
-                UI.mostrarMensaje("Planificación actualizada", "success");
+                UI.mostrarMensaje("Planificación actualizada con éxito", "success");
                 UI.cerrarModalEdicion();
-                UI.cargarYMostrarAgenda(); // Refresca solo la tabla de la agenda
-            } else {
-                UI.mostrarMensaje("Error al actualizar agenda", "error");
+                UI.cargarYMostrarAgenda();
             }
         } catch (error) {
-            console.error(error);
+            UI.mostrarMensaje("Error al conectar con el servidor de agendas", "error");
         }
 
     } else {
-        // --- CASO B: GUARDAR EN ASIGNACIONES (HISTORIAL) ---
-        // Aquí se queda tu lógica vieja para la sección de "Consultar"
-        const camposAsignacion = {
+        // --- MODO HISTORIAL (ASIGNACIONES) ---
+        // Aquí 'valorVariable' se interpreta como Cantidad Abarcada
+        const payloadAsignacion = {
             id,
-            conductor: campos.conductor,
-            cantidad_abarcado: campos.punto_encuentro,
-            // (puedes añadir fechas aquí si el modal de asignación las tiene)
+            conductor: conductor,
+            cantidad_abarcado: valorVariable
         };
         
-        await editarAsignacion(id, camposAsignacion, UI, () => {
+        await editarAsignacion(id, payloadAsignacion, UI, () => {
             UI.cerrarModalEdicion();
-            refrescarTabla(); // Refresca la tabla de consultas
+            refrescarTabla();
         });
     }
 });
@@ -290,18 +289,21 @@ window.gestionarEdicion = (id) => {
     const salida = window.agendaActual.find(a => a.id === id);
     if (!salida) return;
 
-    // Usamos el modal de edición existente pero con enfoque serio
+    // Cambiamos el texto del label para que tenga sentido
+    const labelCantidad = document.querySelector('label[for="editCantidad"]');
+    if (labelCantidad) {
+        labelCantidad.innerText = "Cantidad abarcada";
+    }
+
     document.getElementById("editId").value = salida.id;
     document.getElementById("editConductor").value = salida.conductor || "";
     document.getElementById("editCantidad").value = salida.punto_encuentro || "";
     
-    // Cambiamos fechas si el modal las pide (están en tu HTML)
-    if(document.getElementById("editFechaAsignado")) {
-        document.getElementById("editFechaAsignado").value = salida.fecha;
-    }
+    // Cambiamos el placeholder para guiar al usuario
+    document.getElementById("editCantidad").placeholder = "Ej: Plaza central, 09:00hs";
 
     const modalTitle = document.querySelector("#modalEdicion .modal-title");
-    modalTitle.innerHTML = `<span class="text-xs text-gray-400 uppercase tracking-widest">Orden de Cambio</span><br>Territorio #${salida.territorio_id}`;
+    modalTitle.innerHTML = `<span class="text-xs text-gray-400 uppercase tracking-widest">Orden de Gestión</span><br>Territorio #${salida.territorio_id}`;
     
     document.getElementById("modalEdicion").classList.remove("hidden");
 };
