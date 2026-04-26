@@ -285,7 +285,12 @@ export const UI = {
                         <td class="editable-conductor">${item.conductor}</td>
                         <td class="editable-encuentro">${item.punto_encuentro || '---'}</td>
                         <td>
-                            <button onclick="ui.activarEdicion(${item.id})" class="btn btn-sm btn-outline btn-info">✏️</button>
+                            <div class="flex gap-2">
+                                <!-- Cambiado ui a UI para que coincida con el objeto global -->
+                                <button onclick="UI.activarEdicion(${item.id})" class="btn btn-sm btn-outline btn-info">✏️</button>
+                                <!-- Agregamos el botón de Soft Delete -->
+                                <button onclick="UI.desactivarSalida(${item.id})" class="btn btn-sm btn-outline btn-error">🗑️</button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -342,11 +347,11 @@ export const UI = {
 
     async desactivarSalida(id) {
         if (!confirm("¿Estás seguro de quitar esta salida de la agenda?")) return;
-        
+
         try {
             // Hacemos un patch enviando activo: false
             await Api.actualizarSalida(id, { activo: false });
-            
+
             this.mostrarMensaje("Salida removida del historial", "success");
             this.cargarYMostrarAgenda(); // Refrescamos la tabla y ya no aparecerá
         } catch (error) {
