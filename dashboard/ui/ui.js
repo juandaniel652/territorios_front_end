@@ -255,60 +255,79 @@ export const UI = {
             const agenda = await Api.obtenerAgendaGuardada();
             const contenedor = document.getElementById("containerAgendaGuardada");
 
-            // IMPORTANTE: Guardamos en la variable global que definimos en script.js
             window.agendaActual = agenda; 
 
             if (!agenda || agenda.length === 0) {
                 contenedor.innerHTML = `
                     <div class="py-12 text-center border-2 border-dashed border-gray-100 rounded-xl">
-                        <p class="text-gray-400 font-medium">No se registran planificaciones activas.</p>
+                        <p class="text-gray-400 font-medium">No hay salidas programadas en el historial.</p>
                     </div>`;
                 return;
             }
 
             let html = `
-                <table class="data-table">
+                <table class="data-table w-full">
                     <thead>
                         <tr>
-                            <th>Territorio</th>
-                            <th>Fecha</th>
-                            <th>Turno</th>
-                            <th>Responsable</th>
-                            <th>Punto de Encuentro</th>
-                            <th class="text-right">Gestión</th>
+                            <th class="p-4 text-center">Territorio</th>
+                            <th class="p-4">Conductor / Responsable</th>
+                            <th class="p-4">Punto de Encuentro</th>
+                            <th class="p-4 text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-50">
             `;
 
             agenda.forEach(item => {
-                // Formateo de fecha simple y serio
-                const fechaVal = item.fecha.includes('T') ? item.fecha.split('T')[0] : item.fecha;
+                const esSinAsignar = !item.conductor || item.conductor === 'Sin asignar';
+                const fechaLegible = item.fecha ? new Date(item.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' }) : '---';
 
                 html += `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td>
-                            <span class="font-mono font-bold text-green-700 bg-green-50 px-2 py-1 rounded">
-                                #${String(item.territorio_id).padStart(2, '0')}
-                            </span>
+                    <tr class="hover:bg-gray-50/80 transition-colors group">
+                        <!-- COLUMNA 1: TERRITORIO -->
+                        <td class="p-4 text-center">
+                            <div class="flex flex-col items-center">
+                                <span class="territorio-badge text-lg">#${String(item.territorio_id).padStart(2, '0')}</span>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase mt-1">${fechaLegible}</span>
+                            </div>
                         </td>
-                        <td class="text-gray-600">${fechaVal}</td>
-                        <td>
-                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-gray-200 text-gray-500">
-                                ${item.turno}
-                            </span>
+
+                        <!-- COLUMNA 2: CONDUCTOR -->
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full ${esSinAsignar ? 'bg-red-50' : 'bg-green-50'} flex items-center justify-center border border-gray-100">
+                                    <svg class="w-4 h-4 ${esSinAsignar ? 'text-red-400' : 'text-green-600'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="${esSinAsignar ? 'text-red-500 italic' : 'text-gray-900 font-semibold'} leading-tight">
+                                        ${item.conductor || 'Sin asignar'}
+                                    </span>
+                                    <span class="text-[11px] text-gray-500 font-medium">Responsable de salida</span>
+                                </div>
+                            </div>
                         </td>
-                        <td class="font-medium text-gray-900">${item.conductor || '---'}</td>
-                        <td class="text-gray-500 text-xs">${item.punto_encuentro || 'A coordinar'}</td>
-                        <td class="text-right">
+
+                        <!-- COLUMNA 3: PUNTO DE ENCUENTRO -->
+                        <td class="p-4">
+                            <div class="flex flex-col">
+                                <span class="text-sm text-gray-700 font-medium">${item.punto_encuentro || 'A coordinar'}</span>
+                                <div class="flex items-center gap-1 mt-0.5">
+                                    <span class="badge-turno">${item.turno}</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- COLUMNA 4: ACCIONES -->
+                        <td class="p-4 text-right">
                             <div class="flex justify-end gap-2">
                                 <button onclick="gestionarEdicion(${item.id})" 
-                                        class="text-xs font-semibold text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-md border border-gray-200 bg-white hover:border-gray-400 transition-all">
-                                    Gestionar
+                                        class="btn-gestion-outline hover:border-green-500 hover:text-green-600 flex items-center gap-1">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    Editar
                                 </button>
                                 <button onclick="confirmarBaja(${item.id})" 
-                                        class="text-xs font-semibold text-red-600 hover:text-white px-3 py-1.5 rounded-md hover:bg-red-600 transition-all">
-                                    Dar de baja
+                                        class="p-2 text-gray-300 hover:text-red-500 transition-colors">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
                             </div>
                         </td>
@@ -321,9 +340,10 @@ export const UI = {
 
         } catch (error) {
             console.error("Error al cargar agenda:", error);
-            contenedor.innerHTML = `<p class="text-red-500 text-sm p-4">Error de conexión con el servidor.</p>`;
+            contenedor.innerHTML = `<div class="p-4 text-red-500 bg-red-50 rounded-lg text-sm">Error al cargar datos del servidor.</div>`;
         }
-    },    
+    },
+
 
     activarEdicion(id) {
         const fila = document.querySelector(`tr[data-id="${id}"]`);
