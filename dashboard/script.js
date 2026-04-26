@@ -176,15 +176,41 @@ document.getElementById("formEdicion")?.addEventListener("submit", async (e) => 
 document.getElementById("btnCancelEdit")?.addEventListener("click", () => UI.cerrarModalEdicion());
 
 // ── Modal confirmación: eliminar ──────────────────────────────────────────────
-document.getElementById("btnConfirmDelete")?.addEventListener("click", async () => {
-    const idRaw = document.getElementById("confirmDeleteId").value;
-    const id = Number(idRaw);
-    if (!id || isNaN(id)) return;
+// script.js
 
-    await eliminarAsignacion(id, UI, () => {
-        UI.cerrarModalConfirm();
-        refrescarTabla();
-    });
+document.getElementById("btnConfirmDelete")?.addEventListener("click", async () => {
+    const id = Number(document.getElementById("confirmDeleteId").value);
+    if (!id) return;
+
+    // Detectamos si el modal se abrió desde la Agenda por el texto del contexto
+    const esAgenda = document.getElementById("confirmInfoText").innerText.includes("salida");
+
+    if (esAgenda) {
+        try {
+            // Llamada directa al endpoint de salidas (Soft Delete)
+            const res = await fetch(`https://backend-territorios.onrender.com/api/v1/salidas/${id}`, {
+                method: 'DELETE', // O PATCH si usas "activo: false"
+                headers: { 'Authorization': `Bearer ${localStorage.getItem("token")}` }
+            });
+
+            if (res.ok) {
+                UI.mostrarMensaje("Salida dada de baja correctamente", "success");
+                UI.cerrarModalConfirm();
+                UI.cargarYMostrarAgenda(); // Refrescamos la tabla de agenda
+            } else {
+                const err = await res.json();
+                UI.mostrarMensaje(err.detail || "Error al dar de baja", "error");
+            }
+        } catch (e) {
+            UI.mostrarMensaje("Error de conexión", "error");
+        }
+    } else {
+        // Si no es agenda, sigue con el comportamiento normal de asignaciones
+        await eliminarAsignacion(id, UI, () => {
+            UI.cerrarModalConfirm();
+            refrescarTabla();
+        });
+    }
 });
 
 document.getElementById("btnCancelDelete")?.addEventListener("click", () => UI.cerrarModalConfirm());
