@@ -148,28 +148,56 @@ DOM.btnBuscarSugerencias.addEventListener("click", () =>
 // Usamos "?" para que si el formulario no existe (User), no tire error
 document.getElementById("formEdicion")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const idRaw = document.getElementById("editId").value;
-    const id = Number(idRaw);
     
-    if (!id || isNaN(id)) {
-        UI.mostrarMensaje("ID de asignación inválido.", "error");
-        return;
-    }
+    const id = Number(document.getElementById("editId").value);
+    const modalTitle = document.querySelector("#modalEdicion .modal-title").innerText;
+    
+    // DETECTAMOS: ¿Estamos editando una Salida de la Agenda o una Asignación histórica?
+    const esAgenda = modalTitle.includes("Territorio #"); 
 
     const campos = {
-        id,
-        conductor: document.getElementById("editConductor").value.trim() || undefined,
-        fecha_asignado: document.getElementById("editFechaAsignado").value || undefined,
-        fecha_completado: document.getElementById("editFechaCompletado").value || undefined,
-        cantidad_abarcado: document.getElementById("editCantidad").value.trim() || undefined,
+        conductor: document.getElementById("editConductor").value.trim(),
+        punto_encuentro: document.getElementById("editCantidad").value.trim(), // 'editCantidad' es el ID en tu HTML para el encuentro
     };
 
-    Object.keys(campos).forEach(k => campos[k] === undefined && delete campos[k]);
+    if (esAgenda) {
+        // --- CASO A: GUARDAR EN AGENDA (SALIDAS) ---
+        try {
+            const res = await fetch(`https://backend-territorios.onrender.com/api/v1/salidas/${id}`, {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(campos)
+            });
 
-    await editarAsignacion(id, campos, UI, () => {
-        UI.cerrarModalEdicion();
-        refrescarTabla();
-    });
+            if (res.ok) {
+                UI.mostrarMensaje("Planificación actualizada", "success");
+                UI.cerrarModalEdicion();
+                UI.cargarYMostrarAgenda(); // Refresca solo la tabla de la agenda
+            } else {
+                UI.mostrarMensaje("Error al actualizar agenda", "error");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+    } else {
+        // --- CASO B: GUARDAR EN ASIGNACIONES (HISTORIAL) ---
+        // Aquí se queda tu lógica vieja para la sección de "Consultar"
+        const camposAsignacion = {
+            id,
+            conductor: campos.conductor,
+            cantidad_abarcado: campos.punto_encuentro,
+            // (puedes añadir fechas aquí si el modal de asignación las tiene)
+        };
+        
+        await editarAsignacion(id, camposAsignacion, UI, () => {
+            UI.cerrarModalEdicion();
+            refrescarTabla(); // Refresca la tabla de consultas
+        });
+    }
 });
 
 // Botones de cancelar con "?"
