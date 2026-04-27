@@ -219,36 +219,90 @@ export const UI = {
     },
 
     renderizarTablaHistorial(agenda) {
-            const contenedor = document.getElementById("containerHistorial");
-            let html = `
-                <table class="table w-full bg-base-100 shadow-xl">
+        const contenedor = document.getElementById("containerAgendaGuardada");
+        
+        if (!agenda || agenda.length === 0) {
+            contenedor.innerHTML = `
+                <div class="p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl">
+                    <p class="text-gray-400 font-medium">No hay salidas programadas para este periodo.</p>
+                </div>`;
+            return;
+        }
+
+        let html = `
+            <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+                <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Turno</th>
-                            <th>Territorio</th>
-                            <th>Conductor</th>
-                            <th>Encuentro</th>
+                        <tr class="bg-green-50/50">
+                            <th class="p-4 text-[11px] font-bold text-green-700 uppercase tracking-widest">Columna 1: Horarios</th>
+                            <th class="p-4 text-[11px] font-bold text-green-700 uppercase tracking-widest">Columna 2: Encuentro</th>
+                            <th class="p-4 text-[11px] font-bold text-green-700 uppercase tracking-widest text-center">Columna 3: Territorio</th>
+                            <th class="p-4 text-[11px] font-bold text-green-700 uppercase tracking-widest">Columna 4: Conductor</th>
+                            <th class="p-4"></th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-50">
+        `;
+
+        agenda.forEach(item => {
+            // Procesar Fecha: de 2026-04-26 a "Domingo 26/04/2026"
+            const [y, m, d] = item.fecha.split('-');
+            const fechaObj = new Date(y, m - 1, d);
+            const diaNombre = fechaObj.toLocaleDateString('es-AR', { weekday: 'long' });
+            const diaFormateado = diaNombre.charAt(0).toUpperCase() + diaNombre.slice(1);
+
+            const esAM = item.turno === 'AM';
+
+            html += `
+                <tr class="hover:bg-green-50/20 transition-colors group">
+                    <!-- COLUMNA 1: HORARIOS -->
+                    <td class="p-4 border-l-4 ${esAM ? 'border-green-400' : 'border-emerald-600'}">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-gray-800">${diaFormateado} ${d}/${m}/${y}</span>
+                            <span class="text-[10px] font-black tracking-tighter ${esAM ? 'text-green-500' : 'text-emerald-700'}">
+                                RANGO: ${item.turno}
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- COLUMNA 2: ENCUENTRO -->
+                    <td class="p-4">
+                        <span class="text-sm ${item.punto_encuentro ? 'text-gray-600 font-medium' : 'text-gray-300 italic'}">
+                            ${item.punto_encuentro || 'Punto a coordinar'}
+                        </span>
+                    </td>
+
+                    <!-- COLUMNA 3: TERRITORIO -->
+                    <td class="p-4 text-center">
+                        <span class="inline-block bg-gray-50 text-green-700 px-3 py-1 rounded border border-green-100 font-mono font-bold text-base">
+                            ${item.territorio_id}
+                        </span>
+                    </td>
+
+                    <!-- COLUMNA 4: CONDUCTOR -->
+                    <td class="p-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full ${item.conductor_nombre ? 'bg-green-400' : 'bg-gray-200'}"></div>
+                            <span class="text-sm font-semibold text-gray-700">
+                                ${item.conductor_nombre || 'Sin asignar'}
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- ACCIONES -->
+                    <td class="p-4 text-right">
+                        <button onclick="gestionarEdicion(${item.id})" class="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-green-600 transition-all">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </button>
+                    </td>
+                </tr>
             `;
+        });
 
-            agenda.forEach(item => {
-                html += `
-                    <tr>
-                        <td>${item.fecha}</td>
-                        <td>${item.turno}</td>
-                        <td>${item.territorio_id}</td>
-                        <td>${item.conductor?.nombre || 'Sin asignar'}</td>
-                        <td>${item.punto_encuentro || '-'}</td>
-                    </tr>
-                `;
-            });
+        html += `</tbody></table></div>`;
+        contenedor.innerHTML = html;
+    },
 
-            html += `</tbody></table>`;
-            contenedor.innerHTML = html;
-        },
 
     async cargarYMostrarAgenda() {
         try {
