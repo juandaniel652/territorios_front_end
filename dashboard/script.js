@@ -375,23 +375,30 @@ if (AuthService.isAuthenticated() && !AuthService.isAdmin()) {
 }
 
 function autoInitDashboard() {
-    // 1. Verificamos que los elementos necesarios existan en el DOM
     const rangoSelect = document.getElementById("rangoSugerencias");
     
+    // Si existe el selector, significa que el HTML cargó
     if (rangoSelect) {
-        // Forzamos el valor a 1-20 por si el HTML tiene otro
         rangoSelect.value = "1-20";
         
-        console.log("📊 Dashboard: Cargando sugerencias iniciales (1-20)...");
+        // Verificamos si la sección Dashboard es la que está activa
+        // (Ajusta 'seccionDashboard' según el ID real en tu index.html)
+        const seccionDash = document.getElementById("seccionDashboard");
         
-        // Llamamos al caso de uso que ya tienes importado
-        // Pasamos "1-20" y el objeto UI que ya está importado arriba
-        cargarSugerencias("1-20", UI);
+        if (seccionDash && !seccionDash.classList.contains("hidden")) {
+            console.log("📊 Ejecutando carga inicial automática...");
+            cargarSugerencias("1-20", UI);
+        } else {
+            // Si entramos y el dashboard no es lo primero que se ve, 
+            // igual lo cargamos para que cuando el usuario haga click ya esté listo
+            cargarSugerencias("1-20", UI);
+        }
     }
 }
 
-// Ejecutamos la carga con un leve delay para que los gráficos (Charts) 
-// y la UI estén totalmente listos.
-setTimeout(autoInitDashboard, 300);
+// Subimos el delay a 500ms para darle aire a la conexión con Render (que suele dormirse)
+window.addEventListener('load', () => {
+    setTimeout(autoInitDashboard, 500);
+});
 
 UI.initDatePickers();
