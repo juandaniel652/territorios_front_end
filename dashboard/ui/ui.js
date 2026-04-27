@@ -229,19 +229,20 @@ export const UI = {
         const contenedor = document.getElementById("containerAgendaGuardada");
         
         if (!agenda || agenda.length === 0) {
-            contenedor.innerHTML = `<div class="py-12 text-center text-gray-400">No hay historial.</div>`;
+            contenedor.innerHTML = `
+                <div class="py-16 text-center border-2 border-dashed border-gray-100 rounded-xl">
+                    <p class="text-gray-400 font-medium">No se registran salidas programadas en el historial.</p>
+                </div>`;
             return;
         }
     
         let html = '';
         let semanaActual = null;
     
-        agenda.forEach((item, index) => {
+        agenda.forEach((item) => {
             // --- LÓGICA DE AGRUPACIÓN SEMANAL ---
             const fechaObj = new Date(item.fecha + 'T00:00:00');
-            
-            // Calculamos el lunes y domingo de la semana de este item
-            const diaSemana = fechaObj.getDay(); // 0 es domingo, 1 lunes...
+            const diaSemana = fechaObj.getDay(); 
             const diffLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
             
             const lunes = new Date(fechaObj);
@@ -249,69 +250,78 @@ export const UI = {
             const domingo = new Date(lunes);
             domingo.setDate(lunes.getDate() + 6);
         
-            const rangoSemana = `Semana del ${lunes.getDate()} de ${lunes.toLocaleString('es-AR', {month:'long'})} al ${domingo.getDate()} de ${domingo.toLocaleString('es-AR', {month:'long'})} ${domingo.getFullYear()}`;
+            // Formato: SEMANA DEL 27 DE ABRIL AL 03 DE MAYO, 2026
+            const mesLunes = lunes.toLocaleString('es-AR', {month:'long'}).toUpperCase();
+            const mesDomingo = domingo.toLocaleString('es-AR', {month:'long'}).toUpperCase();
+            const rangoSemana = `SEMANA DEL ${lunes.getDate()} DE ${mesLunes} AL ${domingo.getDate()} DE ${mesDomingo}, ${domingo.getFullYear()}`;
         
-            // Si la semana cambió, cerramos la tabla anterior (si existe) y abrimos un nuevo bloque
             if (semanaActual !== rangoSemana) {
-                if (semanaActual !== null) html += `</tbody></table></div></div>`; // Cerrar bloque anterior
+                if (semanaActual !== null) html += `</tbody></table></div></div>`; 
                 
                 semanaActual = rangoSemana;
                 
                 html += `
-                    <div class="mb-10">
-                        <div class="bg-gray-100 px-4 py-2 rounded-t-lg border-x border-t border-gray-200">
-                            <span class="text-sm font-bold text-gray-600 uppercase tracking-widest">📅 ${rangoSemana}</span>
+                    <div class="mb-12">
+                        <div class="flex items-center mb-3">
+                            <div class="h-px flex-grow bg-gray-200"></div>
+                            <span class="px-4 text-[11px] font-black text-gray-500 tracking-[0.2em] uppercase">
+                                ${rangoSemana}
+                            </span>
+                            <div class="h-px flex-grow bg-gray-200"></div>
                         </div>
-                        <div class="overflow-hidden rounded-b-xl border border-gray-200 bg-white shadow-sm">
+                        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-gray-50 text-gray-500 border-b border-gray-200">
-                                        <th class="p-3 text-[10px] font-bold uppercase w-1/4">Día y Turno</th>
-                                        <th class="p-3 text-[10px] font-bold uppercase w-1/4">Punto de Encuentro</th>
-                                        <th class="p-3 text-[10px] font-bold uppercase w-1/6 text-center">Territorio</th>
-                                        <th class="p-3 text-[10px] font-bold uppercase w-1/4">Conductor</th>
-                                        <th class="p-3 w-10"></th>
+                                    <tr class="bg-gray-50 border-b border-gray-200">
+                                        <th class="p-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest w-1/4">Día y Turno</th>
+                                        <th class="p-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest w-1/4">Punto de Encuentro</th>
+                                        <th class="p-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest w-1/6 text-center">Territorio</th>
+                                        <th class="p-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest w-1/4">Conductor</th>
+                                        <th class="p-4 w-12"></th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                 `;
             }
         
-            // --- RENDERIZADO DE FILA ---
             const nombreDia = fechaObj.toLocaleDateString('es-AR', { weekday: 'long' });
             const esAM = item.turno === 'AM';
         
             html += `
-                <tr class="hover:bg-blue-50/30 transition-colors group" data-id="${item.id}">
-                    <td class="p-4">
+                <tr class="hover:bg-green-50/40 transition-colors group" data-id="${item.id}">
+                    <td class="p-4 border-l-4 ${esAM ? 'border-green-400' : 'border-emerald-600'}">
                         <div class="flex flex-col">
                             <span class="text-sm font-bold text-gray-800 capitalize">${nombreDia}</span>
-                            <span class="text-[10px] font-black tracking-tighter ${esAM ? 'text-blue-500' : 'text-indigo-700'}">
-                                ${esAM ? '☀️ MAÑANA (AM)' : '🌙 TARDE (PM)'}
+                            <span class="text-[10px] font-black tracking-widest ${esAM ? 'text-green-600' : 'text-emerald-700'}">
+                                TURNO ${item.turno}
                             </span>
                         </div>
                     </td>
-                    <td class="p-4">
-                        <span class="text-sm text-gray-600 editable-encuentro">${item.punto_encuentro || 'A confirmar'}</span>
+                    <td class="p-4 text-sm text-gray-600">
+                        <span class="editable-encuentro">${item.punto_encuentro || 'A COORDINAR'}</span>
                     </td>
                     <td class="p-4 text-center">
-                        <span class="inline-block bg-gray-50 text-gray-700 px-3 py-1 rounded border border-gray-200 font-mono font-bold">
+                        <span class="inline-block bg-green-50 text-green-700 px-3 py-1 rounded border border-green-100 font-mono font-bold text-sm">
                             #${String(item.territorio_id).padStart(2, '0')}
                         </span>
                     </td>
                     <td class="p-4">
-                        <span class="text-sm font-medium text-gray-700 editable-conductor">${item.conductor_nombre || 'Sin asignar'}</span>
+                        <span class="text-sm font-semibold text-gray-700 uppercase tracking-tight editable-conductor">
+                            ${item.conductor_nombre || 'SIN ASIGNAR'}
+                        </span>
                     </td>
                     <td class="p-4 text-right">
-                        <button onclick="UI.activarEdicion(${item.id})" class="text-gray-400 hover:text-blue-600 p-1">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        <button onclick="UI.activarEdicion(${item.id})" class="p-2 text-gray-300 hover:text-green-600 transition-all">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
                         </button>
                     </td>
                 </tr>
             `;
         });
     
-        html += `</tbody></table></div></div>`; // Cerrar el último bloque
+        html += `</tbody></table></div></div>`;
         contenedor.innerHTML = html;
     },
 
