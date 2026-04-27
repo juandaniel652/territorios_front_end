@@ -83,13 +83,16 @@ export const Api = {
     },
 
     async actualizarSalida(id, datos) {
-        // Usamos CONFIG.BASE_URL y authHeaders() para ser consistentes
         const res = await fetch(`${CONFIG.BASE_URL}/api/v1/salidas/${id}`, {
             method: 'PATCH',
             headers: authHeaders(),
             body: JSON.stringify(datos)
         });
         return handleResponse(res);
+    },
+
+    async obtenerSalidasQuincena() {
+        return this.obtenerAgendaGuardada(); 
     },
 
     async obtenerAgendaGuardada() {
