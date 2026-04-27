@@ -210,11 +210,23 @@ export const UI = {
     },
 
     async verAgendaGuardada() {
+        const contenedor = document.getElementById("containerAgendaGuardada");
         try {
-            const agenda = await Api.obtenerSalidasQuincena(); // Debes crear este método en tu api.js
+            // 1. Mostrar estado de carga visual
+            contenedor.innerHTML = `<div class="p-10 text-center text-green-600">Cargando agenda...</div>`;
+            
+            // 2. Traer los datos (Asegúrate que este método en api.js use la nueva Query de SQL)
+            const agenda = await Api.obtenerSalidasQuincena(); 
+            
+            // 3. Guardar en window para acceso global si es necesario
+            window.agendaActual = agenda; 
+
+            // 4. Renderizar con la lógica de 4 columnas
             this.renderizarTablaHistorial(agenda);
         } catch (error) {
+            console.error("Error al cargar agenda:", error);
             this.mostrarMensaje("No se pudo cargar la agenda", "error");
+            contenedor.innerHTML = `<div class="p-4 text-red-500 bg-red-50 rounded-lg text-sm text-center">Error al conectar con el servidor.</div>`;
         }
     },
 
@@ -222,84 +234,76 @@ export const UI = {
         const contenedor = document.getElementById("containerAgendaGuardada");
         
         if (!agenda || agenda.length === 0) {
-            contenedor.innerHTML = `<p class="text-center py-10 text-gray-400">No hay registros.</p>`;
+            contenedor.innerHTML = `
+                <div class="py-12 text-center border-2 border-dashed border-gray-100 rounded-xl">
+                    <p class="text-gray-400 font-medium">No hay salidas programadas en el historial.</p>
+                </div>`;
             return;
         }
     
-        // ORDENAMIENTO ESTRICTO: Por fecha y luego turno (AM antes que PM)
-        const agendaOrdenada = [...agenda].sort((a, b) => {
-            const fechaA = new Date(a.fecha);
-            const fechaB = new Date(b.fecha);
-            if (fechaA - fechaB !== 0) return fechaA - fechaB;
-            return a.turno === 'AM' ? -1 : 1;
-        });
+        let html = `
+            <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-green-600 text-white">
+                            <th class="p-4 text-[11px] font-bold uppercase tracking-widest">Columna 1: Horarios</th>
+                            <th class="p-4 text-[11px] font-bold uppercase tracking-widest">Columna 2: Encuentro</th>
+                            <th class="p-4 text-[11px] font-bold uppercase tracking-widest text-center">Columna 3: Territorio</th>
+                            <th class="p-4 text-[11px] font-bold uppercase tracking-widest">Columna 4: Conductor</th>
+                            <th class="p-4"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+        `;
     
-        let html = "";
-        let semanaActual = "";
-    
-        agendaOrdenada.forEach((item, index) => {
-            // Detectar cambio de semana para poner el encabezado
-            const fechaObj = new Date(item.fecha + "T00:00:00");
-            const inicioSemana = new Date(fechaObj);
-            inicioSemana.setDate(fechaObj.getDate() - (fechaObj.getDay() === 0 ? 6 : fechaObj.getDay() - 1));
-            const finSemana = new Date(inicioSemana);
-            finSemana.setDate(inicioSemana.getDate() + 6);
-            
-            const rangoSemana = `Semana del ${inicioSemana.getDate()} de ${inicioSemana.toLocaleDateString('es-AR', {month:'Long'})} al ${finSemana.getDate()} de ${finSemana.toLocaleDateString('es-AR', {month:'Long'})}`;
-        
-            if (semanaActual !== rangoSemana) {
-                semanaActual = rangoSemana;
-                if (index !== 0) html += `</tbody></table></div>`; // Cerrar tabla anterior
-                
-                html += `
-                    <div class="mt-8 mb-4">
-                        <h3 class="text-green-800 font-bold text-sm bg-green-50 px-4 py-2 rounded-lg inline-block border border-green-100">
-                            - ${semanaActual}
-                        </h3>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-100">
-                                    <th class="p-4 text-[10px] uppercase font-black text-gray-400 tracking-tighter">Columna 1: Horarios</th>
-                                    <th class="p-4 text-[10px] uppercase font-black text-gray-400 tracking-tighter">Columna 2: Encuentro</th>
-                                    <th class="p-4 text-[10px] uppercase font-black text-gray-400 tracking-tighter text-center">Columna 3: Territorio</th>
-                                    <th class="p-4 text-[10px] uppercase font-black text-gray-400 tracking-tighter">Columna 4: Conductor</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-50">
-                `;
-            }
-        
-            const diaNombre = fechaObj.toLocaleDateString('es-AR', { weekday: 'long' });
-            const diaCapitalizado = diaNombre.charAt(0).toUpperCase() + diaNombre.slice(1);
-            const fechaNumerica = fechaObj.toLocaleDateString('es-AR');
+        agenda.forEach(item => {
+            const [y, m, d] = item.fecha.split('-');
+            const fechaFormateada = `${d}/${m}/${y}`;
+            const diaSemana = item.dia_nombre || ""; 
+            const esAM = item.turno === 'AM';
+            const esSinAsignar = !item.conductor_nombre || item.conductor_nombre === 'Sin asignar';
         
             html += `
-                <tr class="hover:bg-green-50/20 transition-colors">
-                    <!-- COLUMNA 1: HORARIOS -->
-                    <td class="p-4">
+                <tr class="hover:bg-green-50/40 transition-colors group" data-id="${item.id}">
+                    <td class="p-4 border-l-4 ${esAM ? 'border-green-400' : 'border-emerald-600'}">
                         <div class="flex flex-col">
-                            <span class="text-xs font-bold text-gray-800">${diaCapitalizado} ${fechaNumerica}</span>
-                            <span class="text-[10px] font-black ${item.turno === 'AM' ? 'text-green-500' : 'text-emerald-700'}">
-                                Dato clave: ${item.turno}
+                            <span class="text-sm font-bold text-gray-800">${diaSemana} ${fechaFormateada}</span>
+                            <span class="text-[10px] font-black tracking-widest ${esAM ? 'text-green-500' : 'text-emerald-700'}">
+                                ${item.turno}
                             </span>
                         </div>
                     </td>
         
-                    <!-- COLUMNA 2: ENCUENTRO -->
                     <td class="p-4">
-                        <span class="text-sm font-medium text-gray-600">${item.punto_encuentro || 'A confirmar'}</span>
+                        <span class="text-sm text-gray-600 font-medium editable-encuentro">
+                            ${item.punto_encuentro || 'A confirmar'}
+                        </span>
                     </td>
         
-                    <!-- COLUMNA 3: TERRITORIO -->
                     <td class="p-4 text-center">
-                        <span class="text-base font-bold text-green-700">${item.territorio_id}</span>
+                        <span class="inline-block bg-green-50 text-green-700 px-3 py-1 rounded-lg border border-green-100 font-mono font-bold text-base">
+                            #${String(item.territorio_id).padStart(2, '0')}
+                        </span>
                     </td>
         
-                    <!-- COLUMNA 4: CONDUCTOR -->
                     <td class="p-4">
-                        <span class="text-sm font-semibold text-gray-700">${item.conductor_nombre || item.conductor || 'Sin asignar'}</span>
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full ${esSinAsignar ? 'bg-red-400' : 'bg-green-500'}"></div>
+                            <span class="text-sm font-semibold ${esSinAsignar ? 'text-red-500 italic' : 'text-gray-700'} editable-conductor">
+                                ${item.conductor_nombre || 'Sin asignar'}
+                            </span>
+                        </div>
+                    </td>
+        
+                    <td class="p-4 text-right">
+                        <div class="flex justify-end gap-2 acciones-celda">
+                            <button onclick="UI.activarEdicion(${item.id})" class="p-2 text-gray-400 hover:text-green-600 transition-all">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </button>
+                            <button onclick="UI.desactivarSalida(${item.id})" class="p-2 text-gray-300 hover:text-red-500 transition-colors">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -308,7 +312,6 @@ export const UI = {
         html += `</tbody></table></div>`;
         contenedor.innerHTML = html;
     },
-
 
     async cargarYMostrarAgenda() {
         try {
