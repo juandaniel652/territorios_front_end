@@ -91,8 +91,12 @@ export const Api = {
         return handleResponse(res);
     },
 
-    async obtenerSalidasQuincena() {
-        return this.obtenerAgendaGuardada(); 
+    async obtenerSalidasQuincena(fechaBase = "") {
+        // Si hay fecha, la agregamos como query param
+        const url = fechaBase ? `/salidas/quincena?fecha_base=${fechaBase}` : `/salidas/quincena`;
+        const response = await fetch(`${this.baseUrl}${url}`);
+        if (!response.ok) throw new Error("Error en red");
+        return await response.json();
     },
 
     async obtenerAgendaGuardada() {

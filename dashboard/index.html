@@ -434,6 +434,23 @@
             Historial de Agendas Guardadas
           </h3>
 
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div>
+                  <h2 class="text-lg font-bold text-gray-800">Historial de Salidas</h2>
+                  <p class="text-xs text-gray-500">Consulta y gestiona las planificaciones guardadas</p>
+              </div>
+              
+              <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100">
+                  <label class="text-[10px] font-black text-gray-400 uppercase px-2">Ver desde:</label>
+                  <input type="date" id="fechaFiltroHistorial" class="form-input-sm border-none bg-transparent text-sm font-bold text-green-700 w-32">
+                  <button onclick="UI.verAgendaGuardada()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm shadow-green-200">
+                      🔍 Filtrar
+                  </button>
+              </div>
+          </div>
+
+
           <div id="containerAgendaGuardada" class="table-wrapper">
             <!-- Este es el único contenedor que quedará para el JS -->
             <div class="py-10 text-center text-gray-400">

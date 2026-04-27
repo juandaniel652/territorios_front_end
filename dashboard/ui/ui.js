@@ -127,6 +127,18 @@ export const UI = {
         document.querySelectorAll("#editFechaAsignado, #editFechaCompletado, #fechaInicioAgenda").forEach(el => {
             if (el && !el._flatpickr) flatpickr(el, config);
         });
+
+        flatpickr("#fechaFiltroHistorial", {
+            locale: Spanish,
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "F J, Y", // Muestra "Mayo 2026" o similar
+            placeholder: "Elegir mes...",
+            onChange: (selectedDates, dateStr) => {
+                // Esto dispara la búsqueda apenas el usuario elige un mes
+                this.verAgendaGuardada();
+            }
+        });
     },
 
     // --- NUEVO MÉTODO PARA EL PUNTO 1 ---
@@ -211,17 +223,34 @@ export const UI = {
 
     async verAgendaGuardada() {
         const contenedor = document.getElementById("containerAgendaGuardada");
+        const filtroFecha = document.getElementById("fechaFiltroHistorial");
+        
+        // Si el input está vacío, usamos la fecha de hoy
+        const fechaParaCargar = filtroFecha.value || new Date().toISOString().split('T')[0];
+
         try {
-            contenedor.innerHTML = `<div class="p-10 text-center text-green-600">Cargando agenda...</div>`;
-            
-            // Ahora Api tiene AMBOS nombres, no va a fallar
-            const agenda = await Api.obtenerSalidasQuincena(); 
-            
+            contenedor.innerHTML = `
+                <div class="py-12 text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600 mb-4"></div>
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Cargando registros del mes...</p>
+                </div>`;
+
+            const agenda = await Api.obtenerSalidasQuincena(fechaParaCargar); 
+
             window.agendaActual = agenda; 
-            this.renderizarTablaHistorial(agenda); // Esta es la de las 4 columnas
+
+            if (agenda.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="py-16 text-center border-2 border-dashed border-gray-100 rounded-xl">
+                        <p class="text-gray-400 font-medium">No hay salidas registradas en el mes seleccionado.</p>
+                    </div>`;
+                return;
+            }
+
+            this.renderizarTablaHistorial(agenda);
         } catch (error) {
             console.error("Error al cargar agenda:", error);
-            contenedor.innerHTML = `<div class="p-4 text-red-500 bg-red-50 rounded-lg text-center">Error al conectar con el servidor.</div>`;
+            contenedor.innerHTML = `<div class="p-4 text-red-500 text-center">Error al conectar con el servidor.</div>`;
         }
     },
 
