@@ -348,4 +348,30 @@ window.confirmarBaja = (id) => {
     document.getElementById("modalConfirm").classList.remove("hidden");
 };
 
+if (AuthService.isAuthenticated() && !AuthService.isAdmin()) {
+    console.warn("⚠️ Modo Lectura: Restringiendo interfaz.");
+    
+    // 1. Inyectamos CSS para ocultar lo que no debe ver
+    const style = document.createElement('style');
+    style.innerHTML = `
+        #btnAgregar, 
+        .btn-row-edit, 
+        .btn-row-delete,
+        #seccionAgregar,
+        /* Oculta la card de "Planificar Nueva Agenda" */
+        #seccionAgenda .form-card:first-of-type,
+        /* Oculta los botones de acción en las tablas si se filtran por clase */
+        .admin-only { 
+            display: none !important; 
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 2. Eliminamos físicamente los botones de navegación prohibidos
+    document.getElementById("btnAgregar")?.remove();
+    
+    // Opcional: Si no quieres que el usuario use las sugerencias para asignar:
+    // document.getElementById("btnSugerencias")?.remove(); 
+}
+
 UI.initDatePickers();

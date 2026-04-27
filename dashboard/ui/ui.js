@@ -255,6 +255,8 @@ export const UI = {
     },
 
     renderizarTablaHistorial(agenda) {
+        // Usamos una constante para el rol
+        const esAdmin = localStorage.getItem("role") === "admin";
         const contenedor = document.getElementById("containerAgendaGuardada");
         
         if (!agenda || agenda.length === 0) {
@@ -264,31 +266,27 @@ export const UI = {
                 </div>`;
             return;
         }
-
+    
         let html = '';
         let semanaActual = null;
-
+    
         agenda.forEach((item) => {
-            // --- LÓGICA DE AGRUPACIÓN SEMANAL ---
             const fechaObj = new Date(item.fecha + 'T00:00:00');
             const diaSemana = fechaObj.getDay(); 
             const diffLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
-
             const lunes = new Date(fechaObj);
             lunes.setDate(fechaObj.getDate() + diffLunes);
             const domingo = new Date(lunes);
             domingo.setDate(lunes.getDate() + 6);
-
-            // Formato: SEMANA DEL 27 DE ABRIL AL 03 DE MAYO, 2026
+            
             const mesLunes = lunes.toLocaleString('es-AR', {month:'long'}).toUpperCase();
             const mesDomingo = domingo.toLocaleString('es-AR', {month:'long'}).toUpperCase();
             const rangoSemana = `SEMANA DEL ${lunes.getDate()} DE ${mesLunes} AL ${domingo.getDate()} DE ${mesDomingo}, ${domingo.getFullYear()}`;
-
+        
             if (semanaActual !== rangoSemana) {
                 if (semanaActual !== null) html += `</tbody></table></div></div>`; 
-
                 semanaActual = rangoSemana;
-
+            
                 html += `
                     <div class="mb-12">
                         <div class="flex items-center mb-3">
@@ -306,50 +304,49 @@ export const UI = {
                                         <th class="p-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest w-1/4">Punto de Encuentro</th>
                                         <th class="p-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest w-1/6 text-center">Territorio</th>
                                         <th class="p-4 text-[10px] font-bold text-gray-600 uppercase tracking-widest w-1/4">Conductor</th>
-                                        <th class="p-4 w-12"></th>
+                                        ${esAdmin ? '<th class="p-4 w-12 text-right">Acciones</th>' : ''} 
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                 `;
             }
-
+        
             const nombreDia = fechaObj.toLocaleDateString('es-AR', { weekday: 'long' });
             const esAM = item.turno === 'AM';
-
+        
+            // Solo creamos el HTML de acciones si es admin
+            const accionesCelda = esAdmin ? `
+                <td class="p-4 text-right">
+                    <div class="flex justify-end gap-2">
+                        <button onclick="window.gestionarEdicion(${item.id})" class="p-2 text-gray-300 hover:text-green-600 transition-all" title="Editar">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </button>
+                        <button onclick="window.confirmarBaja(${item.id})" class="p-2 text-gray-300 hover:text-red-600 transition-all" title="Baja">
+                             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </td>` : '';
+        
             html += `
                 <tr class="hover:bg-green-50/40 transition-colors group" data-id="${item.id}">
                     <td class="p-4 border-l-4 ${esAM ? 'border-green-400' : 'border-emerald-600'}">
                         <div class="flex flex-col">
                             <span class="text-sm font-bold text-gray-800 capitalize">${nombreDia}</span>
-                            <span class="text-[10px] font-black tracking-widest ${esAM ? 'text-green-600' : 'text-emerald-700'}">
-                                TURNO ${item.turno}
-                            </span>
+                            <span class="text-[10px] font-black tracking-widest ${esAM ? 'text-green-600' : 'text-emerald-700'}">TURNO ${item.turno}</span>
                         </div>
                     </td>
-                    <td class="p-4 text-sm text-gray-600">
-                        <span class="editable-encuentro">${item.punto_encuentro || 'A COORDINAR'}</span>
-                    </td>
+                    <td class="p-4 text-sm text-gray-600">${item.punto_encuentro || 'A COORDINAR'}</td>
                     <td class="p-4 text-center">
                         <span class="inline-block bg-green-50 text-green-700 px-3 py-1 rounded border border-green-100 font-mono font-bold text-sm">
                             ${String(item.territorio_id).padStart(2, '0')}
                         </span>
                     </td>
-                    <td class="p-4">
-                        <span class="text-sm font-semibold text-gray-700 uppercase tracking-tight editable-conductor">
-                            ${item.conductor_nombre || 'SIN ASIGNAR'}
-                        </span>
-                    </td>
-                    <td class="p-4 text-right">
-                        <button onclick="UI.activarEdicion(${item.id})" class="p-2 text-gray-300 hover:text-green-600 transition-all">
-                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                        </button>
-                    </td>
+                    <td class="p-4"><span class="text-sm font-semibold text-gray-700 uppercase">${item.conductor_nombre || 'SIN ASIGNAR'}</span></td>
+                    ${accionesCelda}
                 </tr>
             `;
         });
-
+    
         html += `</tbody></table></div></div>`;
         contenedor.innerHTML = html;
     },
