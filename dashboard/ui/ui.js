@@ -235,31 +235,31 @@ export const UI = {
                 </div>`;
             return;
         }
-    
+
         let html = '';
         let semanaActual = null;
-    
+
         agenda.forEach((item) => {
             // --- LÓGICA DE AGRUPACIÓN SEMANAL ---
             const fechaObj = new Date(item.fecha + 'T00:00:00');
             const diaSemana = fechaObj.getDay(); 
             const diffLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
-            
+
             const lunes = new Date(fechaObj);
             lunes.setDate(fechaObj.getDate() + diffLunes);
             const domingo = new Date(lunes);
             domingo.setDate(lunes.getDate() + 6);
-        
+
             // Formato: SEMANA DEL 27 DE ABRIL AL 03 DE MAYO, 2026
             const mesLunes = lunes.toLocaleString('es-AR', {month:'long'}).toUpperCase();
             const mesDomingo = domingo.toLocaleString('es-AR', {month:'long'}).toUpperCase();
             const rangoSemana = `SEMANA DEL ${lunes.getDate()} DE ${mesLunes} AL ${domingo.getDate()} DE ${mesDomingo}, ${domingo.getFullYear()}`;
-        
+
             if (semanaActual !== rangoSemana) {
                 if (semanaActual !== null) html += `</tbody></table></div></div>`; 
-                
+
                 semanaActual = rangoSemana;
-                
+
                 html += `
                     <div class="mb-12">
                         <div class="flex items-center mb-3">
@@ -283,10 +283,10 @@ export const UI = {
                                 <tbody class="divide-y divide-gray-100">
                 `;
             }
-        
+
             const nombreDia = fechaObj.toLocaleDateString('es-AR', { weekday: 'long' });
             const esAM = item.turno === 'AM';
-        
+
             html += `
                 <tr class="hover:bg-green-50/40 transition-colors group" data-id="${item.id}">
                     <td class="p-4 border-l-4 ${esAM ? 'border-green-400' : 'border-emerald-600'}">
@@ -302,7 +302,7 @@ export const UI = {
                     </td>
                     <td class="p-4 text-center">
                         <span class="inline-block bg-green-50 text-green-700 px-3 py-1 rounded border border-green-100 font-mono font-bold text-sm">
-                            #${String(item.territorio_id).padStart(2, '0')}
+                            ${String(item.territorio_id).padStart(2, '0')}
                         </span>
                     </td>
                     <td class="p-4">
@@ -320,7 +320,7 @@ export const UI = {
                 </tr>
             `;
         });
-    
+
         html += `</tbody></table></div></div>`;
         contenedor.innerHTML = html;
     },
