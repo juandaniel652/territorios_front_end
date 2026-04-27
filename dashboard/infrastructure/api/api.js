@@ -92,10 +92,21 @@ export const Api = {
     },
 
     async obtenerSalidasQuincena(fechaBase = "") {
-        // Si hay fecha, la agregamos como query param
-        const url = fechaBase ? `/salidas/quincena?fecha_base=${fechaBase}` : `/salidas/quincena`;
-        const response = await fetch(`${this.baseUrl}${url}`);
-        if (!response.ok) throw new Error("Error en red");
+        const queryParam = fechaBase ? `?fecha_base=${fechaBase}` : "";
+        const url = `${CONFIG.BASE_URL}/api/v1/salidas/quincena${queryParam}`;
+        
+        console.log("📡 Consultando historial en:", url);
+
+        const response = await fetch(url, { 
+            method: "GET",
+            headers: authHeaders() // 3. ¡Importante! Sin esto el backend te rebota
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error("❌ Error en petición de historial:", errorData);
+            throw new Error("Error en red");
+        }
         return await response.json();
     },
 
