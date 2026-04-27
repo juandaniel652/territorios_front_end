@@ -13,7 +13,7 @@ export async function consultarAsignaciones(numero, uiInterface) {
         uiInterface.renderAsignaciones(territorio.numero, territorio.asignaciones);
     } catch (error) {
         console.error("❌ Error en consulta:", error);
-        uiInterface.mostrarErrorResultados(error.detail || "Error al consultar el backend.");
+        uiInterface.mostrarMensaje("Error al obtener sugerencias iniciales", "error");
     }
 }
 

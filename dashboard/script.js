@@ -374,4 +374,24 @@ if (AuthService.isAuthenticated() && !AuthService.isAdmin()) {
     // document.getElementById("btnSugerencias")?.remove(); 
 }
 
+function autoInitDashboard() {
+    // 1. Verificamos que los elementos necesarios existan en el DOM
+    const rangoSelect = document.getElementById("rangoSugerencias");
+    
+    if (rangoSelect) {
+        // Forzamos el valor a 1-20 por si el HTML tiene otro
+        rangoSelect.value = "1-20";
+        
+        console.log("📊 Dashboard: Cargando sugerencias iniciales (1-20)...");
+        
+        // Llamamos al caso de uso que ya tienes importado
+        // Pasamos "1-20" y el objeto UI que ya está importado arriba
+        cargarSugerencias("1-20", UI);
+    }
+}
+
+// Ejecutamos la carga con un leve delay para que los gráficos (Charts) 
+// y la UI estén totalmente listos.
+setTimeout(autoInitDashboard, 300);
+
 UI.initDatePickers();
