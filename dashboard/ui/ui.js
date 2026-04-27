@@ -222,83 +222,89 @@ export const UI = {
         const contenedor = document.getElementById("containerAgendaGuardada");
         
         if (!agenda || agenda.length === 0) {
-            contenedor.innerHTML = `
-                <div class="p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl">
-                    <p class="text-gray-400 font-medium">No hay salidas programadas para este periodo.</p>
-                </div>`;
+            contenedor.innerHTML = `<p class="text-center py-10 text-gray-400">No hay registros.</p>`;
             return;
         }
-
-        let html = `
-            <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-green-50/50">
-                            <th class="p-4 text-[11px] font-bold text-green-700 uppercase tracking-widest">Columna 1: Horarios</th>
-                            <th class="p-4 text-[11px] font-bold text-green-700 uppercase tracking-widest">Columna 2: Encuentro</th>
-                            <th class="p-4 text-[11px] font-bold text-green-700 uppercase tracking-widest text-center">Columna 3: Territorio</th>
-                            <th class="p-4 text-[11px] font-bold text-green-700 uppercase tracking-widest">Columna 4: Conductor</th>
-                            <th class="p-4"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-50">
-        `;
-
-        agenda.forEach(item => {
-            // Procesar Fecha: de 2026-04-26 a "Domingo 26/04/2026"
-            const [y, m, d] = item.fecha.split('-');
-            const fechaObj = new Date(y, m - 1, d);
+    
+        // ORDENAMIENTO ESTRICTO: Por fecha y luego turno (AM antes que PM)
+        const agendaOrdenada = [...agenda].sort((a, b) => {
+            const fechaA = new Date(a.fecha);
+            const fechaB = new Date(b.fecha);
+            if (fechaA - fechaB !== 0) return fechaA - fechaB;
+            return a.turno === 'AM' ? -1 : 1;
+        });
+    
+        let html = "";
+        let semanaActual = "";
+    
+        agendaOrdenada.forEach((item, index) => {
+            // Detectar cambio de semana para poner el encabezado
+            const fechaObj = new Date(item.fecha + "T00:00:00");
+            const inicioSemana = new Date(fechaObj);
+            inicioSemana.setDate(fechaObj.getDate() - (fechaObj.getDay() === 0 ? 6 : fechaObj.getDay() - 1));
+            const finSemana = new Date(inicioSemana);
+            finSemana.setDate(inicioSemana.getDate() + 6);
+            
+            const rangoSemana = `Semana del ${inicioSemana.getDate()} de ${inicioSemana.toLocaleDateString('es-AR', {month:'Long'})} al ${finSemana.getDate()} de ${finSemana.toLocaleDateString('es-AR', {month:'Long'})}`;
+        
+            if (semanaActual !== rangoSemana) {
+                semanaActual = rangoSemana;
+                if (index !== 0) html += `</tbody></table></div>`; // Cerrar tabla anterior
+                
+                html += `
+                    <div class="mt-8 mb-4">
+                        <h3 class="text-green-800 font-bold text-sm bg-green-50 px-4 py-2 rounded-lg inline-block border border-green-100">
+                            - ${semanaActual}
+                        </h3>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-100">
+                                    <th class="p-4 text-[10px] uppercase font-black text-gray-400 tracking-tighter">Columna 1: Horarios</th>
+                                    <th class="p-4 text-[10px] uppercase font-black text-gray-400 tracking-tighter">Columna 2: Encuentro</th>
+                                    <th class="p-4 text-[10px] uppercase font-black text-gray-400 tracking-tighter text-center">Columna 3: Territorio</th>
+                                    <th class="p-4 text-[10px] uppercase font-black text-gray-400 tracking-tighter">Columna 4: Conductor</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                `;
+            }
+        
             const diaNombre = fechaObj.toLocaleDateString('es-AR', { weekday: 'long' });
-            const diaFormateado = diaNombre.charAt(0).toUpperCase() + diaNombre.slice(1);
-
-            const esAM = item.turno === 'AM';
-
+            const diaCapitalizado = diaNombre.charAt(0).toUpperCase() + diaNombre.slice(1);
+            const fechaNumerica = fechaObj.toLocaleDateString('es-AR');
+        
             html += `
-                <tr class="hover:bg-green-50/20 transition-colors group">
+                <tr class="hover:bg-green-50/20 transition-colors">
                     <!-- COLUMNA 1: HORARIOS -->
-                    <td class="p-4 border-l-4 ${esAM ? 'border-green-400' : 'border-emerald-600'}">
+                    <td class="p-4">
                         <div class="flex flex-col">
-                            <span class="text-sm font-bold text-gray-800">${diaFormateado} ${d}/${m}/${y}</span>
-                            <span class="text-[10px] font-black tracking-tighter ${esAM ? 'text-green-500' : 'text-emerald-700'}">
-                                RANGO: ${item.turno}
+                            <span class="text-xs font-bold text-gray-800">${diaCapitalizado} ${fechaNumerica}</span>
+                            <span class="text-[10px] font-black ${item.turno === 'AM' ? 'text-green-500' : 'text-emerald-700'}">
+                                Dato clave: ${item.turno}
                             </span>
                         </div>
                     </td>
-
+        
                     <!-- COLUMNA 2: ENCUENTRO -->
                     <td class="p-4">
-                        <span class="text-sm ${item.punto_encuentro ? 'text-gray-600 font-medium' : 'text-gray-300 italic'}">
-                            ${item.punto_encuentro || 'Punto a coordinar'}
-                        </span>
+                        <span class="text-sm font-medium text-gray-600">${item.punto_encuentro || 'A confirmar'}</span>
                     </td>
-
+        
                     <!-- COLUMNA 3: TERRITORIO -->
                     <td class="p-4 text-center">
-                        <span class="inline-block bg-gray-50 text-green-700 px-3 py-1 rounded border border-green-100 font-mono font-bold text-base">
-                            ${item.territorio_id}
-                        </span>
+                        <span class="text-base font-bold text-green-700">${item.territorio_id}</span>
                     </td>
-
+        
                     <!-- COLUMNA 4: CONDUCTOR -->
                     <td class="p-4">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2 h-2 rounded-full ${item.conductor_nombre ? 'bg-green-400' : 'bg-gray-200'}"></div>
-                            <span class="text-sm font-semibold text-gray-700">
-                                ${item.conductor_nombre || 'Sin asignar'}
-                            </span>
-                        </div>
-                    </td>
-
-                    <!-- ACCIONES -->
-                    <td class="p-4 text-right">
-                        <button onclick="gestionarEdicion(${item.id})" class="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-green-600 transition-all">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        </button>
+                        <span class="text-sm font-semibold text-gray-700">${item.conductor_nombre || item.conductor || 'Sin asignar'}</span>
                     </td>
                 </tr>
             `;
         });
-
+    
         html += `</tbody></table></div>`;
         contenedor.innerHTML = html;
     },
