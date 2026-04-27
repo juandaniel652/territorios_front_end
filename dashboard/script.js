@@ -399,4 +399,17 @@ window.addEventListener('load', () => {
     setTimeout(autoInitDashboard, 500);
 });
 
+// Idea para tu lógica de navegación en script.js
+function cambiarSeccion(nuevaSeccion) {
+    const actual = document.querySelector('.section-base:not(.hidden)');
+    if (actual) {
+        actual.style.opacity = "0"; // Desvanece la actual
+        setTimeout(() => {
+            actual.classList.add('hidden');
+            nuevaSeccion.classList.remove('hidden');
+            nuevaSeccion.style.opacity = "1"; // Muestra la nueva
+        }, 150);
+    }
+}
+
 UI.initDatePickers();
