@@ -374,26 +374,24 @@ if (AuthService.isAuthenticated() && !AuthService.isAdmin()) {
     // document.getElementById("btnSugerencias")?.remove(); 
 }
 
+window.cargarSugerencias = cargarSugerencias;
+window.UI = UI;
+
 function autoInitDashboard() {
-    const rangoSelect = document.getElementById("rangoSugerencias");
-    
-    // Si existe el selector, significa que el HTML cargó
-    if (rangoSelect) {
-        rangoSelect.value = "1-20";
-        
-        // Verificamos si la sección Dashboard es la que está activa
-        // (Ajusta 'seccionDashboard' según el ID real en tu index.html)
-        const seccionDash = document.getElementById("seccionDashboard");
-        
-        if (seccionDash && !seccionDash.classList.contains("hidden")) {
-            console.log("📊 Ejecutando carga inicial automática...");
-            cargarSugerencias("1-20", UI);
-        } else {
-            // Si entramos y el dashboard no es lo primero que se ve, 
-            // igual lo cargamos para que cuando el usuario haga click ya esté listo
-            cargarSugerencias("1-20", UI);
-        }
+    console.log("📊 Intentando carga inicial...");
+    if (typeof window.cargarSugerencias === "function") {
+        // Usamos el rango por defecto
+        window.cargarSugerencias("1-20", window.UI);
+    } else {
+        console.error("❌ Error: cargarSugerencias no está disponible.");
     }
+}
+
+// Ejecutamos la carga
+if (document.readyState === 'complete') {
+    setTimeout(autoInitDashboard, 500);
+} else {
+    window.addEventListener('load', () => setTimeout(autoInitDashboard, 500));
 }
 
 // Subimos el delay a 500ms para darle aire a la conexión con Render (que suele dormirse)
