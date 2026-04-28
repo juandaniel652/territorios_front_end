@@ -258,7 +258,7 @@
     .section-base {
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    
+
     /* Efecto de "skeleton" muy sutil para cuando cargan los datos */
     .loading-pulse {
       animation: pulse 1.5s infinite;
@@ -476,6 +476,47 @@
           </div>
         </div>
       </section>
+      
+      
+      <section id="seccionPlanillaS13" class="section-base hidden">
+        <div class="form-card" style="background: white; border: 2px solid #000; padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #000; margin-bottom: 10px; padding-bottom: 5px;">
+            <h2 style="font-family: 'DM Sans', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Registro de Asignación de Territorio</h2>
+            <p style="font-weight: 600;">Año de servicio: <span style="border-bottom: 1px solid #000; padding: 0 20px;">2026</span></p>
+          </div>
+        
+          <div class="table-wrapper" style="border: 1.5px solid #000;">
+            <table id="tablaS13" class="data-table" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 11px;">
+              <thead>
+                <tr style="background: #e5e7eb; border-bottom: 1.5px solid #000;">
+                  <th style="border-right: 1.5px solid #000; width: 40px;">Núm. de terr.</th>
+                  <th style="border-right: 1.5px solid #000; width: 80px;">Última fecha completó*</th>
+                  <th colspan="2" style="border-right: 1.5px solid #000;">Asignado 1</th>
+                  <th colspan="2" style="border-right: 1.5px solid #000;">Asignado 2</th>
+                  <th colspan="2" style="border-right: 1.5px solid #000;">Asignado 3</th>
+                  <th colspan="2">Asignado 4</th>
+                </tr>
+                <tr style="background: #f3f4f6; font-size: 9px; border-bottom: 1.5px solid #000;">
+                  <th style="border-right: 1.5px solid #000;"></th>
+                  <th style="border-right: 1.5px solid #000;"></th>
+                  <th style="border-right: 1px solid #000;">Nombre / Fecha Asig.</th>
+                  <th style="border-right: 1.5px solid #000;">Fecha Comp.</th>
+                  <th style="border-right: 1px solid #000;">Nombre / Fecha Asig.</th>
+                  <th style="border-right: 1.5px solid #000;">Fecha Comp.</th>
+                  <th style="border-right: 1px solid #000;">Nombre / Fecha Asig.</th>
+                  <th style="border-right: 1.5px solid #000;">Fecha Comp.</th>
+                  <th style="border-right: 1px solid #000;">Nombre / Fecha Asig.</th>
+                  <th>Fecha Comp.</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyS13">
+                <!-- Se llenará con JS -->
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size: 10px; margin-top: 10px;">*Cuando comience una nueva página, anote en esta columna la última fecha en que los territorios se completaron.</p>
+        </div>
+    </section>
 
     </main>
   </div>

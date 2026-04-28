@@ -476,7 +476,45 @@ export const AgendaUI = {
 
         html += `</tbody></table>`;
         container.innerHTML = html;
-    }
+    },
+
+    renderPlanillaS13(dataTerritorios) {
+        const tbody = document.getElementById("tbodyS13");
+        tbody.innerHTML = "";
+
+        dataTerritorios.forEach(terr => {
+            // Obtenemos el historial de este territorio (máximo 4 para la tabla)
+            const historial = terr.historial || [];
+
+            let rowHtml = `
+                <tr style="border-bottom: 1px solid #000; height: 40px;">
+                    <td style="border-right: 1.5px solid #000; font-weight: bold; background: #f9fafb;">${terr.id}</td>
+                    <td style="border-right: 1.5px solid #000;">${terr.ultima_vuelta_anterior || ''}</td>
+            `;
+
+            // Llenamos las 4 columnas de asignación
+            for (let i = 0; i < 4; i++) {
+                const registro = historial[i];
+                if (registro) {
+                    rowHtml += `
+                        <td style="border-right: 1px solid #000; font-size: 10px; text-align: left; padding: 2px 5px;">
+                            <strong>${registro.conductor}</strong><br>${registro.fecha_asignado}
+                        </td>
+                        <td style="border-right: ${i < 3 ? '1.5px solid #000' : 'none'};">${registro.fecha_completado}</td>
+                    `;
+                } else {
+                    // Celda vacía si no hay historial
+                    rowHtml += `
+                        <td style="border-right: 1px solid #000;"></td>
+                        <td style="border-right: ${i < 3 ? '1.5px solid #000' : 'none'};"></td>
+                    `;
+                }
+            }
+
+            rowHtml += `</tr>`;
+            tbody.innerHTML += rowHtml;
+        });
+    },
 };
 
 // --- EL TRUCO PARA VERCEL ---
