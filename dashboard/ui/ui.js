@@ -39,25 +39,29 @@ export const UI = {
         
     },
 
-    // En ui.js
     renderDashboard(stats) {
-        document.getElementById("totalAsignaciones").textContent = stats.total_asignaciones;
-        document.getElementById("territoriosActivos").textContent = stats.territorios_activos;
-        document.getElementById("asignacionesCompletadas").textContent = stats.asignaciones_completadas;
+    // Actualizar KPIs
+        document.getElementById("totalAsignaciones").textContent = stats.total_asignaciones || 0;
+        document.getElementById("territoriosActivos").textContent = stats.territorios_activos || 0;
+        document.getElementById("asignacionesCompletadas").textContent = stats.asignaciones_completadas || 0;
 
-        Charts.renderBarChart(
-            DOM.canvasAsignaciones, 
-            stats.chart_data.labels, 
-            stats.chart_data.values
-        );
+        // Renderizar Gráfico
+        if (window.Charts) {
+            Charts.renderBarChart(
+                document.getElementById("asignacionesChart"), 
+                stats.chart_data.labels, 
+                stats.chart_data.values
+            );
+        }
 
-        // ACTIVAR PLANILLA S-13
+        // --- CRÍTICO: MOSTRAR PLANILLA S-13 ---
         const seccionS13 = document.getElementById("seccionPlanillaS13");
         if (seccionS13) {
-            seccionS13.classList.remove("hidden"); // Quitamos el hidden para que se vea abajo del gráfico
+            seccionS13.classList.remove("hidden"); // Quitamos el candado de visibilidad
             this.renderPlanillaS13(stats.territorios_detalle || []);
         }
     },
+    
 
     renderSugerencias(sugerencias) {
         const container = DOM.resultadoSugerencias;
@@ -153,38 +157,24 @@ export const UI = {
     // En ui.js, dentro del objeto UI:
     async manejarGenerarAgenda() {
         const input = document.getElementById("fechaInicioAgenda");
-        const contenedorPropuesta = document.getElementById("containerPropuesta");
-
-        if (!input || !input.value) {
-            this.mostrarMensaje("Selecciona una fecha de inicio", "error");
+        const contenedor = document.getElementById("containerPropuesta");
+        
+        if (!input.value) {
+            alert("Por favor selecciona una fecha");
             return;
         }
-
-        // 1. Limpiar y mostrar carga en el contenedor de ARRIBA
-        this.mostrarCarga(true);
-        contenedorPropuesta.innerHTML = `
-            <div class="py-20 text-center">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600 mb-4"></div>
-                <p class="text-gray-400 font-medium">Generando propuesta editable...</p>
-            </div>`;
-
+    
+        // Limpiar placeholder y poner estado de carga
+        contenedor.innerHTML = '<div class="p-10 text-center text-gray-500 animate-pulse">Generando propuesta...</div>';
+    
         try {
-            const fechaLunes = obtenerLunes(input.value);
-
-            // 2. Llamar al controlador para obtener el plan sugerido
-            const resultado = await prepararAgendaQuincenal(fechaLunes, this);
-
-            // 3. Renderizar la tabla editable en el contenedor de arriba
-            if (resultado && resultado.plan) {
-                this.renderVistaPreviaAgenda(resultado.plan, resultado.conductores);
-            } else {
-                contenedorPropuesta.innerHTML = `<p class="p-8 text-center text-gray-500">No se pudo generar la propuesta. Intenta con otra fecha.</p>`;
-            }
+            // Asumiendo que Preparador es tu lógica de negocio
+            const data = await Preparador.obtenerPropuesta(input.value); 
+            
+            // Renderizar dentro de contenedor (EL DE ARRIBA)
+            this.renderTablaPropuesta(data, contenedor); 
         } catch (error) {
-            console.error("Error al generar agenda:", error);
-            this.mostrarErrorResultados("Error al procesar la propuesta de creación.");
-        } finally {
-            this.mostrarCarga(false);
+            contenedor.innerHTML = '<div class="p-10 text-red-500">Error al generar propuesta.</div>';
         }
     },
 
@@ -496,38 +486,36 @@ export const AgendaUI = {
 
     // Dentro del objeto UI en ui.js, añade o reemplaza este método:
 
-    renderPlanillaS13(dataTerritorios) {
+    renderPlanillaS13(data) {
         const tbody = document.getElementById("tbodyS13");
         if (!tbody) return;
         tbody.innerHTML = "";
 
-        dataTerritorios.forEach(terr => {
+        data.forEach(terr => {
             const historial = terr.historial || [];
-            // Iniciamos la fila con el ID y la última fecha de completado anterior
             let rowHtml = `
-                <tr style="border-bottom: 1px solid #000; height: 42px;">
+                <tr style="border-bottom: 1.5px solid #000; height: 42px;">
                     <td style="border-right: 1.5px solid #000; font-weight: bold; background: #f9fafb;">${String(terr.numero || terr.id).padStart(2, '0')}</td>
                     <td style="border-right: 1.5px solid #000; font-size: 10px;">${terr.ultima_fecha_anterior || '—'}</td>
             `;
 
-            // Renderizamos exactamente 5 bloques de asignación
+            // Generar las 5 columnas de asignación
             for (let i = 0; i < 5; i++) {
                 const reg = historial[i];
-                const isLast = (i === 4);
+                const borderStyle = (i === 4) ? '' : 'border-right: 1.5px solid #000;';
+
                 if (reg) {
                     rowHtml += `
-                        <td style="border-right: 1px solid #000; font-size: 9px; text-align: left; padding: 2px 4px; line-height: 1.1;">
-                            <strong style="display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:75px;">${reg.conductor}</strong>
-                            <span style="color:#666">${DateFormatter.toArgentina(reg.fecha_asignado)}</span>
+                        <td style="border-right: 1px solid #000; font-size: 9px; text-align: left; padding: 2px 4px;">
+                            <strong style="display:block;">${reg.conductor}</strong>
+                            <span style="color:#666">${reg.fecha_asignado}</span>
                         </td>
-                        <td style="border-right: ${isLast ? 'none' : '1.5px solid #000'}; font-size: 9px; min-width:45px;">
-                            ${DateFormatter.toArgentina(reg.fecha_completado) || ''}
-                        </td>
+                        <td style="${borderStyle} font-size: 9px;">${reg.fecha_completado || ''}</td>
                     `;
                 } else {
                     rowHtml += `
                         <td style="border-right: 1px solid #000;"></td>
-                        <td style="border-right: ${isLast ? 'none' : '1.5px solid #000'};"></td>
+                        <td style="${borderStyle}"></td>
                     `;
                 }
             }
