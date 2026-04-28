@@ -39,6 +39,7 @@ export const UI = {
         
     },
 
+    // En ui.js
     renderDashboard(stats) {
         document.getElementById("totalAsignaciones").textContent = stats.total_asignaciones;
         document.getElementById("territoriosActivos").textContent = stats.territorios_activos;
@@ -50,9 +51,11 @@ export const UI = {
             stats.chart_data.values
         );
 
-        // Invocamos la planilla S-13 con los datos de los territorios que vienen en el stats
-        if (stats.territorios_detalle) {
-            this.renderPlanillaS13(stats.territorios_detalle);
+        // ACTIVAR PLANILLA S-13
+        const seccionS13 = document.getElementById("seccionPlanillaS13");
+        if (seccionS13) {
+            seccionS13.classList.remove("hidden"); // Quitamos el hidden para que se vea abajo del gráfico
+            this.renderPlanillaS13(stats.territorios_detalle || []);
         }
     },
 
@@ -147,29 +150,39 @@ export const UI = {
     },
 
     // --- NUEVO MÉTODO PARA EL PUNTO 1 ---
+    // En ui.js, dentro del objeto UI:
     async manejarGenerarAgenda() {
         const input = document.getElementById("fechaInicioAgenda");
+        const contenedorPropuesta = document.getElementById("containerPropuesta");
+
         if (!input || !input.value) {
-            this.mostrarMensaje("Selecciona una fecha", "error");
+            this.mostrarMensaje("Selecciona una fecha de inicio", "error");
             return;
         }
 
-        // 1. Primero calculamos la fecha
-        const fechaLunes = obtenerLunes(input.value);
-        console.log(`🚀 Mandando al controlador: ${fechaLunes}`);
-
-        // 2. Mostramos el estado de carga
+        // 1. Limpiar y mostrar carga en el contenedor de ARRIBA
         this.mostrarCarga(true);
+        contenedorPropuesta.innerHTML = `
+            <div class="py-20 text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-600 mb-4"></div>
+                <p class="text-gray-400 font-medium">Generando propuesta editable...</p>
+            </div>`;
 
         try {
+            const fechaLunes = obtenerLunes(input.value);
+
+            // 2. Llamar al controlador para obtener el plan sugerido
             const resultado = await prepararAgendaQuincenal(fechaLunes, this);
-            // Si el controlador no lo hace, forzamos la vista previa editable:
-            if (resultado) {
+
+            // 3. Renderizar la tabla editable en el contenedor de arriba
+            if (resultado && resultado.plan) {
                 this.renderVistaPreviaAgenda(resultado.plan, resultado.conductores);
+            } else {
+                contenedorPropuesta.innerHTML = `<p class="p-8 text-center text-gray-500">No se pudo generar la propuesta. Intenta con otra fecha.</p>`;
             }
         } catch (error) {
             console.error("Error al generar agenda:", error);
-            this.mostrarMensaje("Error al procesar la agenda", "error");
+            this.mostrarErrorResultados("Error al procesar la propuesta de creación.");
         } finally {
             this.mostrarCarga(false);
         }
@@ -490,24 +503,26 @@ export const AgendaUI = {
 
         dataTerritorios.forEach(terr => {
             const historial = terr.historial || [];
-            
+            // Iniciamos la fila con el ID y la última fecha de completado anterior
             let rowHtml = `
                 <tr style="border-bottom: 1px solid #000; height: 42px;">
                     <td style="border-right: 1.5px solid #000; font-weight: bold; background: #f9fafb;">${String(terr.numero || terr.id).padStart(2, '0')}</td>
-                    <td style="border-right: 1.5px solid #000; font-size: 10px;">${terr.ultima_completado_anterior || '—'}</td>
+                    <td style="border-right: 1.5px solid #000; font-size: 10px;">${terr.ultima_fecha_anterior || '—'}</td>
             `;
 
-            // Bucle de 5 columnas para completar la planilla
+            // Renderizamos exactamente 5 bloques de asignación
             for (let i = 0; i < 5; i++) {
-                const registro = historial[i];
+                const reg = historial[i];
                 const isLast = (i === 4);
-                if (registro) {
+                if (reg) {
                     rowHtml += `
                         <td style="border-right: 1px solid #000; font-size: 9px; text-align: left; padding: 2px 4px; line-height: 1.1;">
-                            <span style="display:block; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px;">${registro.conductor}</span>
-                            <span style="color: #444;">${DateFormatter.toArgentina(registro.fecha_asignado)}</span>
+                            <strong style="display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:75px;">${reg.conductor}</strong>
+                            <span style="color:#666">${DateFormatter.toArgentina(reg.fecha_asignado)}</span>
                         </td>
-                        <td style="border-right: ${isLast ? 'none' : '1.5px solid #000'}; font-size: 9px;">${DateFormatter.toArgentina(registro.fecha_completado) || ''}</td>
+                        <td style="border-right: ${isLast ? 'none' : '1.5px solid #000'}; font-size: 9px; min-width:45px;">
+                            ${DateFormatter.toArgentina(reg.fecha_completado) || ''}
+                        </td>
                     `;
                 } else {
                     rowHtml += `
