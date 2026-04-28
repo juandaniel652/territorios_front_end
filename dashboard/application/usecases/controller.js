@@ -102,3 +102,20 @@ export async function confirmarAgendaDefinitiva(planRecibido, conductorDefault, 
         uiInterface.mostrarMensaje(error.detail || "Error al impactar la agenda en la DB.", "error");
     }
 }
+
+export async function cargarDashboardCompleto(rango, uiInterface) {
+    try {
+        // 1. Cargamos los datos de la API
+        const data = await Api.getSugerencias(rango); 
+        
+        // 2. Renderizamos los gráficos que ya tenías
+        uiInterface.renderSugerencias(data.sugerencias);
+        
+        // 3. ¡EL PASO QUE FALTA!: Renderizar la hoja S-13
+        // 'data.territorios' debe ser el array con el historial
+        uiInterface.renderPlanillaS13(data.sugerencias); 
+        
+    } catch (error) {
+        console.error("Error al cargar la planilla:", error);
+    }
+}

@@ -49,6 +49,11 @@ export const UI = {
             stats.chart_data.labels, 
             stats.chart_data.values
         );
+
+        // Invocamos la planilla S-13 con los datos de los territorios que vienen en el stats
+        if (stats.territorios_detalle) {
+            this.renderPlanillaS13(stats.territorios_detalle);
+        }
     },
 
     renderSugerencias(sugerencias) {
@@ -157,13 +162,11 @@ export const UI = {
         this.mostrarCarga(true);
 
         try {
-            // 3. Llamamos al proceso (prepararAgendaQuincenal se encarga de llamar a la API
-            // y de invocar a UI.renderVistaPreviaAgenda internamente)
-            await prepararAgendaQuincenal(fechaLunes, this);
-
-            // 4. Si por alguna razón prepararAgendaQuincenal NO llama al render, 
-            // lo podés forzar acá, pero normalmente el controlador ya lo hace.
-
+            const resultado = await prepararAgendaQuincenal(fechaLunes, this);
+            // Si el controlador no lo hace, forzamos la vista previa editable:
+            if (resultado) {
+                this.renderVistaPreviaAgenda(resultado.plan, resultado.conductores);
+            }
         } catch (error) {
             console.error("Error al generar agenda:", error);
             this.mostrarMensaje("Error al procesar la agenda", "error");
@@ -478,39 +481,41 @@ export const AgendaUI = {
         container.innerHTML = html;
     },
 
+    // Dentro del objeto UI en ui.js, añade o reemplaza este método:
+
     renderPlanillaS13(dataTerritorios) {
         const tbody = document.getElementById("tbodyS13");
+        if (!tbody) return;
         tbody.innerHTML = "";
 
         dataTerritorios.forEach(terr => {
-            // Obtenemos el historial de este territorio (máximo 4 para la tabla)
             const historial = terr.historial || [];
-
+            
             let rowHtml = `
-                <tr style="border-bottom: 1px solid #000; height: 40px;">
-                    <td style="border-right: 1.5px solid #000; font-weight: bold; background: #f9fafb;">${terr.id}</td>
-                    <td style="border-right: 1.5px solid #000;">${terr.ultima_vuelta_anterior || ''}</td>
+                <tr style="border-bottom: 1px solid #000; height: 42px;">
+                    <td style="border-right: 1.5px solid #000; font-weight: bold; background: #f9fafb;">${String(terr.numero || terr.id).padStart(2, '0')}</td>
+                    <td style="border-right: 1.5px solid #000; font-size: 10px;">${terr.ultima_completado_anterior || '—'}</td>
             `;
 
-            // Llenamos las 4 columnas de asignación
-            for (let i = 0; i < 4; i++) {
+            // Bucle de 5 columnas para completar la planilla
+            for (let i = 0; i < 5; i++) {
                 const registro = historial[i];
+                const isLast = (i === 4);
                 if (registro) {
                     rowHtml += `
-                        <td style="border-right: 1px solid #000; font-size: 10px; text-align: left; padding: 2px 5px;">
-                            <strong>${registro.conductor}</strong><br>${registro.fecha_asignado}
+                        <td style="border-right: 1px solid #000; font-size: 9px; text-align: left; padding: 2px 4px; line-height: 1.1;">
+                            <span style="display:block; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px;">${registro.conductor}</span>
+                            <span style="color: #444;">${DateFormatter.toArgentina(registro.fecha_asignado)}</span>
                         </td>
-                        <td style="border-right: ${i < 3 ? '1.5px solid #000' : 'none'};">${registro.fecha_completado}</td>
+                        <td style="border-right: ${isLast ? 'none' : '1.5px solid #000'}; font-size: 9px;">${DateFormatter.toArgentina(registro.fecha_completado) || ''}</td>
                     `;
                 } else {
-                    // Celda vacía si no hay historial
                     rowHtml += `
                         <td style="border-right: 1px solid #000;"></td>
-                        <td style="border-right: ${i < 3 ? '1.5px solid #000' : 'none'};"></td>
+                        <td style="border-right: ${isLast ? 'none' : '1.5px solid #000'};"></td>
                     `;
                 }
             }
-
             rowHtml += `</tr>`;
             tbody.innerHTML += rowHtml;
         });
