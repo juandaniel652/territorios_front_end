@@ -19,13 +19,14 @@ export const setOnAsignacionModificada = (fn) => {
 
 console.log("🚀 UI.js cargado: " + new Date().toLocaleTimeString('es-AR'));
 
+
+
 export const UI = {
     // 1. Definimos la propiedad interna pero no la asignamos todavía
-    _tables: null, 
+    _tables: Tables, 
     
 
     renderAsignaciones: (territorio, asignaciones) => {
-        // Usamos la referencia inyectada
         return (UI._tables || Tables).renderAsignaciones(territorio, asignaciones);
     },
 
@@ -33,31 +34,27 @@ export const UI = {
         const t = UI._tables || Tables || window.Tables;
         if (t && t.renderVistaPreviaAgenda) {
             t.renderVistaPreviaAgenda(plan, conductores);
-        } else {
-            console.error("❌ Error: No se pudo encontrar el módulo Tables");
         }
-        
     },
 
     renderDashboard(stats) {
-    // Actualizar KPIs
         document.getElementById("totalAsignaciones").textContent = stats.total_asignaciones || 0;
         document.getElementById("territoriosActivos").textContent = stats.territorios_activos || 0;
         document.getElementById("asignacionesCompletadas").textContent = stats.asignaciones_completadas || 0;
 
-        // Renderizar Gráfico
-        if (window.Charts) {
-            Charts.renderBarChart(
+        if (window.Charts || Charts) {
+            const chartModule = window.Charts || Charts;
+            chartModule.renderBarChart(
                 document.getElementById("asignacionesChart"), 
                 stats.chart_data.labels, 
                 stats.chart_data.values
             );
         }
 
-        // --- CRÍTICO: MOSTRAR PLANILLA S-13 ---
+        // MOSTRAR PLANILLA S-13 AL CARGAR DASHBOARD
         const seccionS13 = document.getElementById("seccionPlanillaS13");
         if (seccionS13) {
-            seccionS13.classList.remove("hidden"); // Quitamos el candado de visibilidad
+            seccionS13.classList.remove("hidden");
             this.renderPlanillaS13(stats.territorios_detalle || []);
         }
     },
@@ -94,19 +91,18 @@ export const UI = {
 
     mostrarCarga(estado) {
         const btn = document.getElementById("btnGenerarPropuesta");
-        if (!btn) return;
-        btn.disabled = !!estado;
-        btn.innerHTML = estado ? "Generando..." : "Generar Propuesta";
-        btn.style.opacity = estado ? "0.7" : "1";
+        if (btn) {
+            btn.disabled = !!estado;
+            btn.innerHTML = estado ? "Generando..." : "Generar Propuesta";
+        }
     },
 
     mostrarMensaje(texto, tipo = "success") {
-        DOM.mensaje.textContent = texto;
-        DOM.mensaje.className = tipo === "success" ? "msg-success" : "msg-error";
-        setTimeout(() => {
-            DOM.mensaje.textContent = "";
-            DOM.mensaje.className = "";
-        }, 4000);
+        const msg = document.getElementById("mensaje");
+        if (!msg) return;
+        msg.textContent = texto;
+        msg.className = tipo === "success" ? "msg-success" : "msg-error";
+        setTimeout(() => { msg.textContent = ""; msg.className = ""; }, 4000);
     },
 
     limpiarResultados() {
@@ -135,7 +131,6 @@ export const UI = {
             altFormat: "d/m/Y",
             allowInput: true
         };
-        // AGREGAMOS #fechaInicioAgenda a la lista de selectores
         document.querySelectorAll("#editFechaAsignado, #editFechaCompletado, #fechaInicioAgenda").forEach(el => {
             if (el && !el._flatpickr) flatpickr(el, config);
         });
@@ -144,12 +139,8 @@ export const UI = {
             locale: Spanish,
             dateFormat: "Y-m-d",
             altInput: true,
-            altFormat: "F J, Y", // Muestra "Mayo 2026" o similar
-            placeholder: "Elegir mes...",
-            onChange: (selectedDates, dateStr) => {
-                // Esto dispara la búsqueda apenas el usuario elige un mes
-                this.verAgendaGuardada();
-            }
+            altFormat: "F Y", 
+            onChange: () => this.verAgendaGuardada()
         });
     },
 
@@ -160,20 +151,23 @@ export const UI = {
         const contenedor = document.getElementById("containerPropuesta");
         
         if (!input.value) {
-            alert("Por favor selecciona una fecha");
+            alert("Selecciona una fecha de inicio");
             return;
         }
     
-        // Limpiar placeholder y poner estado de carga
         contenedor.innerHTML = '<div class="p-10 text-center text-gray-500 animate-pulse">Generando propuesta...</div>';
     
         try {
-            // Asumiendo que Preparador es tu lógica de negocio
-            const data = await Preparador.obtenerPropuesta(input.value); 
+            // Usamos la función importada correctamente
+            const fechaLunes = obtenerLunes(input.value);
+            const resultado = await prepararAgendaQuincenal(fechaLunes, this);
             
-            // Renderizar dentro de contenedor (EL DE ARRIBA)
-            this.renderTablaPropuesta(data, contenedor); 
+            // Si el controlador no renderiza automáticamente, lo forzamos:
+            if (resultado && resultado.plan) {
+                this.renderVistaPreviaAgenda(resultado.plan, resultado.conductores);
+            }
         } catch (error) {
+            console.error("Error:", error);
             contenedor.innerHTML = '<div class="p-10 text-red-500">Error al generar propuesta.</div>';
         }
     },
@@ -499,24 +493,18 @@ export const AgendaUI = {
                     <td style="border-right: 1.5px solid #000; font-size: 10px;">${terr.ultima_fecha_anterior || '—'}</td>
             `;
 
-            // Generar las 5 columnas de asignación
             for (let i = 0; i < 5; i++) {
                 const reg = historial[i];
                 const borderStyle = (i === 4) ? '' : 'border-right: 1.5px solid #000;';
-
                 if (reg) {
                     rowHtml += `
                         <td style="border-right: 1px solid #000; font-size: 9px; text-align: left; padding: 2px 4px;">
                             <strong style="display:block;">${reg.conductor}</strong>
                             <span style="color:#666">${reg.fecha_asignado}</span>
                         </td>
-                        <td style="${borderStyle} font-size: 9px;">${reg.fecha_completado || ''}</td>
-                    `;
+                        <td style="${borderStyle} font-size: 9px;">${reg.fecha_completado || ''}</td>`;
                 } else {
-                    rowHtml += `
-                        <td style="border-right: 1px solid #000;"></td>
-                        <td style="${borderStyle}"></td>
-                    `;
+                    rowHtml += `<td style="border-right: 1px solid #000;"></td><td style="${borderStyle}"></td>`;
                 }
             }
             rowHtml += `</tr>`;
