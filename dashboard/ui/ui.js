@@ -4,9 +4,10 @@ import { Tables }           from "./tables.js";
 import { Modals }           from "./modals.js";
 import { Charts }           from "./charts.js";
 import { initGlobalEvents } from "./events.js";
-import { Api } from "../infrastructure/api/api.js";
+// Buscá la línea que importa Api y cambiala a:
+import { ApiService } from "../model/api.service.js"; 
+// (Asegurate de que el nombre coincida con el export de api.service.js)
 import { DateFormatter, obtenerLunes } from "./utils.js";
-import { prepararAgendaQuincenal } from "../application/usecases/controller.js";
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
 import "flatpickr/dist/flatpickr.min.css";

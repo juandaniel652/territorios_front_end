@@ -1,0 +1,7 @@
+¿Cómo aplicamos SOLID aquí?
+
+    S (Single Responsibility): ui.manager.js solo decide qué mostrar; components.js solo decide cómo se ve el HTML de una fila; api.service.js solo sabe hablar con el servidor.
+
+    O (Open/Closed): Si mañana quieres agregar una Planilla S-14, solo creas un nuevo componente en components.js sin tocar la lógica del API.
+
+    D (Dependency Inversion): El main.js inyectará las dependencias para que todo esté conectado pero no "pegado".

@@ -2,12 +2,16 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  // Forzamos que la raíz sea el directorio actual
   root: resolve(__dirname, './'),
   base: '/', 
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './') // El alias @ apunta a la raíz del proyecto
+    }
+  },
   build: {
     outDir: 'dist',
-    emptyOutDir: true, // Limpia la carpeta dist antes de buildear
+    emptyOutDir: true,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),

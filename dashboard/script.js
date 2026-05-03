@@ -1,7 +1,7 @@
 // script.js — Entry point
 import { UI, setOnAsignacionModificada } from "./ui/ui.js";
 import { DOM }                         from "./ui/dom.js";
-import { AuthService }                 from "./infrastructure/auth/AuthService.js";
+import { AuthService } from "./model/auth.service.js";
 import { 
     consultarAsignaciones, 
     crearAsignacion, 
@@ -10,7 +10,7 @@ import {
     eliminarAsignacion,
     prepararAgendaQuincenal, 
     confirmarAgendaDefinitiva  
-} from "./application/usecases/controller.js";
+} from "./controller/dashboard.controller.js";
 import { DateFormatter } from "./ui/utils.js";
 
 // --- Control de Acceso Visual ---

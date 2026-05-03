@@ -1,0 +1,13 @@
+dashboard/
+├── controller/             <-- (Renombrar application/usecases)
+│   └── dashboard.controller.js
+├── model/                  <-- (Renombrar service)
+│   ├── api.service.js      <-- (Tu "Model" que habla con el backend)
+│   └── auth.service.js     <-- (Mover desde infrastructure/auth)
+├── ui/                     <-- (La "Vista")
+│   ├── components.js       <-- (Generadores de HTML/Templates)
+│   ├── ui.manager.js       <-- (Orquestador de la UI)
+│   └── charts.js           <-- (Lógica específica de gráficos)
+├── config.js
+├── index.html
+└── main.js                 <-- (Punto de entrada/Entry point)

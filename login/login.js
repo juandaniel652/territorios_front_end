@@ -1,7 +1,7 @@
 // login/login.js
 // Usamos rutas relativas para evitar problemas de resolución en Vercel
 import { CONFIG }      from "../dashboard/config.js";
-import { AuthService } from "../dashboard/infrastructure/auth/AuthService.js";
+import { AuthService } from "../dashboard/model/auth.service.js";
 
 const loginForm    = document.getElementById("loginForm");
 const errorMessage = document.getElementById("errorMessage");
