@@ -1,121 +1,114 @@
-// application/usecases/controller.js
+// dashboard/controller/dashboard.controller.js
 import { Api }        from "../model/api.service.js";
 import { Validators } from "../model/validators.js";
+import { UIManager }  from "../ui/ui.js";
 
-export async function consultarAsignaciones(numero, uiInterface) {
-    uiInterface.limpiarResultados();
-    if (!Validators.territorioValido(numero)) {
-        uiInterface.mostrarErrorResultados("Ingrese un número de territorio válido.");
-        return;
+export const Controller = {
+    
+    async consultarAsignaciones(numero) {
+        UIManager.limpiarResultados();
+        if (!Validators.territorioValido(numero)) {
+            UIManager.mostrarErrorResultados("Ingrese un número de territorio válido.");
+            return;
+        }
+        try {
+            const territorio = await Api.getTerritorio(numero);
+            UIManager.renderAsignaciones(territorio.numero, territorio.asignaciones);
+        } catch (error) {
+            console.error("❌ Error en consulta:", error);
+            UIManager.mostrarMensaje("Error al obtener datos", "error");
+        }
+    },
+
+    async crearAsignacion(asignacionData, onSuccess) {
+        if (!asignacionData.numero_territorio || !asignacionData.conductor || !asignacionData.fecha_asignado) {
+            UIManager.mostrarMensaje("Faltan datos esenciales.", "error");
+            return;
+        }
+        try {
+            const result = await Api.crearAsignacion(asignacionData);
+            UIManager.mostrarMensaje(result.message || "Guardado con éxito.", "success");
+            if (onSuccess) onSuccess();
+            this.cargarDashboardCompleto(); // Recargar tras crear
+        } catch (error) {
+            UIManager.mostrarMensaje(error.detail || "Error al guardar.", "error");
+        }
+    },
+
+    async cargarSugerencias(rango) {
+        try {
+            const data = await Api.getSugerencias(rango);
+            UIManager.renderSugerencias(data.sugerencias);
+        } catch (error) {
+            UIManager.mostrarErrorResultados("Error al obtener sugerencias.");
+        }
+    },
+
+    async editarAsignacion(id, campos, onSuccess) {
+        try {
+            const result = await Api.actualizarSalida(id, campos);
+            UIManager.mostrarMensaje(result.message || "Actualizado.", "success");
+            if (onSuccess) onSuccess();
+        } catch (error) {
+            UIManager.mostrarMensaje("Error al actualizar.", "error");
+        }
+    },
+
+    async eliminarAsignacion(id, onSuccess) {
+        if (!confirm("¿Eliminar esta asignación?")) return;
+        try {
+            const result = await Api.eliminarAsignacion(id);
+            UIManager.mostrarMensaje(result.message || "Eliminada.", "success");
+            if (onSuccess) onSuccess();
+            this.cargarDashboardCompleto();
+        } catch (error) {
+            UIManager.mostrarMensaje("Error al eliminar.", "error");
+        }
+    },
+
+    // --- FUNCIONES DE AGENDA ---
+
+    async prepararAgendaQuincenal(fechaInicio) {
+        UIManager.showLoading(true); 
+        try {
+            const plan = await Api.generarPlanQuincenal(fechaInicio);
+            UIManager.renderVistaPreviaAgenda(plan || []);
+        } catch (error) {
+            UIManager.mostrarMensaje("Error al generar propuesta.", "error");
+        } finally {
+            UIManager.showLoading(false);
+        }
+    },
+
+    async confirmarAgendaDefinitiva(planRecibido, conductorDefault, onSuccess) {
+        try {
+            const payload = {
+                conductor_default: conductorDefault || "Sin Asignar",
+                items: planRecibido.map(item => ({
+                    territorio_id: item.territorio_id,
+                    fecha_asignado: item.fecha, 
+                    turno: item.turno
+                }))
+            };
+            const result = await Api.confirmarAgenda(payload);
+            UIManager.mostrarMensaje(result.message, "success");
+            if (onSuccess) onSuccess();
+            this.cargarDashboardCompleto();
+        } catch (error) {
+            UIManager.mostrarMensaje(error.detail || "Error al impactar agenda.", "error");
+        }
+    },
+
+    async cargarDashboardCompleto(rango = 3) {
+        try {
+            UIManager.showLoading(true);
+            const data = await Api.getSugerencias(rango); 
+            UIManager.renderSugerencias(data.sugerencias);
+            UIManager.renderPlanillaS13(data.sugerencias); 
+        } catch (error) {
+            console.error("Error en dashboard:", error);
+        } finally {
+            UIManager.showLoading(false);
+        }
     }
-    try {
-        const territorio = await Api.getTerritorio(numero);
-        uiInterface.renderAsignaciones(territorio.numero, territorio.asignaciones);
-    } catch (error) {
-        console.error("❌ Error en consulta:", error);
-        uiInterface.mostrarMensaje("Error al obtener sugerencias iniciales", "error");
-    }
-}
-
-export async function crearAsignacion(asignacionData, uiInterface, onSuccess) {
-    console.log("Validando asignación:", asignacionData);
-
-    if (!asignacionData.numero_territorio || !asignacionData.conductor || !asignacionData.fecha_asignado) {
-        uiInterface.mostrarMensaje("Faltan datos esenciales (Territorio, Conductor o Fecha).", "error");
-        return;
-    }
-
-    try {
-        const result = await Api.crearAsignacion(asignacionData);
-        uiInterface.mostrarMensaje(result.message || "Asignación guardada con éxito.", "success");
-        if (onSuccess) onSuccess();
-    } catch (error) {
-        console.error("❌ Error al crear:", error);
-        uiInterface.mostrarMensaje(error.detail || "Error al guardar en el servidor.", "error");
-    }
-}
-
-export async function cargarSugerencias(rango, uiInterface) {
-    try {
-        const data = await Api.getSugerencias(rango);
-        uiInterface.renderSugerencias(data.sugerencias);
-    } catch (error) {
-        console.error("❌ Error en sugerencias:", error);
-        uiInterface.mostrarErrorResultados("Error al obtener sugerencias.");
-    }
-}
-
-export async function editarAsignacion(id, campos, uiInterface, onSuccess) {
-    try {
-        const result = await Api.editarAsignacion(id, campos);
-        uiInterface.mostrarMensaje(result.message || "Asignación actualizada.", "success");
-        if (onSuccess) onSuccess();
-    } catch (error) {
-        console.error("❌ Error al editar:", error);
-        uiInterface.mostrarMensaje(error.detail || "Error al actualizar asignación.", "error");
-    }
-}
-
-export async function eliminarAsignacion(id, uiInterface, onSuccess) {
-    try {
-        const result = await Api.eliminarAsignacion(id);
-        uiInterface.mostrarMensaje(result.message || "Asignación eliminada.", "success");
-        if (onSuccess) onSuccess();
-    } catch (error) {
-        console.error("❌ Error al eliminar:", error);
-        uiInterface.mostrarMensaje(error.detail || "Error al eliminar asignación.", "error");
-    }
-}
-
-// --- FUNCIONES DE AGENDA (Donde saltaba el error de Tables) ---
-
-export async function prepararAgendaQuincenal(fechaInicio, uiInterface) {
-    uiInterface.mostrarCarga(true); 
-    try {
-        const plan = await Api.generarPlanQuincenal(fechaInicio);
-        // Aquí uiInterface llamará a renderVistaPreviaAgenda que ya tiene el fix de _tables
-        uiInterface.renderVistaPreviaAgenda(plan || []);
-    } catch (error) {
-        console.error("❌ Error generando plan:", error);
-        uiInterface.mostrarMensaje("Error al generar la propuesta de agenda.", "error");
-    } finally {
-        uiInterface.mostrarCarga(false);
-    }
-}
-
-export async function confirmarAgendaDefinitiva(planRecibido, conductorDefault, uiInterface, onSuccess) {
-    try {
-        const payload = {
-            conductor_default: conductorDefault || "Sin Asignar",
-            items: planRecibido.map(item => ({
-                territorio_id: item.territorio_id,
-                fecha_asignado: item.fecha, 
-                turno: item.turno
-            }))
-        };
-
-        const result = await Api.confirmarAgenda(payload);
-        uiInterface.mostrarMensaje(result.message, "success");
-        if (onSuccess) onSuccess();
-    } catch (error) {
-        console.error("❌ Error confirmando agenda:", error);
-        uiInterface.mostrarMensaje(error.detail || "Error al impactar la agenda en la DB.", "error");
-    }
-}
-
-export async function cargarDashboardCompleto(rango, uiInterface) {
-    try {
-        // 1. Cargamos los datos de la API
-        const data = await Api.getSugerencias(rango); 
-        
-        // 2. Renderizamos los gráficos que ya tenías
-        uiInterface.renderSugerencias(data.sugerencias);
-        
-        // 3. ¡EL PASO QUE FALTA!: Renderizar la hoja S-13
-        // 'data.territorios' debe ser el array con el historial
-        uiInterface.renderPlanillaS13(data.sugerencias); 
-        
-    } catch (error) {
-        console.error("Error al cargar la planilla:", error);
-    }
-}
+};
