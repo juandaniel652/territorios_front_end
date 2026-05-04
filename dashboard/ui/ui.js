@@ -118,7 +118,7 @@ export const UIManager = {
 };
 
 // --- EXPOSICIÓN GLOBAL Y ARRANQUE ---
-window.UIManager = UIManager;
+window.UI = UIManager;
 
 // Inicialización retardada para asegurar que el DOM esté listo en Vercel
 setTimeout(() => {
