@@ -114,7 +114,15 @@ export const UIManager = {
     initDatePickers() {
         const config = { locale: Spanish, dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y" };
         document.querySelectorAll(".datepicker").forEach(el => flatpickr(el, config));
+    },
+
+    verAgendaGuardada: function() {
+        console.log("📅 Cargando agenda guardada...");
+        // Aquí va tu lógica para mostrar la sección de agenda y cargar los datos
+        document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('seccionAgenda').classList.remove('hidden');
     }
+
 };
 
 // --- EXPOSICIÓN GLOBAL Y ARRANQUE ---

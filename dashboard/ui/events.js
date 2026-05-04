@@ -4,6 +4,20 @@ import { Modals } from "./modals.js";
 export function initGlobalEvents() {
     console.log("Sistema de eventos UI inicializado");
 
+    document.addEventListener("click", (e) => {
+        // 1. Navegación a Agenda
+        const btnVerAgenda = e.target.closest("#btnAgenda, #btnVerAgendaGuardada");
+        if (btnVerAgenda) {
+            // Verificamos que window.UI exista antes de llamar
+            if (window.UI && window.UI.verAgendaGuardada) {
+                window.UI.verAgendaGuardada();
+            } else {
+                console.warn("⚠️ window.UI.verAgendaGuardada no está lista");
+            }
+        }
+
+    });
+
     // --- LÓGICA DE INTERCAMBIO DE TERRITORIOS (Propuesta) ---
     document.addEventListener('focusin', (e) => {
         if (e.target.classList.contains('territory-input')) {
