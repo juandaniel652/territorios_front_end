@@ -68,7 +68,16 @@ export const UIManager = {
     renderPlanillaS13(data) {
         const tbody = document.getElementById("tbodyS13");
         if (!tbody) return;
-        tbody.innerHTML = data.map(terr => {
+
+        // SEGURO DE VIDA: Si data no existe o no es array, usamos []
+        const registros = Array.isArray(data) ? data : [];
+
+        if (registros.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="12" class="p-4 text-center text-gray-400 italic">No hay datos disponibles</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = registros.map(terr => {
             const historial = terr.historial || [];
             let row = `<tr class="border-b border-black h-[42px]">
                 <td class="border-r border-black font-bold bg-gray-50">${String(terr.numero).padStart(2, '0')}</td>
