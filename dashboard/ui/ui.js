@@ -4,39 +4,44 @@ import { Tables }           from "./tables.js";
 import { Modals }           from "./modals.js";
 import { Charts }           from "./charts.js";
 import { initGlobalEvents } from "./events.js";
-import { Api }              from "../model/api.service.js"; // Usamos el nombre consistente
-import { DateFormatter, obtenerLunes } from "./utils.js";
+import { DateFormatter }    from "./utils.js";
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
 
+/**
+ * UIManager - Orquestador único de la Interfaz
+ * Se encarga de la manipulación del DOM y delegar a componentes especializados (Tables, Charts)
+ */
 export const UIManager = {
-    // --- PROPIEDADES ---
-    _tables: Tables,
-
     // --- RENDERIZADO DE ASIGNACIONES Y AGENDA ---
     renderAsignaciones(territorio, asignaciones) {
-        return this._tables.renderAsignaciones(territorio, asignaciones);
+        return Tables.renderAsignaciones(territorio, asignaciones);
     },
 
     renderVistaPreviaAgenda(plan, conductores = []) {
-        if (this._tables && this._tables.renderVistaPreviaAgenda) {
-            this._tables.renderVistaPreviaAgenda(plan, conductores);
+        if (Tables && Tables.renderVistaPreviaAgenda) {
+            Tables.renderVistaPreviaAgenda(plan, conductores);
         }
     },
 
     // --- DASHBOARD Y GRÁFICOS ---
     renderDashboard(stats) {
-        document.getElementById("totalAsignaciones").textContent = stats.total_asignaciones || 0;
-        document.getElementById("territoriosActivos").textContent = stats.territorios_activos || 0;
+        // Actualización de contadores con fallback a 0
+        const elTotal = document.getElementById("totalAsignaciones");
+        const elActivos = document.getElementById("territoriosActivos");
+        
+        if (elTotal) elTotal.textContent = stats.total_asignaciones || 0;
+        if (elActivos) elActivos.textContent = stats.territorios_activos || 0;
 
-        if (Charts) {
+        if (Charts && stats.chart_data) {
             Charts.renderBarChart(
                 document.getElementById("asignacionesChart"), 
-                stats.chart_data.labels, 
-                stats.chart_data.values
+                stats.chart_data.labels || [], 
+                stats.chart_data.values || []
             );
         }
 
+        // Mostrar S-13 automáticamente si hay datos
         const seccionS13 = document.getElementById("seccionPlanillaS13");
         if (seccionS13) {
             seccionS13.classList.remove("hidden");
@@ -57,11 +62,13 @@ export const UIManager = {
                 </div>
             </div>`).join("");
         
-        Charts.renderBarChart(
-            DOM.canvasAsignaciones, 
-            sugerencias.map(s => `T-${s.numero}`), 
-            sugerencias.map(s => s.dias_atraso ?? 0)
-        );
+        if (Charts && DOM.canvasAsignaciones) {
+            Charts.renderBarChart(
+                DOM.canvasAsignaciones, 
+                sugerencias.map(s => `T-${s.numero}`), 
+                sugerencias.map(s => s.dias_atraso ?? 0)
+            );
+        }
     },
 
     // --- PLANILLA S-13 (HISTORIAL TÉCNICO) ---
@@ -69,26 +76,26 @@ export const UIManager = {
         const tbody = document.getElementById("tbodyS13");
         if (!tbody) return;
 
-        // SEGURO DE VIDA: Si data no existe o no es array, usamos []
         const registros = Array.isArray(data) ? data : [];
 
         if (registros.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="12" class="p-4 text-center text-gray-400 italic">No hay datos disponibles</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="12" class="p-4 text-center text-gray-400 italic">No hay datos para la planilla S-13</td></tr>`;
             return;
         }
 
         tbody.innerHTML = registros.map(terr => {
             const historial = terr.historial || [];
             let row = `<tr class="border-b border-black h-[42px]">
-                <td class="border-r border-black font-bold bg-gray-50">${String(terr.numero).padStart(2, '0')}</td>
-                <td class="border-r border-black text-[10px]">${terr.ultima_fecha_anterior || '—'}</td>`;
+                <td class="border-r border-black font-bold bg-gray-50 text-center">${String(terr.numero).padStart(2, '0')}</td>
+                <td class="border-r border-black text-[10px] text-center">${terr.ultima_fecha_anterior || '—'}</td>`;
             
+            // Renderizamos 5 columnas de historial (estándar S-13)
             for (let i = 0; i < 5; i++) {
                 const reg = historial[i];
                 if (reg) {
                     row += `<td class="border-r border-black p-1 text-[9px]">
-                        <strong>${reg.conductor}</strong><br><span class="text-gray-500">${reg.fecha_asignado}</span>
-                    </td><td class="border-r border-black text-[9px]">${reg.fecha_completado || ''}</td>`;
+                        <strong>${reg.conductor}</strong><br><span class="text-gray-400">${reg.fecha_asignado}</span>
+                    </td><td class="border-r border-black text-[9px] text-center">${reg.fecha_completado || ''}</td>`;
                 } else {
                     row += `<td class="border-r border-black"></td><td class="border-r border-black"></td>`;
                 }
@@ -97,7 +104,7 @@ export const UIManager = {
         }).join("");
     },
 
-    // --- GESTIÓN DE EVENTOS DE INTERFAZ ---
+    // --- NAVEGACIÓN Y ESTADOS ---
     showLoading(estado) {
         const loader = document.getElementById("mainLoader");
         if (loader) loader.classList.toggle("hidden", !estado);
@@ -107,8 +114,8 @@ export const UIManager = {
         const msg = document.getElementById("mensaje");
         if (!msg) return;
         msg.textContent = texto;
-        msg.className = tipo === "success" ? "text-green-600 font-bold" : "text-red-600 font-bold";
-        setTimeout(() => { msg.textContent = ""; }, 4000);
+        msg.className = tipo === "success" ? "text-green-600 font-bold p-2" : "text-red-600 font-bold p-2";
+        setTimeout(() => { msg.textContent = ""; msg.className = ""; }, 4000);
     },
 
     initDatePickers() {
@@ -116,21 +123,33 @@ export const UIManager = {
         document.querySelectorAll(".datepicker").forEach(el => flatpickr(el, config));
     },
 
-    verAgendaGuardada: function() {
-        console.log("📅 Cargando agenda guardada...");
-        // Aquí va tu lógica para mostrar la sección de agenda y cargar los datos
-        document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('seccionAgenda').classList.remove('hidden');
-    }
+    // Requisito para events.js: Navegación a la agenda
+    verAgendaGuardada() {
+        console.log("📅 Navegando a Agenda Quincenal...");
+        // 1. Ocultar todas las secciones base
+        document.querySelectorAll('.section-base, section').forEach(s => s.classList.add('hidden'));
+        
+        // 2. Mostrar la sección de agenda
+        const seccion = document.getElementById('seccionAgenda');
+        if (seccion) {
+            seccion.classList.remove('hidden');
+            seccion.classList.add('animate-in');
+        } else {
+            console.error("No se encontró la sección #seccionAgenda");
+        }
+    },
 
+    limpiarResultados() {
+        if (DOM.resultadoTerritorio) DOM.resultadoTerritorio.innerHTML = "";
+    }
 };
 
-// --- EXPOSICIÓN GLOBAL Y ARRANQUE ---
+// --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---
 window.UI = UIManager;
 
-// Inicialización retardada para asegurar que el DOM esté listo en Vercel
-setTimeout(() => {
+// Inicialización controlada
+document.addEventListener('DOMContentLoaded', () => {
     initGlobalEvents();
     UIManager.initDatePickers();
-    console.log("✅ UI Sistema inicializado");
-}, 150);
+    console.log("✅ UI Sistema inicializado y expuesto en window.UI");
+});
