@@ -419,60 +419,37 @@
 
       <!-- Sección Agenda Unificada y Mejorada -->
       <section id="seccionAgenda" class="section-base hidden">
-        <!-- Card de Planificación (Arriba) -->
+        <!-- Card 1: Generación de Propuesta Nueva -->
         <div class="form-card mb-6">
-          <h3 class="section-title flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            Planificación Quincenal
-          </h3>
-
-          <div class="search-bar flex flex-wrap items-end gap-4 mb-6">
+          <h3 class="section-title">Planificación de Nueva Agenda</h3>
+          <div class="search-bar flex gap-4 items-end">
             <div class="form-group">
-              <label class="form-label">Fecha de Inicio (Lunes o Domingo)</label>
+              <label class="form-label">Fecha de Inicio</label>
               <input type="date" id="fechaInicioAgenda" class="form-input" style="max-width:200px;">
             </div>
-            <button id="btnGenerarPropuesta" class="btn-primary-sm flex items-center gap-2">
-              <span>Generar Propuesta</span>
-            </button>
+            <!-- ID CLAVE: btnGenerarPropuesta -->
+            <button id="btnGenerarPropuesta" class="btn-primary-sm">Generar Propuesta</button>
+          </div>
+          
+          <!-- ID CLAVE: containerPropuesta (Aquí el JS inyectará la tabla editable) -->
+          <div id="containerPropuesta" class="table-wrapper mt-4 border-dashed border-2 border-gray-200 min-h-[100px]">
+            <p class="p-8 text-center text-gray-400">Seleccioná una fecha para generar la sugerencia.</p>
           </div>
         
-          <!-- Contenedor de Propuesta Nueva -->
-          <div id="containerPropuesta" class="table-wrapper min-h-[100px] border-dashed border-2 border-gray-200">
-            <div style="padding: 40px; text-align: center; color: var(--gray-400);">
-              <p>Seleccioná una fecha de inicio para ver la sugerencia del sistema.</p>
-            </div>
+          <!-- Botón para Guardar la propuesta generada -->
+          <div id="accionesPropuesta" class="hidden mt-4 flex justify-end">
+              <button id="btnConfirmarAgenda" class="btn-primary-sm" style="background: var(--green-600);">
+                  Confirmar y Guardar Agenda
+              </button>
           </div>
         </div>
       
-        <!-- Card de Historial (Abajo) -->
+        <!-- Card 2: Historial de Agendas Guardadas -->
         <div class="form-card">
-          <h3 class="section-title flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            Historial de Agendas Guardadas
-          </h3>
-
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-              <div>
-                  <h2 class="text-lg font-bold text-gray-800">Historial de Salidas</h2>
-                  <p class="text-xs text-gray-500">Consulta y gestiona las planificaciones guardadas</p>
-              </div>
-              
-              <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100">
-                  <label class="text-[10px] font-black text-gray-400 uppercase px-2">Ver desde:</label>
-                  <input type="date" id="fechaFiltroHistorial" class="form-input-sm border-none bg-transparent text-sm font-bold text-green-700 w-32">
-                  <button onclick="UI.verAgendaGuardada()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm shadow-green-200">
-                      🔍 Filtrar
-                  </button>
-              </div>
-          </div>
-
-
+          <h3 class="section-title">Historial de Agendas (Rogelio Gómez)</h3>
+          <!-- ID CLAVE: containerAgendaGuardada (Aquí el JS inyectará el historial) -->
           <div id="containerAgendaGuardada" class="table-wrapper">
-            <!-- Este es el único contenedor que quedará para el JS -->
-            <div class="py-10 text-center text-gray-400">
-              <div class="animate-pulse">Cargando historial de planificación...</div>
-            </div>
+            <p class="p-8 text-center text-gray-400">Cargando historial...</p>
           </div>
         </div>
       </section>
