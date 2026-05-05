@@ -145,19 +145,23 @@ export const UIManager = {
 };
 
 // --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---
-window.UI = UIManager;
-
 // Inicialización controlada
-const init = () => {
-    if (window.UI_INITIALIZED) return;
-    initGlobalEvents();
-    UIManager.initDatePickers();
-    window.UI_INITIALIZED = true;
-    console.log("✅ UI Sistema inicializado");
+window.UI = {
+    verAgendaGuardada: async () => {
+        // Llamada al controller
+        await Controller.cargarHistorialAgenda(); 
+    },
+    manejarGenerarAgenda: () => {
+        const fecha = document.getElementById("inputFechaInicio")?.value;
+        if (fecha) {
+            Controller.prepararAgendaQuincenal(fecha);
+        } else {
+            UIManager.mostrarMensaje("Seleccione una fecha", "error");
+        }
+    },
+    manejarConfirmarAgenda: () => {
+        // Tu lógica para capturar la tabla de la propuesta y mandarla al controller
+        const datosPropuesta = UIManager.obtenerDatosTablaPropuesta();
+        Controller.confirmarAgendaDefinitiva(datosPropuesta);
+    }
 };
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
