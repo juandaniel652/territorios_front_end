@@ -50,26 +50,41 @@ export const UIManager = {
         }
     },
 
-    renderSugerencias(sugerencias) {
-        const container = DOM.resultadoSugerencias;
-        if (!container || !sugerencias) return;
+    renderSugerencias: function(sugerencias) {
+        const container = document.getElementById("containerSugerencias");
+        if (!container) return;
 
-        container.innerHTML = sugerencias.map(s => `
-            <div class="sugerencia-card">
-                <span class="sugerencia-card__num">T-${s.numero}</span>
-                <div class="sugerencia-card__info">
-                    <p class="sugerencia-card__last">Última: ${DateFormatter.format(s.ultima_fecha)}</p>
-                    <p class="sugerencia-card__days">Sin asignar: <strong>${s.dias_atraso ?? "—"} días</strong></p>
-                </div>
-            </div>`).join("");
-        
-        if (Charts && DOM.canvasAsignaciones) {
-            Charts.renderBarChart(
-                DOM.canvasAsignaciones, 
-                sugerencias.map(s => `T-${s.numero}`), 
-                sugerencias.map(s => s.dias_atraso ?? 0)
-            );
+        if (!sugerencias || sugerencias.length === 0) {
+            container.innerHTML = `<p class="text-center p-4">No hay sugerencias para este rango.</p>`;
+            return;
         }
+
+        container.innerHTML = sugerencias.map(s => {
+            // EVITAMOS EL ERROR: En lugar de usar s.fecha.format(), 
+            // usamos una forma nativa y segura.
+            const fechaFormateada = s.ultima_fecha 
+                ? new Date(s.ultima_fecha).toLocaleDateString('es-AR') 
+                : 'Nunca';
+
+            return `
+                <div class="card bg-base-100 shadow-xl border-l-4 border-accent mb-4">
+                    <div class="card-body p-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="card-title text-secondary">Territorio ${s.numero}</h3>
+                            <div class="badge badge-outline">${s.severidad || 'Media'}</div>
+                        </div>
+                        <p class="text-sm text-gray-500">Última asignación: ${fechaFormateada}</p>
+                        <div class="card-actions justify-end mt-2">
+                            <button class="btn btn-sm btn-primary" 
+                                    onclick="document.getElementById('territorioInput').value='${s.numero}'; 
+                                             window.scrollTo(0,0);">
+                                Consultar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     },
 
     // --- PLANILLA S-13 (HISTORIAL TÉCNICO) ---
