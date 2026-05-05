@@ -5,7 +5,7 @@ import { UIManager }  from "../ui/ui.js";
 
 export const Controller = {
     
-    async consultarAsignaciones(numero) {
+    async consultarTerritorio(numero) { 
 
         UIManager.limpiarResultados();
         if (!Validators.territorioValido(numero)) {
@@ -13,6 +13,7 @@ export const Controller = {
             return;
         }
         try {
+            // OJO: Recordá que Api.getTerritorio debe estar en api.service.js
             const territorio = await Api.getTerritorio(numero);
             UIManager.renderAsignaciones(territorio.numero, territorio.asignaciones);
         } catch (error) {
