@@ -36,7 +36,7 @@ export const Controller = {
         }
     },
 
-    async cargarSugerencias(rango) {
+    async obtenerSugerencias(rango) {
         try {
             const data = await Api.getSugerencias(rango);
             UIManager.renderSugerencias(data.sugerencias);
