@@ -2,16 +2,24 @@
 import { CONFIG, getHeaders, handleResponse } from "../config.js";
 
 export const Api = {
-    async getSugerencias(rangoId) {
+    async obtenerSugerencias(rangoStr) {
+        try {
+            // 1. Llamamos al API pasando el string para que el Model decida qué ID mandar al back
+            const data = await Api.getSugerencias(rangoStr);
+            const listaSugerida = Array.isArray(data) ? data : (data.sugerencias || []);
         
-        // Si viene "1-20" o "1", nos quedamos solo con el primer dígito como entero
-        const valorLimpio = parseInt(rangoId); 
+            // 2. FILTRADO LÓGICO: Obtenemos min y max del string "21-40"
+            const [min, max] = rangoStr.split('-').map(Number);
         
+            // 3. Filtramos para que la UI no muestre territorios fuera del bloque visual
+            const listaFiltrada = listaSugerida.filter(s => s.numero >= min && s.numero <= max);
         
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/sugerencias?rango=${valorLimpio}`, {
-            headers: getHeaders() // Esto debe ir perfecto
-        });
-        return handleResponse(res);
+            // 4. Renderizamos
+            UIManager.renderSugerencias(listaFiltrada);
+        
+        } catch (error) {
+            UIManager.mostrarErrorResultados("No se pudieron cargar las sugerencias.");
+        }
     },
 
     async getTerritorio(numero) {

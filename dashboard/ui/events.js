@@ -72,10 +72,18 @@ export function initGlobalEvents() {
 
         // --- 5. BUSCADOR DE SUGERENCIAS ---
         if (target.closest("#btnBuscarSugerencias")) {
-            const rango = document.getElementById("rangoSelect")?.value;
+            const select = document.getElementById("rangoSelect");
+            const rango = select?.value; // Captura "1-20", "21-40", etc.
+
+            if (!rango) return;
+        
             UIManager.showLoading(true);
             try {
+                // El Controller recibirá el string (ej: "21-40") 
+                // y él se encargará de filtrar y pedir el rango al API
                 await Controller.obtenerSugerencias(rango);
+            } catch (err) {
+                console.error("Error al buscar sugerencias:", err);
             } finally {
                 UIManager.showLoading(false);
             }
