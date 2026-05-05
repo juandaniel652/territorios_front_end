@@ -27,11 +27,11 @@ export const UIManager = {
 
     // --- DASHBOARD Y GRÁFICOS ---
     renderSugerencias: function(sugerencias) {
-        // CAMBIO AQUÍ: Usamos el ID real del HTML "resultadoSugerencias"
+        // ID REAL del HTML
         const container = document.getElementById("resultadoSugerencias"); 
         
         if (!container) {
-            console.error("❌ No se encontró el contenedor 'resultadoSugerencias' en el DOM");
+            console.error("❌ No se encontró el contenedor 'resultadoSugerencias'");
             return;
         }
     
@@ -41,62 +41,28 @@ export const UIManager = {
         }
     
         container.innerHTML = sugerencias.map(s => {
-            const fechaFormateada = s.ultima_fecha 
-                ? new Date(s.ultima_fecha).toLocaleDateString('es-AR') 
-                : 'Nunca';
+            // Usamos ultima_visita que es lo que manda tu backend
+            const fechaFormateada = s.ultima_visita 
+                ? new Date(s.ultima_visita).toLocaleDateString('es-AR') 
+                : 'Sin registros';
         
             return `
                 <div class="card bg-base-100 shadow-xl border-l-4 border-accent mb-4">
                     <div class="card-body p-4">
                         <div class="flex justify-between items-center">
-                            <h3 class="card-title text-secondary">Territorio ${s.numero}</h3>
-                            <div class="badge badge-outline">${s.severidad || 'Media'}</div>
+                            <div>
+                                <h3 class="card-title text-secondary">Territorio ${s.numero}</h3>
+                                <p class="text-xs text-gray-400">Zona: ${s.zona || 'N/A'}</p>
+                            </div>
+                            <div class="badge badge-outline">${s.estado || 'Disponible'}</div>
                         </div>
-                        <p class="text-sm text-gray-500">Última asignación: ${fechaFormateada}</p>
+                        <p class="text-sm text-gray-500 mt-2 italic">Última visita: ${fechaFormateada}</p>
                         <div class="card-actions justify-end mt-2">
                             <button class="btn btn-sm btn-primary" 
                                     onclick="document.getElementById('territorioInput').value='${s.numero}'; 
-                                             const btnConsultar = document.getElementById('btnConsultar');
-                                             if(btnConsultar) btnConsultar.click();
+                                             document.getElementById('btnConsultar').click();
                                              window.scrollTo(0,0);">
-                                Consultar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    },
-
-    renderSugerencias: function(sugerencias) {
-        const container = document.getElementById("containerSugerencias");
-        if (!container) return;
-
-        if (!sugerencias || sugerencias.length === 0) {
-            container.innerHTML = `<p class="text-center p-4">No hay sugerencias para este rango.</p>`;
-            return;
-        }
-
-        container.innerHTML = sugerencias.map(s => {
-            // EVITAMOS EL ERROR: En lugar de usar s.fecha.format(), 
-            // usamos una forma nativa y segura.
-            const fechaFormateada = s.ultima_fecha 
-                ? new Date(s.ultima_fecha).toLocaleDateString('es-AR') 
-                : 'Nunca';
-
-            return `
-                <div class="card bg-base-100 shadow-xl border-l-4 border-accent mb-4">
-                    <div class="card-body p-4">
-                        <div class="flex justify-between items-center">
-                            <h3 class="card-title text-secondary">Territorio ${s.numero}</h3>
-                            <div class="badge badge-outline">${s.severidad || 'Media'}</div>
-                        </div>
-                        <p class="text-sm text-gray-500">Última asignación: ${fechaFormateada}</p>
-                        <div class="card-actions justify-end mt-2">
-                            <button class="btn btn-sm btn-primary" 
-                                    onclick="document.getElementById('territorioInput').value='${s.numero}'; 
-                                             window.scrollTo(0,0);">
-                                Consultar
+                                Consultar historial
                             </button>
                         </div>
                     </div>
