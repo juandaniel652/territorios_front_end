@@ -26,49 +26,48 @@ export const UIManager = {
     },
 
     // --- DASHBOARD Y GRÁFICOS ---
-    renderSugerencias: function(sugerencias) {
-        // ID REAL del HTML
-        const container = document.getElementById("resultadoSugerencias"); 
-        
-        if (!container) {
-            console.error("❌ No se encontró el contenedor 'resultadoSugerencias'");
+    renderSugerencias(sugerencias) {
+        const contenedor = document.getElementById("resultadoSugerencias");
+        if (!contenedor) return;
+
+        contenedor.innerHTML = ""; // Limpiamos
+
+        if (sugerencias.length === 0) {
+            contenedor.innerHTML = `<p class="result-empty p-4">No hay territorios sugeridos en este rango.</p>`;
             return;
         }
-    
-        if (!sugerencias || sugerencias.length === 0) {
-            container.innerHTML = `<p class="text-center p-4">No hay sugerencias para este rango.</p>`;
-            return;
-        }
-    
-        container.innerHTML = sugerencias.map(s => {
-            // Usamos ultima_visita que es lo que manda tu backend
-            const fechaFormateada = s.ultima_visita 
-                ? new Date(s.ultima_visita).toLocaleDateString('es-AR') 
-                : 'Sin registros';
-        
-            return `
-                <div class="card bg-base-100 shadow-xl border-l-4 border-accent mb-4">
-                    <div class="card-body p-4">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h3 class="card-title text-secondary">Territorio ${s.numero}</h3>
-                                <p class="text-xs text-gray-400">Zona: ${s.zona || 'N/A'}</p>
-                            </div>
-                            <div class="badge badge-outline">${s.estado || 'Disponible'}</div>
-                        </div>
-                        <p class="text-sm text-gray-500 mt-2 italic">Última visita: ${fechaFormateada}</p>
-                        <div class="card-actions justify-end mt-2">
-                            <button class="btn btn-sm btn-primary" 
-                                    onclick="document.getElementById('territorioInput').value='${s.numero}'; 
-                                             document.getElementById('btnConsultar').click();
-                                             window.scrollTo(0,0);">
-                                Consultar historial
-                            </button>
-                        </div>
-                    </div>
+
+        // Definimos los colores corporativos según la severidad
+        const estilosSeveridad = {
+            'critico': { bg: '#fef2f2', border: '#fecaca', text: '#dc2626', label: 'CRÍTICO' },
+            'severo':  { bg: '#fffbeb', border: '#fef3c7', text: '#d97706', label: 'SEVERO' },
+            'normal':  { bg: '#f0fdf4', border: '#dcfce7', text: '#16a34a', label: 'NORMAL' }
+        };
+
+        sugerencias.forEach(s => {
+            const estilo = estilosSeveridad[s.severidad] || estilosSeveridad['normal'];
+            
+            const card = document.createElement("div");
+            card.className = "sugerencia-card animate-in";
+            // Aplicamos un borde sutil del color de la severidad
+            card.style.borderLeft = `4px solid ${estilo.text}`;
+
+            card.innerHTML = `
+                <div class="sugerencia-card__num">${s.numero}</div>
+                <div class="sugerencia-card__info">
+                    <p class="sugerencia-card__last">Última vez: <strong>${s.ultima_visita}</strong></p>
+                    <p class="sugerencia-card__days">Hace <strong>${s.dias_atraso}</strong> días</p>
+                    <p class="sugerencia-card__sev" style="color: ${estilo.text}; font-weight: 600;">
+                        ● ${estilo.label}
+                    </p>
                 </div>
+                <button class="btn-primary-sm" onclick="window.UI.seleccionarTerritorio(${s.numero})" 
+                        style="padding: 6px 10px; font-size: 11px; background: ${s.severidad === 'critico' ? '#171b24' : ''}">
+                    Asignar
+                </button>
             `;
-        }).join('');
+            contenedor.appendChild(card);
+        });
     },
 
     // --- PLANILLA S-13 (HISTORIAL TÉCNICO) ---
