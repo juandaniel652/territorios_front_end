@@ -1,62 +1,78 @@
+// dashboard/ui/dom.js
+
+/**
+ * DOM Manager - Centraliza el acceso a los elementos de la interfaz.
+ * Usamos 'getters' para asegurar que los elementos se busquen en el momento de uso,
+ * evitando errores de 'null' durante la carga inicial o el build de Vite.
+ */
 export const DOM = {
-    // Botones y Navegación
-    consultarBtn:         document.getElementById("consultarBtn"),
-    btnBuscarSugerencias: document.getElementById("btnBuscarSugerencias"),
-    btnLogout:            document.getElementById("btnLogout"),
-    
-    // Contenedores
-    resultadoDiv:         document.getElementById("resultadoTerritorio"),
-    resultadoSugerencias: document.getElementById("resultadoSugerencias"),
-    mensaje:              document.getElementById("mensaje"),
-    
-    // Formulario Principal (Agregamos el objeto inputs que falta)
-    territorioInput:      document.getElementById("territorioInput"),
-    rangoSelect:          document.getElementById("rangoSelect"),
-    form:                 document.getElementById("asignacionForm"),
-    
-    // --- ESTO ES LO QUE ESTABA FALTANDO ---
+    // --- BOTONES Y NAVEGACIÓN ---
+    get consultarBtn()         { return document.getElementById("consultarBtn"); },
+    get btnBuscarSugerencias() { return document.getElementById("btnBuscarSugerencias"); },
+    get btnLogout()            { return document.getElementById("btnLogout"); },
+    get btnAgenda()            { return document.getElementById("btnAgenda"); },
+    get btnGenerarPropuesta()  { return document.getElementById("btnGenerarPropuesta"); },
+
+    // --- CONTENEDORES Y MENSAJES ---
+    get resultadoDiv()         { return document.getElementById("resultadoTerritorio"); },
+    get resultadoSugerencias() { return document.getElementById("resultadoSugerencias"); },
+    get mensaje()              { return document.getElementById("mensaje"); },
+    get containerPropuesta()   { return document.getElementById("containerPropuesta"); },
+    get mainLoader()           { return document.getElementById("mainLoader"); },
+
+    // --- FORMULARIO PRINCIPAL ---
+    get territorioInput()      { return document.getElementById("territorioInput"); },
+    get rangoSelect()          { return document.getElementById("rangoSelect"); },
+    get form()                 { return document.getElementById("asignacionForm"); },
+    get fechaInicioAgenda()    { return document.getElementById("fechaInicioAgenda"); },
+
+    // --- INPUTS DE CREACIÓN (Agrupados) ---
     inputs: {
-        numeroTerritorio: document.getElementById("numeroTerritorio"),
-        conductor:        document.getElementById("conductor"),
-        fechaAsignado:    document.getElementById("fechaAsignado"),
-        fechaCompletado:  document.getElementById("fechaCompletado"),
-        totalAbarcado:    document.getElementById("totalAbarcado")
+        get numeroTerritorio() { return document.getElementById("numeroTerritorio"); },
+        get conductor()        { return document.getElementById("conductor"); },
+        get fechaAsignado()    { return document.getElementById("fechaAsignado"); },
+        get fechaCompletado()  { return document.getElementById("fechaCompletado"); },
+        get totalAbarcado()    { return document.getElementById("totalAbarcado"); }
     },
 
-    // Modal Edición
-    modalEdicion:         document.getElementById("modalEdicion"),
-    formEdicion:          document.getElementById("formEdicion"),
+    // --- MODAL EDICIÓN ---
+    get modalEdicion()         { return document.getElementById("modalEdicion"); },
+    get formEdicion()          { return document.getElementById("formEdicion"); },
     editInputs: {
-        id:               document.getElementById("editId"),
-        conductor:        document.getElementById("editConductor"),
-        fechaAsignado:    document.getElementById("editFechaAsignado"),
-        fechaCompletado:  document.getElementById("editFechaCompletado"),
-        cantidad:         document.getElementById("editCantidad"),
+        get id()               { return document.getElementById("editId"); },
+        get conductor()        { return document.getElementById("editConductor"); },
+        get fechaAsignado()    { return document.getElementById("editFechaAsignado"); },
+        get fechaCompletado()  { return document.getElementById("editFechaCompletado"); },
+        get cantidad()         { return document.getElementById("editCantidad"); }
     },
 
-    // Modal Confirmación
-    modalConfirm:         document.getElementById("modalConfirm"),
-    confirmDeleteId:      document.getElementById("confirmDeleteId"),
-    btnConfirmDelete:     document.getElementById("btnConfirmDelete"),
+    // --- MODAL CONFIRMACIÓN / ELIMINACIÓN ---
+    get modalConfirm()         { return document.getElementById("modalConfirm"); },
+    get confirmDeleteId()      { return document.getElementById("confirmDeleteId"); },
+    get btnConfirmDelete()     { return document.getElementById("btnConfirmDelete"); },
 
-    btnAgenda:            document.getElementById("btnAgenda"), // El botón del sidebar
-    btnGenerarPropuesta:  document.getElementById("btnGenerarPropuesta"),
-    fechaInicioAgenda:    document.getElementById("fechaInicioAgenda"),
-    containerPropuesta:   document.getElementById("containerPropuesta"),
+    // --- GRÁFICOS (Retorna el elemento, no solo el ID) ---
+    get canvasAsignaciones()   { return document.getElementById("asignacionesChart"); },
 
-    // Gráficos
-    canvasAsignaciones:   "asignacionesChart",
-
+    /**
+     * Gestión de visibilidad de secciones
+     * @param {string} id - ID de la sección a mostrar
+     */
     mostrarSeccion(id) {
-        document.querySelectorAll("main section").forEach(sec => {
+        const secciones = document.querySelectorAll("main section, .section-base");
+        secciones.forEach(sec => {
             sec.classList.add("hidden");
             sec.classList.remove("animate-in");
         });
+
         const activa = document.getElementById(id);
         if (activa) {
             activa.classList.remove("hidden");
-            void activa.offsetWidth;
+            // Force reflow para disparar la animación de CSS
+            void activa.offsetWidth; 
             activa.classList.add("animate-in");
+        } else {
+            console.warn(`⚠️ Intento de mostrar sección inexistente: ${id}`);
         }
     }
 };

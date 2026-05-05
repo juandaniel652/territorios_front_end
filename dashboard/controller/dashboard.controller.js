@@ -6,6 +6,7 @@ import { UIManager }  from "../ui/ui.js";
 export const Controller = {
     
     async consultarAsignaciones(numero) {
+        
         UIManager.limpiarResultados();
         if (!Validators.territorioValido(numero)) {
             UIManager.mostrarErrorResultados("Ingrese un número de territorio válido.");

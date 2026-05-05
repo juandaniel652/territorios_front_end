@@ -6,7 +6,7 @@ dashboard/
 │   └── auth.service.js     <-- (Mover desde infrastructure/auth)
 ├── ui/                     <-- (La "Vista")
 │   ├── components.js       <-- (Generadores de HTML/Templates)
-│   ├── ui.manager.js       <-- (Orquestador de la UI)
+│   ├── ui.js       <-- (Orquestador de la UI)
 │   └── charts.js           <-- (Lógica específica de gráficos)
 ├── config.js
 ├── index.html

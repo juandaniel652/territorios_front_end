@@ -148,8 +148,16 @@ export const UIManager = {
 window.UI = UIManager;
 
 // Inicialización controlada
-document.addEventListener('DOMContentLoaded', () => {
+const init = () => {
+    if (window.UI_INITIALIZED) return;
     initGlobalEvents();
     UIManager.initDatePickers();
-    console.log("✅ UI Sistema inicializado y expuesto en window.UI");
-});
+    window.UI_INITIALIZED = true;
+    console.log("✅ UI Sistema inicializado");
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
