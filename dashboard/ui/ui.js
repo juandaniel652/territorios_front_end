@@ -106,15 +106,13 @@ export const UIManager = {
     },
 
     // --- NAVEGACIÓN Y ESTADOS ---
-    showLoading(estado) {
-    // Buscamos cualquier cosa que parezca un loader si el ID no existe
-        const loader = document.getElementById("mainLoader") || document.querySelector(".loading, .spinner");
-        if (loader) {
-            loader.classList.toggle("hidden", !estado);
-        }
-        // Si no hay loader, simplemente no hacemos nada, pero ya no se tilda.
+    showLoading: function(estado) {
+        const loader = document.getElementById("mainLoader");
+        if (!loader) return;
+        loader.classList.toggle("hidden", !estado);
+        loader.style.display = estado ? "flex" : "none";
     },
-    
+
     mostrarMensaje(texto, tipo = "success") {
         const msg = document.getElementById("mensaje");
         if (!msg) return;
@@ -146,7 +144,37 @@ export const UIManager = {
 
     limpiarResultados() {
         if (DOM.resultadoTerritorio) DOM.resultadoTerritorio.innerHTML = "";
-    }
+    },
+
+    cambiarSeccion: function(btnId) {
+        console.log("🔄 Cambiando sección para el botón:", btnId);
+        const sectionId = btnId.replace('btn', 'seccion');
+        const targetSection = document.getElementById(sectionId);
+        
+        if (targetSection) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('section[id^="seccion"], .section-base').forEach(s => {
+                s.classList.add('hidden');
+            });
+
+            // Mostrar la elegida
+            targetSection.classList.remove('hidden');
+            targetSection.classList.add('animate-in');
+            
+            // Actualizar Header y Botones
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                const titulo = btn.innerText.trim();
+                document.getElementById("headerTitle").textContent = titulo;
+                
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+        } else {
+            console.warn(`⚠️ No se encontró la sección: ${sectionId}`);
+        }
+        this.showLoading(false);
+    },
 };
 
 // --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---
