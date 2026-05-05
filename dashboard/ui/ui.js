@@ -142,8 +142,9 @@ export const UIManager = {
         }
     },
 
-    limpiarResultados() {
-        if (DOM.resultadoTerritorio) DOM.resultadoTerritorio.innerHTML = "";
+    limpiarResultados: function() {
+        const container = document.getElementById("containerResultados");
+        if (container) container.innerHTML = "";
     },
 
     cambiarSeccion: function(btnId) {
@@ -177,20 +178,15 @@ export const UIManager = {
     },
 
     mostrarErrorResultados: function(mensaje) {
-        // Buscamos el contenedor donde deberían ir los resultados
-        const container = document.getElementById("containerSugerencias") || 
-                          document.getElementById("containerResultados");
+        const container = document.getElementById("containerResultados");
         if (container) {
             container.innerHTML = `
-                <div class="p-4 bg-red-100 text-red-700 rounded-lg border border-red-200">
-                    <p class="font-bold">⚠️ Error</p>
-                    <p>${mensaje || 'No se pudieron obtener los datos.'}</p>
+                <div class="p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+                    <p class="font-medium">${mensaje}</p>
                 </div>
             `;
-        } else {
-            alert(mensaje); // Fallback por si no hay contenedor
         }
-    }
+    },
 };
 
 // --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---

@@ -40,9 +40,19 @@ export const Controller = {
     async obtenerSugerencias(rango) {
         try {
             const data = await Api.getSugerencias(rango);
-            UIManager.renderSugerencias(data.sugerencias);
+            
+            // Si el backend devuelve una lista directamente (muy común en FastAPI)
+            // o si viene dentro de un objeto, lo manejamos:
+            const sugerencias = Array.isArray(data) ? data : (data.sugerencias || []);
+            
+            if (sugerencias.length === 0) {
+                UIManager.mostrarMensaje("No hay sugerencias para este rango.", "info");
+            }
+            
+            UIManager.renderSugerencias(sugerencias);
         } catch (error) {
-            UIManager.mostrarErrorResultados("Error al obtener sugerencias.");
+            console.error("Error al obtener sugerencias:", error);
+            UIManager.mostrarErrorResultados("Error: Revisar permisos de admin o sesión.");
         }
     },
 

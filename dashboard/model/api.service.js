@@ -2,11 +2,12 @@
 import { CONFIG, getHeaders, handleResponse } from "../config.js";
 
 export const Api = {
-    async getSugerencias(rango = 3) {
-        // Forzamos entero para que FastAPI no lance 422
-        const rangoInt = parseInt(rango); 
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/sugerencias?rango=${rangoInt}`, {
-            headers: getHeaders()
+    async getSugerencias(rangoId) {
+        // Si viene "1-20" o "1", nos quedamos solo con el primer dígito como entero
+        const valorLimpio = parseInt(rangoId); 
+        
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/sugerencias?rango=${valorLimpio}`, {
+            headers: getHeaders() // Esto debe ir perfecto
         });
         return handleResponse(res);
     },
