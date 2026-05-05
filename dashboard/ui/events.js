@@ -2,66 +2,62 @@
 import { Modals } from "./modals.js";
 
 export function initGlobalEvents() {
-    console.log("✅ Sistema de eventos UI inicializado");
+    console.log("🚀 Sistema de eventos UI inicializado con IDs reales");
 
-    // --- DELEGACIÓN DE EVENTOS ÚNICA PARA CLICKS ---
     document.addEventListener("click", (e) => {
         const target = e.target;
 
-        // 1. Manejo de Navegación (Sidebar)
-        // Buscamos si el click fue en un botón de navegación
+        // 1. LOGOUT (ID real: btnLogout)
+        if (target.closest("#btnLogout")) {
+            console.log("👋 Cerrando sesión...");
+            localStorage.removeItem("token");
+            window.location.href = "../login/index.html";
+            return;
+        }
+
+        // 2. NAVEGACIÓN (IDs reales: btnDashboard, btnAgregar, btnConsultar, etc.)
         const btnNav = target.closest(".nav-btn");
         if (btnNav) {
-            // Extraemos el ID de la sección (ej: btnAgenda -> seccionAgenda)
+            console.log("📍 Navegando a:", btnNav.id);
+            
+            // Lógica de pestañas: btnDashboard -> seccionDashboard
             const sectionId = btnNav.id.replace('btn', 'seccion');
             const targetSection = document.getElementById(sectionId);
 
             if (targetSection) {
-                // Ocultar todas las secciones
+                // Ocultar todas
                 document.querySelectorAll('.section-base').forEach(s => s.classList.add('hidden'));
-                // Mostrar la elegida
-                targetSection.classList.remove('hidden');
-                targetSection.classList.add('animate-in');
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
                 
-                // Actualizar Header (Opcional, pero recomendado para feedback visual)
-                const headerTitle = document.getElementById('headerTitle');
-                if (headerTitle) headerTitle.innerText = btnNav.innerText.trim();
-            }
-        }
+                // Mostrar actual
+                targetSection.classList.remove('hidden');
+                btnNav.classList.add('active');
 
-        // 2. Navegación específica a Agenda (Carga de datos)
-        const btnVerAgenda = target.closest("#btnAgenda, #btnVerAgendaGuardada");
-        if (btnVerAgenda) {
-            if (window.UI && window.UI.verAgendaGuardada) {
-                try {
+                // Si es la agenda, disparamos la carga de datos
+                if (btnNav.id === "btnAgenda" && window.UI?.verAgendaGuardada) {
                     window.UI.verAgendaGuardada();
-                } catch (err) {
-                    console.error("❌ Error al cargar la agenda guardada:", err);
                 }
-            } else {
-                console.warn("⚠️ window.UI.verAgendaGuardada no está lista");
             }
+            return;
         }
 
-        // 3. Generar Propuesta
-        const btnGenerar = target.closest("#btnGenerarPropuesta");
-        if (btnGenerar) {
+        // 3. GENERAR PROPUESTA (ID real: btnGenerarPropuesta)
+        if (target.closest("#btnGenerarPropuesta")) {
+            console.log("🛠️ Generando propuesta...");
             window.UI?.manejarGenerarAgenda?.();
             return;
         }
 
-        // 4. Confirmar Agenda
-        const btnConfirmar = target.closest("#btnConfirmarAgenda");
-        if (btnConfirmar) {
+        // 4. CONFIRMAR (ID real: btnConfirmarAgenda)
+        if (target.closest("#btnConfirmarAgenda")) {
+            console.log("💾 Confirmando agenda...");
             window.UI?.manejarConfirmarAgenda?.();
-            setTimeout(() => window.UI?.verAgendaGuardada?.(), 800);
             return;
         }
 
-        // 5. Lógica de Modales (Editar)
+        // 5. MODALES (Editar/Eliminar)
         const btnEdit = target.closest(".btn-row-edit");
         if (btnEdit) {
-            e.preventDefault();
             Modals.abrirEdicion({
                 id: btnEdit.dataset.id,
                 conductor: btnEdit.dataset.conductor,
@@ -69,62 +65,12 @@ export function initGlobalEvents() {
                 fecha_completado: btnEdit.dataset.fechaCompletado,
                 cantidad_abarcado: btnEdit.dataset.cantidad
             });
-            return;
         }
 
-        // 6. Lógica de Eliminación
-        const btnDelete = target.closest(".btn-row-delete");
-        if (btnDelete) {
-            e.preventDefault();
-            const id = btnDelete.dataset.id;
-            const fila = btnDelete.closest("tr");
-            const fechaTxt = fila?.querySelectorAll("td")[1]?.innerText || "Fecha desconocida";
-            const conductor = fila?.querySelectorAll("td")[0]?.innerText || "Sin nombre";
-            Modals.abrirConfirmarEliminacion(id, conductor, fechaTxt);
-            return;
-        }
-
-        // 7. Cierre de Modales (Overlay o X)
-        if (target.closest(".btn-close-modal") || target.classList.contains("modal-overlay")) {
+        // 6. CIERRE DE MODALES (IDs reales: btnCancelEdit, btnCancelDelete)
+        if (target.closest("#btnCancelEdit, #btnCancelDelete, .btn-close-modal, .modal-overlay")) {
             Modals.cerrarEdicion();
             Modals.cerrarConfirmar();
         }
-    });
-
-    // --- LÓGICA DE INTERCAMBIO DE TERRITORIOS (Focus & Change) ---
-    document.addEventListener('focusin', (e) => {
-        if (e.target.classList.contains('territory-input')) {
-            e.target.dataset.oldValue = e.target.value;
-        }
-    });
-
-    document.addEventListener('change', (e) => {
-        if (e.target.classList.contains('territory-input')) {
-            const nuevoValor = e.target.value;
-            const viejoValor = e.target.dataset.oldValue;
-            const tablaPadre = e.target.closest('table'); 
-
-            if (!tablaPadre) return;
-
-            const otroInput = Array.from(tablaPadre.querySelectorAll('.territory-input'))
-                .find(input => input !== e.target && input.value === nuevoValor);
-
-            if (otroInput) {
-                otroInput.value = viejoValor;
-                otroInput.classList.add('bg-yellow-100');
-                setTimeout(() => otroInput.classList.remove('bg-yellow-100'), 500);
-            }
-        }
-    });
-
-    // --- BOTONES DE CANCELACIÓN ---
-    document.getElementById("btnCancelEdit")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        Modals.cerrarEdicion();
-    });
-
-    document.getElementById("btnCancelDelete")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        Modals.cerrarConfirmar();
     });
 }

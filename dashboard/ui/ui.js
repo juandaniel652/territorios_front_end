@@ -107,10 +107,14 @@ export const UIManager = {
 
     // --- NAVEGACIÓN Y ESTADOS ---
     showLoading(estado) {
-        const loader = document.getElementById("mainLoader");
-        if (loader) loader.classList.toggle("hidden", !estado);
+    // Buscamos cualquier cosa que parezca un loader si el ID no existe
+        const loader = document.getElementById("mainLoader") || document.querySelector(".loading, .spinner");
+        if (loader) {
+            loader.classList.toggle("hidden", !estado);
+        }
+        // Si no hay loader, simplemente no hacemos nada, pero ya no se tilda.
     },
-
+    
     mostrarMensaje(texto, tipo = "success") {
         const msg = document.getElementById("mensaje");
         if (!msg) return;
