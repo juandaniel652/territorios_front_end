@@ -3,7 +3,16 @@ import { CONFIG, getHeaders, handleResponse } from "../config.js";
 
 export const Api = {
     async getSugerencias(rango = 3) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/sugerencias?rango=${rango}`, {
+        // Forzamos entero para que FastAPI no lance 422
+        const rangoInt = parseInt(rango); 
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/sugerencias?rango=${rangoInt}`, {
+            headers: getHeaders()
+        });
+        return handleResponse(res);
+    },
+
+    async getTerritorio(numero) {
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/${numero}`, {
             headers: getHeaders()
         });
         return handleResponse(res);
