@@ -5,6 +5,7 @@ import { Modals }           from "./modals.js";
 import { Charts }           from "./charts.js";
 import { initGlobalEvents } from "./events.js";
 import { DateFormatter }    from "./utils.js";
+import { Controller } from "../controller/dashboard.controller.js";
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
 
@@ -147,14 +148,23 @@ export const UIManager = {
 // --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---
 // Inicialización controlada
 window.UI = {
+    // Esta función maneja el cambio de pestaña Y la carga de datos
     verAgendaGuardada: async () => {
-        console.log("📅 Cargando agenda...");
-        // Usamos el Controller que está importado en este archivo
+        console.log("📅 Accediendo a la sección Agenda...");
+        
+        // 1. Lógica Visual (Mostrar/Ocultar)
+        document.querySelectorAll('.section-base, section').forEach(s => s.classList.add('hidden'));
+        const seccion = document.getElementById('seccionAgenda');
+        if (seccion) {
+            seccion.classList.remove('hidden');
+        }
+
+        // 2. Lógica de Datos (Llamar al backend)
         try {
-            await Controller.cargarDashboardCompleto(); 
-            // O la función específica que tengas para el historial
+            // Llamamos al controller para que traiga los datos frescos
+            await Controller.cargarDashboardCompleto(3); 
         } catch (err) {
-            console.error("Error al llamar al controller:", err);
+            console.error("❌ Error al refrescar datos desde la agenda:", err);
         }
     },
 
@@ -164,12 +174,14 @@ window.UI = {
             alert("Por favor, selecciona una fecha de inicio.");
             return;
         }
+        console.log("🛠️ Generando propuesta para:", fecha);
         await Controller.prepararAgendaQuincenal(fecha);
     },
 
     manejarConfirmarAgenda: async () => {
-        // Aquí podrías recolectar datos de la tabla antes de enviar
-        // Supongamos que Controller ya sabe qué confirmar o recibe datos
+        console.log("💾 Confirmando agenda definitiva...");
+        // Recolectamos los datos de la tabla que Tables.js renderizó
+        // Si no tienes una variable global, el controller debería buscar en el DOM
         await Controller.confirmarAgendaDefinitiva(window.datosPropuestaActual || []);
     }
 };
