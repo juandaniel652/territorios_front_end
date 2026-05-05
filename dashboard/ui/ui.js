@@ -148,20 +148,30 @@ export const UIManager = {
 // Inicialización controlada
 window.UI = {
     verAgendaGuardada: async () => {
-        // Llamada al controller
-        await Controller.cargarHistorialAgenda(); 
-    },
-    manejarGenerarAgenda: () => {
-        const fecha = document.getElementById("inputFechaInicio")?.value;
-        if (fecha) {
-            Controller.prepararAgendaQuincenal(fecha);
-        } else {
-            UIManager.mostrarMensaje("Seleccione una fecha", "error");
+        console.log("📅 Cargando agenda...");
+        // Usamos el Controller que está importado en este archivo
+        try {
+            await Controller.cargarDashboardCompleto(); 
+            // O la función específica que tengas para el historial
+        } catch (err) {
+            console.error("Error al llamar al controller:", err);
         }
     },
-    manejarConfirmarAgenda: () => {
-        // Tu lógica para capturar la tabla de la propuesta y mandarla al controller
-        const datosPropuesta = UIManager.obtenerDatosTablaPropuesta();
-        Controller.confirmarAgendaDefinitiva(datosPropuesta);
+
+    manejarGenerarAgenda: async () => {
+        const fecha = document.getElementById("inputFechaInicio")?.value;
+        if (!fecha) {
+            alert("Por favor, selecciona una fecha de inicio.");
+            return;
+        }
+        await Controller.prepararAgendaQuincenal(fecha);
+    },
+
+    manejarConfirmarAgenda: async () => {
+        // Aquí podrías recolectar datos de la tabla antes de enviar
+        // Supongamos que Controller ya sabe qué confirmar o recibe datos
+        await Controller.confirmarAgendaDefinitiva(window.datosPropuestaActual || []);
     }
 };
+
+console.log("✅ window.UI vinculado con éxito al Controller");
