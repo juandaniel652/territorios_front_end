@@ -40,22 +40,11 @@ export const Controller = {
     async obtenerSugerencias(rangoSeleccionado) {
         UIManager.showLoading(true);
         try {
-            // 1. Pedimos los datos al API (rango 1, 2 o 3 según la lógica de severidad del back)
             const data = await Api.getSugerencias(rangoSeleccionado);
-            const listaSugerida = Array.isArray(data) ? data : (data.sugerencias || []);
-        
-            // 2. Definimos los límites según lo que el usuario eligió en el select
-            // rangoSeleccionado viene como "1-20", "21-40", o "41-60"
-            const [min, max] = rangoSeleccionado.split('-').map(Number);
-        
-            // 3. Filtramos la lista para que solo queden los del bloque visual correcto
-            const listaFiltrada = listaSugerida.filter(s => s.numero >= min && s.numero <= max);
-        
-            console.log(`✅ Sugerencias filtradas para el bloque ${min}-${max}:`, listaFiltrada);
-        
-            // 4. Renderizamos solo los que corresponden
-            UIManager.renderSugerencias(listaFiltrada);
-        
+            const listaSugerida = data.sugerencias || data;
+            
+            // El backend YA filtró por rango, solo renderizamos directo
+            UIManager.renderSugerencias(listaSugerida);
         } catch (error) {
             console.error("❌ Error filtrando sugerencias:", error);
             UIManager.mostrarErrorResultados("Error al procesar el rango de territorios.");
@@ -119,18 +108,23 @@ export const Controller = {
         }
     },
 
-    async cargarDashboardCompleto(rango = 3) {
+    async cargarDashboardCompleto(rango = "1-20") { 
         try {
             UIManager.showLoading(true);
+
+            // 2. Ahora enviamos un rango que el backend sí reconoce
             const data = await Api.getSugerencias(rango); 
-            
-            // Si la API devolvió el error de auth como objeto (tu caso del 200 OK)
+
             if (data.detail === "Not authenticated") {
                 throw { status: 401, message: "Sesión expirada" };
             }
 
-            UIManager.renderSugerencias(data.sugerencias);
-            UIManager.renderPlanillaS13(data.sugerencias); 
+            // 3. Extraemos la lista correctamente (siempre verificando si es el objeto o la lista)
+            const lista = data.sugerencias || data;
+
+            UIManager.renderSugerencias(lista);
+            // UIManager.renderPlanillaS13(lista); // Si usás esta función, pasale la lista corregida
+
         } catch (error) {
             console.error("Error en dashboard:", error);
             if (error.status === 401 || error.message?.includes("authenticated")) {
@@ -138,7 +132,7 @@ export const Controller = {
                 window.location.href = "../login/index.html";
             }
         } finally {
-            UIManager.showLoading(false); // CRÍTICO: Siempre apagar el loader
+            UIManager.showLoading(false);
         }
     }
 };
