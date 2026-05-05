@@ -2,23 +2,40 @@
 import { CONFIG, getHeaders, handleResponse } from "../config.js";
 
 export const Api = {
+
+    async getSugerencias(rangoStr) {
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/sugerencias?rango=${rangoStr}`, {
+            headers: getHeaders()
+        });
+        return handleResponse(res);
+    },
+
     async obtenerSugerencias(rangoStr) {
         try {
-            // 1. Llamamos al API pasando el string para que el Model decida qué ID mandar al back
+            // Llamamos al método que definimos arriba
             const data = await Api.getSugerencias(rangoStr);
-            const listaSugerida = Array.isArray(data) ? data : (data.sugerencias || []);
+            
+            // Si el backend devuelve { sugerencias: [...] }, extraemos la lista
+            const listaSugerida = data.sugerencias || data; 
         
-            // 2. FILTRADO LÓGICO: Obtenemos min y max del string "21-40"
             const [min, max] = rangoStr.split('-').map(Number);
         
-            // 3. Filtramos para que la UI no muestre territorios fuera del bloque visual
+            // Filtrado de seguridad
             const listaFiltrada = listaSugerida.filter(s => s.numero >= min && s.numero <= max);
         
-            // 4. Renderizamos
-            UIManager.renderSugerencias(listaFiltrada);
+            // IMPORTANTE: Asegurate de que UIManager esté disponible o importado
+            if (window.UIManager) {
+                window.UIManager.renderSugerencias(listaFiltrada);
+            }
+            
+            return listaFiltrada; // Por si el controller necesita el dato
         
         } catch (error) {
-            UIManager.mostrarErrorResultados("No se pudieron cargar las sugerencias.");
+            console.error("Error en obtenerSugerencias:", error);
+            if (window.UIManager) {
+                window.UIManager.mostrarErrorResultados("No se pudieron cargar las sugerencias.");
+            }
+            throw error;
         }
     },
 
