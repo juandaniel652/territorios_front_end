@@ -1,71 +1,132 @@
 // frontend/dashboard/ui/events.js
 import { Modals } from "./modals.js";
+import { UIManager } from "./ui.js";
+import { Controller } from "../controller/dashboard.controller.js";
 
 export function initGlobalEvents() {
-    console.log("🚀 Sistema de eventos UI inicializado con IDs reales");
+    console.log("🚀 Orquestador de eventos inicializado");
 
-    document.addEventListener("click", (e) => {
+    document.addEventListener("click", async (e) => {
         const target = e.target;
 
-        // 1. LOGOUT (ID real: btnLogout)
+        // --- 1. LOGOUT ---
         if (target.closest("#btnLogout")) {
-            console.log("👋 Cerrando sesión...");
             localStorage.removeItem("token");
             window.location.href = "../login/index.html";
             return;
         }
 
-        // 2. NAVEGACIÓN (IDs reales: btnDashboard, btnAgregar, btnConsultar, etc.)
+        // --- 2. NAVEGACIÓN CANÓNICA ---
         const btnNav = target.closest(".nav-btn");
         if (btnNav) {
-            // REGLA CANÓNICA: btnX -> seccionX
             const sectionId = btnNav.id.replace('btn', 'seccion');
-            const targetSection = document.getElementById(sectionId);
-        
-            if (targetSection) {
-                // 1. Ocultar TODAS las que empiecen con "seccion"
-                document.querySelectorAll('section[id^="seccion"]').forEach(s => s.classList.add('hidden'));
-                
-                // 2. Mostrar la elegida
-                targetSection.classList.remove('hidden');
-                targetSection.classList.add('animate-in'); // Tu animación de CSS
             
-                // 3. Actualizar el Header (usando el texto del botón)
-                const titulo = btnNav.innerText.trim();
-                document.getElementById("headerTitle").textContent = titulo;
+            // Usamos el UIManager para la parte visual
+            UIManager.cambiarSeccion(btnNav.id); 
+
+            // Lógica específica según la sección
+            if (btnNav.id === "btnAgenda") {
+                UIManager.showLoading(true);
+                try {
+                    await Controller.cargarDashboardCompleto(3); 
+                } catch (err) {
+                    console.error("Error al cargar agenda:", err);
+                } finally {
+                    UIManager.showLoading(false);
+                }
             }
+            return;
         }
 
-        // 3. GENERAR PROPUESTA (ID real: btnGenerarPropuesta)
+        // --- 3. ACCIONES DE AGENDA (GENERAR) ---
         if (target.closest("#btnGenerarPropuesta")) {
-            console.log("🛠️ Generando propuesta...");
-            window.UI?.manejarGenerarAgenda?.();
+            const fecha = document.getElementById("fechaInicioAgenda")?.value;
+            if (!fecha) return alert("Seleccioná una fecha de inicio");
+
+            UIManager.showLoading(true);
+            try {
+                // El controller hace el fetch y el UIManager renderiza el resultado
+                await Controller.prepararAgendaQuincenal(fecha);
+            } catch (err) {
+                alert("Error al generar propuesta");
+            } finally {
+                UIManager.showLoading(false);
+            }
             return;
         }
 
-        // 4. CONFIRMAR (ID real: btnConfirmarAgenda)
+        // --- 4. ACCIONES DE AGENDA (CONFIRMAR) ---
         if (target.closest("#btnConfirmarAgenda")) {
-            console.log("💾 Confirmando agenda...");
-            window.UI?.manejarConfirmarAgenda?.();
+            UIManager.showLoading(true);
+            try {
+                // Suponiendo que guardas la propuesta actual en window o el controller la gestiona
+                await Controller.confirmarAgendaDefinitiva();
+                alert("✅ Agenda guardada correctamente");
+            } catch (err) {
+                console.error(err);
+            } finally {
+                UIManager.showLoading(false);
+            }
             return;
         }
 
-        // 5. MODALES (Editar/Eliminar)
+        // --- 5. BUSCADOR DE SUGERENCIAS ---
+        if (target.closest("#btnBuscarSugerencias")) {
+            const rango = document.getElementById("rangoSelect")?.value;
+            UIManager.showLoading(true);
+            try {
+                await Controller.obtenerSugerencias(rango);
+            } finally {
+                UIManager.showLoading(false);
+            }
+            return;
+        }
+
+        // --- 6. CONSULTAR TERRITORIO ---
+        if (target.closest("#consultarBtn")) {
+            const num = document.getElementById("territorioInput")?.value;
+            if (!num) return;
+            UIManager.showLoading(true);
+            try {
+                await Controller.consultarTerritorio(num);
+            } finally {
+                UIManager.showLoading(false);
+            }
+            return;
+        }
+
+        // --- 7. GESTIÓN DE MODALES ---
         const btnEdit = target.closest(".btn-row-edit");
         if (btnEdit) {
-            Modals.abrirEdicion({
-                id: btnEdit.dataset.id,
-                conductor: btnEdit.dataset.conductor,
-                fecha_asignado: btnEdit.dataset.fechaAsignado,
-                fecha_completado: btnEdit.dataset.fechaCompletado,
-                cantidad_abarcado: btnEdit.dataset.cantidad
-            });
+            Modals.abrirEdicion(btnEdit.dataset);
+            return;
         }
 
-        // 6. CIERRE DE MODALES (IDs reales: btnCancelEdit, btnCancelDelete)
-        if (target.closest("#btnCancelEdit, #btnCancelDelete, .btn-close-modal, .modal-overlay")) {
+        if (target.closest("#btnCancelEdit, #btnCancelDelete, .modal-overlay")) {
             Modals.cerrarEdicion();
             Modals.cerrarConfirmar();
+            return;
         }
     });
+
+    // Evento extra para el formulario de "Agregar Asignación"
+    const formAgregar = document.getElementById("asignacionForm");
+    if (formAgregar) {
+        formAgregar.onsubmit = async (e) => {
+            e.preventDefault();
+            UIManager.showLoading(true);
+            try {
+                // Recolectar datos y enviar al controller
+                const formData = {
+                    territorio: document.getElementById("numeroTerritorio").value,
+                    conductor: document.getElementById("conductor").value,
+                    // ... etc
+                };
+                await Controller.crearAsignacion(formData);
+                formAgregar.reset();
+            } finally {
+                UIManager.showLoading(false);
+            }
+        };
+    }
 }
