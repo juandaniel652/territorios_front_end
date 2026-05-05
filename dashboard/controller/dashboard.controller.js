@@ -6,7 +6,7 @@ import { UIManager }  from "../ui/ui.js";
 export const Controller = {
     
     async consultarAsignaciones(numero) {
-        
+
         UIManager.limpiarResultados();
         if (!Validators.territorioValido(numero)) {
             UIManager.mostrarErrorResultados("Ingrese un número de territorio válido.");
@@ -104,12 +104,22 @@ export const Controller = {
         try {
             UIManager.showLoading(true);
             const data = await Api.getSugerencias(rango); 
+            
+            // Si la API devolvió el error de auth como objeto (tu caso del 200 OK)
+            if (data.detail === "Not authenticated") {
+                throw { status: 401, message: "Sesión expirada" };
+            }
+
             UIManager.renderSugerencias(data.sugerencias);
             UIManager.renderPlanillaS13(data.sugerencias); 
         } catch (error) {
             console.error("Error en dashboard:", error);
+            if (error.status === 401 || error.message?.includes("authenticated")) {
+                localStorage.removeItem("token");
+                window.location.href = "../login/index.html";
+            }
         } finally {
-            UIManager.showLoading(false);
+            UIManager.showLoading(false); // CRÍTICO: Siempre apagar el loader
         }
     }
 };
