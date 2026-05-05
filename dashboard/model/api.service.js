@@ -3,8 +3,10 @@ import { CONFIG, getHeaders, handleResponse } from "../config.js";
 
 export const Api = {
     async getSugerencias(rangoId) {
+        
         // Si viene "1-20" o "1", nos quedamos solo con el primer dígito como entero
         const valorLimpio = parseInt(rangoId); 
+        
         
         const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/sugerencias?rango=${valorLimpio}`, {
             headers: getHeaders() // Esto debe ir perfecto

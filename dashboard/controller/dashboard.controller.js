@@ -37,16 +37,28 @@ export const Controller = {
         }
     },
 
-    async obtenerSugerencias(rango) {
+    async obtenerSugerencias(rangoSeleccionado) {
         UIManager.showLoading(true);
         try {
-            const data = await Api.getSugerencias(rango);
-            // Como el JSON que mostraste es un Array directo [...], lo pasamos así
-            console.log("Datos para renderizar:", data);
-            UIManager.renderSugerencias(data);
+            // 1. Pedimos los datos al API (rango 1, 2 o 3 según la lógica de severidad del back)
+            const data = await Api.getSugerencias(rangoSeleccionado);
+            const listaSugerida = Array.isArray(data) ? data : (data.sugerencias || []);
+        
+            // 2. Definimos los límites según lo que el usuario eligió en el select
+            // rangoSeleccionado viene como "1-20", "21-40", o "41-60"
+            const [min, max] = rangoSeleccionado.split('-').map(Number);
+        
+            // 3. Filtramos la lista para que solo queden los del bloque visual correcto
+            const listaFiltrada = listaSugerida.filter(s => s.numero >= min && s.numero <= max);
+        
+            console.log(`✅ Sugerencias filtradas para el bloque ${min}-${max}:`, listaFiltrada);
+        
+            // 4. Renderizamos solo los que corresponden
+            UIManager.renderSugerencias(listaFiltrada);
+        
         } catch (error) {
-            console.error("Error:", error);
-            UIManager.mostrarErrorResultados("Error al procesar sugerencias");
+            console.error("❌ Error filtrando sugerencias:", error);
+            UIManager.mostrarErrorResultados("Error al procesar el rango de territorios.");
         } finally {
             UIManager.showLoading(false);
         }
