@@ -18,27 +18,22 @@ export function initGlobalEvents() {
         // 2. NAVEGACIÓN (IDs reales: btnDashboard, btnAgregar, btnConsultar, etc.)
         const btnNav = target.closest(".nav-btn");
         if (btnNav) {
-            console.log("📍 Navegando a:", btnNav.id);
-            
-            // Lógica de pestañas: btnDashboard -> seccionDashboard
+            // REGLA CANÓNICA: btnX -> seccionX
             const sectionId = btnNav.id.replace('btn', 'seccion');
             const targetSection = document.getElementById(sectionId);
-
+        
             if (targetSection) {
-                // Ocultar todas
-                document.querySelectorAll('.section-base').forEach(s => s.classList.add('hidden'));
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                // 1. Ocultar TODAS las que empiecen con "seccion"
+                document.querySelectorAll('section[id^="seccion"]').forEach(s => s.classList.add('hidden'));
                 
-                // Mostrar actual
+                // 2. Mostrar la elegida
                 targetSection.classList.remove('hidden');
-                btnNav.classList.add('active');
-
-                // Si es la agenda, disparamos la carga de datos
-                if (btnNav.id === "btnAgenda" && window.UI?.verAgendaGuardada) {
-                    window.UI.verAgendaGuardada();
-                }
+                targetSection.classList.add('animate-in'); // Tu animación de CSS
+            
+                // 3. Actualizar el Header (usando el texto del botón)
+                const titulo = btnNav.innerText.trim();
+                document.getElementById("headerTitle").textContent = titulo;
             }
-            return;
         }
 
         // 3. GENERAR PROPUESTA (ID real: btnGenerarPropuesta)
