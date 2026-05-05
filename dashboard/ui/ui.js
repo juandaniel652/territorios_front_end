@@ -26,28 +26,46 @@ export const UIManager = {
     },
 
     // --- DASHBOARD Y GRÁFICOS ---
-    renderDashboard(stats) {
-        // Actualización de contadores con fallback a 0
-        const elTotal = document.getElementById("totalAsignaciones");
-        const elActivos = document.getElementById("territoriosActivos");
+    renderSugerencias: function(sugerencias) {
+        // CAMBIO AQUÍ: Usamos el ID real del HTML "resultadoSugerencias"
+        const container = document.getElementById("resultadoSugerencias"); 
         
-        if (elTotal) elTotal.textContent = stats.total_asignaciones || 0;
-        if (elActivos) elActivos.textContent = stats.territorios_activos || 0;
-
-        if (Charts && stats.chart_data) {
-            Charts.renderBarChart(
-                document.getElementById("asignacionesChart"), 
-                stats.chart_data.labels || [], 
-                stats.chart_data.values || []
-            );
+        if (!container) {
+            console.error("❌ No se encontró el contenedor 'resultadoSugerencias' en el DOM");
+            return;
         }
-
-        // Mostrar S-13 automáticamente si hay datos
-        const seccionS13 = document.getElementById("seccionPlanillaS13");
-        if (seccionS13) {
-            seccionS13.classList.remove("hidden");
-            this.renderPlanillaS13(stats.territorios_detalle || []);
+    
+        if (!sugerencias || sugerencias.length === 0) {
+            container.innerHTML = `<p class="text-center p-4">No hay sugerencias para este rango.</p>`;
+            return;
         }
+    
+        container.innerHTML = sugerencias.map(s => {
+            const fechaFormateada = s.ultima_fecha 
+                ? new Date(s.ultima_fecha).toLocaleDateString('es-AR') 
+                : 'Nunca';
+        
+            return `
+                <div class="card bg-base-100 shadow-xl border-l-4 border-accent mb-4">
+                    <div class="card-body p-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="card-title text-secondary">Territorio ${s.numero}</h3>
+                            <div class="badge badge-outline">${s.severidad || 'Media'}</div>
+                        </div>
+                        <p class="text-sm text-gray-500">Última asignación: ${fechaFormateada}</p>
+                        <div class="card-actions justify-end mt-2">
+                            <button class="btn btn-sm btn-primary" 
+                                    onclick="document.getElementById('territorioInput').value='${s.numero}'; 
+                                             const btnConsultar = document.getElementById('btnConsultar');
+                                             if(btnConsultar) btnConsultar.click();
+                                             window.scrollTo(0,0);">
+                                Consultar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     },
 
     renderSugerencias: function(sugerencias) {
