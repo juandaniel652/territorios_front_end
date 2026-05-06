@@ -55,7 +55,7 @@ export const UIManager = {
             card.innerHTML = `
                 <div class="sugerencia-card__num">${s.numero}</div>
                 <div class="sugerencia-card__info">
-                    <p class="sugerencia-card__last">Última vez: <strong>${s.ultima_visita}</strong></p>
+                    <p class="sugerencia-card__last">Última vez: <strong>${s.ultima_fecha || 'Nunca'}</strong></p>
                     <p class="sugerencia-card__days">Hace <strong>${s.dias_atraso}</strong> días</p>
                     <p class="sugerencia-card__sev" style="color: ${estilo.text}; font-weight: 600;">
                         ● ${estilo.label}
@@ -163,9 +163,16 @@ export const UIManager = {
             // Actualizar Header y Botones
             const btn = document.getElementById(btnId);
             if (btn) {
-                const titulo = btn.innerText.trim();
-                document.getElementById("headerTitle").textContent = titulo;
+                // Obtenemos el texto del botón (ej: "Sugerencias")
+                const nombreSeccion = btn.innerText.trim();
                 
+                // Actualizamos el título del Header principal
+                const headerTitle = document.getElementById("headerTitle");
+                if (headerTitle) {
+                    headerTitle.textContent = nombreSeccion;
+                }
+                
+                // Feedback visual en los botones
                 document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             }
