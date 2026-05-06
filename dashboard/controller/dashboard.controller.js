@@ -117,10 +117,26 @@ export const Controller = {
         
             const stats = await Api.getTerritorio(49);
             
-            // 2. CORRECCIÓN DE NOMBRE: Usamos renderBarChart que es lo que existe en window.Charts
             if (stats && window.Charts && window.Charts.renderBarChart) {
-                // Ajustá los parámetros (n, r, e, s) según lo que pida tu función
-                window.Charts.renderBarChart('graficoProgreso', stats); 
+                // --- TRANSFORMACIÓN DE DATOS ---
+                // Creamos el objeto que Chart.js espera para no romper el .slice()
+                const dataParaGrafico = {
+                    labels: ['Asignaciones', 'Días Atraso'], // Las etiquetas de las barras
+                    datasets: [{
+                        label: `Territorio ${stats.numero || 49}`,
+                        // Extraemos los valores numéricos de tu objeto stats
+                        // Si tus campos tienen otros nombres (ej. 'cantidad'), cambialos acá:
+                        data: [
+                            stats.total_asignaciones || stats.asignaciones?.length || 0, 
+                            stats.dias_atraso || 0
+                        ],
+                        backgroundColor: '#22c55e', // Verde corporativo
+                        borderRadius: 5
+                    }]
+                };
+            
+                // Ahora enviamos dataParaGrafico en lugar de stats directamente
+                window.Charts.renderBarChart('graficoProgreso', dataParaGrafico); 
             }
         
         } catch (error) {
