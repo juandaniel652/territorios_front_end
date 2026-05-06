@@ -113,30 +113,27 @@ export const Controller = {
         try {
             UIManager.showLoading(true);
             
-            // 1. Cargar sugerencias
             const sugerencias = await Api.getSugerencias(rango);
             UIManager.renderSugerencias(sugerencias.sugerencias || sugerencias);
         
-            // 2. Cargar stats del territorio
             const stats = await Api.getTerritorio(49);
-            console.log("📊 Datos recibidos de la API:", stats); // Esto es para que vos veas qué llega
             
             if (window.Charts && window.Charts.renderBarChart) {
-                // FORZAMOS el formato exacto que Chart.js necesita para los ejes (Ticks)
+                // Mapeo basado en tu console.log:
+                const cantidadAsignaciones = stats.asignaciones ? stats.asignaciones.length : 0;
+                
                 const payload = {
-                    labels: ['Asignaciones', 'Días Atraso'], 
+                    labels: ['Total Asignaciones', 'Estado'], 
                     datasets: [{
-                        label: `Territorio ${stats.numero || 49}`,
-                        data: [
-                            stats.total_asignaciones || 0, 
-                            stats.dias_atraso || 0
-                        ],
-                        backgroundColor: '#16a34a',
-                        borderWidth: 0
+                        label: `Territorio ${stats.territorio || 49}`,
+                        data: [cantidadAsignaciones, 1], // Usamos el .length del array que vimos en consola
+                        backgroundColor: 'rgba(22, 163, 74, 0.5)',
+                        borderColor: 'rgb(22, 163, 74)',
+                        borderWidth: 1
                     }]
                 };
             
-                // Pasamos el payload formateado
+                // Ejecutar el render
                 window.Charts.renderBarChart('graficoProgreso', payload); 
             }
         
