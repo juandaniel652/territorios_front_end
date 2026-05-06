@@ -42,7 +42,7 @@ export const Controller = {
         try {
             const data = await Api.getSugerencias(rangoSeleccionado);
             const listaSugerida = data.sugerencias || data;
-            
+
             // El backend YA filtró por rango, solo renderizamos directo
             UIManager.renderSugerencias(listaSugerida);
         } catch (error) {
@@ -108,29 +108,23 @@ export const Controller = {
         }
     },
 
-    async cargarDashboardCompleto(rango = "1-20") { 
+    async cargarDashboardCompleto(rango = "1-20") {
         try {
             UIManager.showLoading(true);
-
-            // 2. Ahora enviamos un rango que el backend sí reconoce
-            const data = await Api.getSugerencias(rango); 
-
-            if (data.detail === "Not authenticated") {
-                throw { status: 401, message: "Sesión expirada" };
+            
+            // 1. Cargar Sugerencias (Esto es lo que fallaba)
+            const sugerencias = await Service.getSugerencias(rango);
+            UIManager.renderSugerencias(sugerencias);
+        
+            // 2. Cargar Estadísticas Generales (Para las barras)
+            // Asegúrate de que esta función exista y traiga los datos del gráfico
+            const stats = await Service.getEstadisticasGlobales(); 
+            if (stats && Charts) {
+                Charts.renderProgresoGlobal(stats); // Aquí es donde se dibujan las barras
             }
-
-            // 3. Extraemos la lista correctamente (siempre verificando si es el objeto o la lista)
-            const lista = data.sugerencias || data;
-
-            UIManager.renderSugerencias(lista);
-            // UIManager.renderPlanillaS13(lista); // Si usás esta función, pasale la lista corregida
-
+        
         } catch (error) {
-            console.error("Error en dashboard:", error);
-            if (error.status === 401 || error.message?.includes("authenticated")) {
-                localStorage.removeItem("token");
-                window.location.href = "../login/index.html";
-            }
+            console.error("❌ Error en dashboard:", error);
         } finally {
             UIManager.showLoading(false);
         }

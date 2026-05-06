@@ -211,7 +211,7 @@ window.UI = {
         // 2. Lógica de Datos (Llamar al backend)
         try {
             // Llamamos al controller para que traiga los datos frescos
-            await Controller.cargarDashboardCompleto(3); 
+            await Controller.cargarDashboardCompleto("1-20");
         } catch (err) {
             console.error("❌ Error al refrescar datos desde la agenda:", err);
         }

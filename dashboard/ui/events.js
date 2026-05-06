@@ -28,7 +28,7 @@ export function initGlobalEvents() {
             if (btnNav.id === "btnAgenda") {
                 UIManager.showLoading(true);
                 try {
-                    await Controller.cargarDashboardCompleto(3); 
+                    await Controller.cargarDashboardCompleto("1-20");
                 } catch (err) {
                     console.error("Error al cargar agenda:", err);
                 } finally {
