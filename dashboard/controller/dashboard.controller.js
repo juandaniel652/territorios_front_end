@@ -2,7 +2,7 @@
 import { Api }        from "../model/api.service.js";
 import { Validators } from "../model/validators.js";
 import { UIManager }  from "../ui/ui.js";
-
+import { Charts }     from "../ui/charts.js";
 
 export const Controller = {
     
@@ -125,9 +125,8 @@ export const Controller = {
                 // Si Api.getEstadisticasGlobales no existe, comentá esta parte o 
                 // usá Api.getTerritorio(numero) para llenar el gráfico inicial.
                 const stats = await Api.getTerritorio(49); // Ejemplo con el 49 para ver las barras
-                if (stats && window.Charts) {
-                    // Ajustá el nombre de la función según charts.js (ej: renderProgresoGlobal)
-                    window.Charts.renderDetalleProgreso(stats); 
+                if (stats && Charts) {
+                    Charts.renderDetalleProgreso(stats); 
                 }
             } catch (errStats) {
                 console.warn("⚠️ No se pudieron cargar las estadísticas del gráfico:", errStats);

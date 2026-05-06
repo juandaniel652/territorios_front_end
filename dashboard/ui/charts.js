@@ -32,3 +32,5 @@ export const Charts = {
         });
     }
 };
+
+window.Charts = Charts;
