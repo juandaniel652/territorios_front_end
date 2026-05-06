@@ -9,8 +9,9 @@ async function bootstrap() {
     
     if (UIManager.initDatePickers) UIManager.initDatePickers();
 
-    // 1. CORRECCIÓN: Cambiamos 3 por "1-20"
-    // 2. Le agregamos el await para que el flujo sea ordenado
+    // Forzamos visualmente la sección Dashboard al arrancar
+    UIManager.cambiarSeccion("btnDashboard"); // Suponiendo que tu botón se llama así
+
     try {
         await Controller.cargarDashboardCompleto("1-20");
     } catch (err) {
