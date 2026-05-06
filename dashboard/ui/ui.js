@@ -259,7 +259,7 @@ window.UI = {
             }
 
             // 5. Opcional: Hacer scroll suave hasta los resultados o cambiar de pestaña
-            // document.getElementById('seccionDashboard').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('seccionDashboard').scrollIntoView({ behavior: 'smooth' });
 
         } catch (error) {
             console.error("❌ Error al cargar detalle del territorio:", error);
