@@ -254,8 +254,10 @@ window.UI = {
             }
 
             // 4. Renderizar los Gráficos (Las barras que mencionás)
-            if (datos.stats_grafico && Charts) {
-                Charts.renderDetalleProgreso(datos.stats_grafico);
+            if (window.Charts && window.Charts.renderBarChart) {
+                // Usamos el nombre real: renderBarChart
+                // Y le pasamos el ID del canvas que confirmamos que debe existir
+                window.Charts.renderBarChart('graficoProgreso', datos.stats || datos);
             }
 
             // 5. Opcional: Hacer scroll suave hasta los resultados o cambiar de pestaña

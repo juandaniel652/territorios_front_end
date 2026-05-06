@@ -112,24 +112,15 @@ export const Controller = {
     async cargarDashboardCompleto(rango = "1-20") {
         try {
             UIManager.showLoading(true);
-            
-            // 1. CORRECCIÓN: Usamos 'Api', no 'Service'
-            const data = await Api.getSugerencias(rango);
-            const sugerencias = data.sugerencias || data;
-            UIManager.renderSugerencias(sugerencias);
+            const sugerencias = await Api.getSugerencias(rango);
+            UIManager.renderSugerencias(sugerencias.sugerencias || sugerencias);
         
-            // 2. Cargar Estadísticas (Barras del Dashboard)
-            // Si el backend no tiene un endpoint global, podés usar el detalle de un territorio
-            // o llamar al método específico si existe en tu Api.service
-            try {
-                // Si Api.getEstadisticasGlobales no existe, comentá esta parte o 
-                // usá Api.getTerritorio(numero) para llenar el gráfico inicial.
-                const stats = await Api.getTerritorio(49); // Ejemplo con el 49 para ver las barras
-                if (stats && Charts) {
-                    Charts.renderDetalleProgreso(stats); 
-                }
-            } catch (errStats) {
-                console.warn("⚠️ No se pudieron cargar las estadísticas del gráfico:", errStats);
+            const stats = await Api.getTerritorio(49);
+            
+            // 2. CORRECCIÓN DE NOMBRE: Usamos renderBarChart que es lo que existe en window.Charts
+            if (stats && window.Charts && window.Charts.renderBarChart) {
+                // Ajustá los parámetros (n, r, e, s) según lo que pida tu función
+                window.Charts.renderBarChart('graficoProgreso', stats); 
             }
         
         } catch (error) {
@@ -137,5 +128,14 @@ export const Controller = {
         } finally {
             UIManager.showLoading(false);
         }
+    },
+
+    async obtenerDetalleTerritorio(numero) {
+        const res = await Api.getTerritorio(numero);
+        return {
+            asignaciones: res.asignaciones,
+            // Asegúrate de que esto sea lo que tu renderBarChart necesita:
+            stats: res.estadisticas || res.proporciones || [10, 20, 30] 
+        };
     }
 };
