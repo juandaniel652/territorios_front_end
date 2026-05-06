@@ -112,31 +112,32 @@ export const Controller = {
     async cargarDashboardCompleto(rango = "1-20") {
         try {
             UIManager.showLoading(true);
+            
+            // 1. Cargar sugerencias
             const sugerencias = await Api.getSugerencias(rango);
             UIManager.renderSugerencias(sugerencias.sugerencias || sugerencias);
         
+            // 2. Cargar stats del territorio
             const stats = await Api.getTerritorio(49);
+            console.log("📊 Datos recibidos de la API:", stats); // Esto es para que vos veas qué llega
             
-            if (stats && window.Charts && window.Charts.renderBarChart) {
-                // --- TRANSFORMACIÓN DE DATOS ---
-                // Creamos el objeto que Chart.js espera para no romper el .slice()
-                const dataParaGrafico = {
-                    labels: ['Asignaciones', 'Días Atraso'], // Las etiquetas de las barras
+            if (window.Charts && window.Charts.renderBarChart) {
+                // FORZAMOS el formato exacto que Chart.js necesita para los ejes (Ticks)
+                const payload = {
+                    labels: ['Asignaciones', 'Días Atraso'], 
                     datasets: [{
                         label: `Territorio ${stats.numero || 49}`,
-                        // Extraemos los valores numéricos de tu objeto stats
-                        // Si tus campos tienen otros nombres (ej. 'cantidad'), cambialos acá:
                         data: [
-                            stats.total_asignaciones || stats.asignaciones?.length || 0, 
+                            stats.total_asignaciones || 0, 
                             stats.dias_atraso || 0
                         ],
-                        backgroundColor: '#22c55e', // Verde corporativo
-                        borderRadius: 5
+                        backgroundColor: '#16a34a',
+                        borderWidth: 0
                     }]
                 };
             
-                // Ahora enviamos dataParaGrafico en lugar de stats directamente
-                window.Charts.renderBarChart('graficoProgreso', dataParaGrafico); 
+                // Pasamos el payload formateado
+                window.Charts.renderBarChart('graficoProgreso', payload); 
             }
         
         } catch (error) {
