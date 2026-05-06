@@ -232,7 +232,42 @@ window.UI = {
         // Recolectamos los datos de la tabla que Tables.js renderizó
         // Si no tienes una variable global, el controller debería buscar en el DOM
         await Controller.confirmarAgendaDefinitiva(window.datosPropuestaActual || []);
-    }
+    },
+
+    seleccionarTerritorio: async (numero) => {
+        console.log(`🎯 Seleccionando Territorio: ${numero}`);
+        
+        try {
+            UIManager.showLoading(true);
+
+            // 1. Obtener datos detallados del territorio desde el Controller
+            // Esto debería traer: { info, asignaciones, stats_grafico }
+            const datos = await Controller.obtenerDetalleTerritorio(numero);
+
+            // 2. Actualizar el título del Dashboard
+            const headerTitle = document.getElementById("headerTitle");
+            if (headerTitle) headerTitle.textContent = `Dashboard: Territorio ${numero}`;
+
+            // 3. Renderizar el Historial (Tabla)
+            if (datos.asignaciones) {
+                UIManager.renderAsignaciones(numero, datos.asignaciones);
+            }
+
+            // 4. Renderizar los Gráficos (Las barras que mencionás)
+            if (datos.stats_grafico && Charts) {
+                Charts.renderDetalleProgreso(datos.stats_grafico);
+            }
+
+            // 5. Opcional: Hacer scroll suave hasta los resultados o cambiar de pestaña
+            // document.getElementById('seccionDashboard').scrollIntoView({ behavior: 'smooth' });
+
+        } catch (error) {
+            console.error("❌ Error al cargar detalle del territorio:", error);
+            UIManager.mostrarErrorResultados("No se pudo cargar la información del territorio.");
+        } finally {
+            UIManager.showLoading(false);
+        }
+    },
 };
 
 console.log("✅ window.UI vinculado con éxito al Controller");
