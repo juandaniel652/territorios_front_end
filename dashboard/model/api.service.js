@@ -88,3 +88,5 @@ export const Api = {
         return handleResponse(res);
     }
 };
+
+window.Api = Api;
