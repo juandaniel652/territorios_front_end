@@ -112,25 +112,22 @@ export const Controller = {
     async cargarDashboardCompleto(rango = "1-20") {
         try {
             UIManager.showLoading(true);
-
-            // 1. Obtenemos las sugerencias (que tienen los territorios del rango)
-            const sugerencias = await Api.getSugerencias(rango);
-            const listaSugerencias = sugerencias.sugerencias || sugerencias;
-
+            
+            // 1. Traemos la lista de territorios (sugerencias)
+            const response = await Api.getSugerencias(rango);
+            const territorios = response.sugerencias || response;
+            
             // 2. Renderizamos las tarjetas de texto
-            UIManager.renderSugerencias(listaSugerencias);
+            UIManager.renderSugerencias(territorios);
         
-            // 3. Preparamos los datos para el gráfico de barras (Vista General)
+            // 3. Renderizamos el gráfico de barras superior
             if (window.Charts && window.Charts.renderBarChart) {
-
-                // Extraemos los números de territorio para las etiquetas (Labels)
-                const labels = listaSugerencias.map(s => `T-${s.numero}`);
-
-                // Extraemos los días de atraso para las barras (Values)
-                // Si el campo se llama distinto (ej: 'dias'), cambialo acá
-                const values = listaSugerencias.map(s => s.dias_atraso || 0);
-
-                // Renderizamos en el canvas de arriba (asignacionesChart)
+                // Mapeamos los datos: T-49, T-50, etc.
+                const labels = territorios.map(t => `T-${t.numero}`);
+                // Mapeamos los días de atraso
+                const values = territorios.map(t => t.dias_atraso || 0);
+            
+                // Importante: Usar el ID del canvas de la Vista General
                 window.Charts.renderBarChart('asignacionesChart', labels, values, "#3b82f6"); 
             }
         
