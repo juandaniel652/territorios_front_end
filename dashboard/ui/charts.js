@@ -1,40 +1,43 @@
 // ui/charts.js
-let chartInstance = null; // Usamos un solo nombre consistente
+let chartVistaGeneral = null;
 
 export const Charts = {
-    renderBarChart(canvasId, labels, values, color = "#22c55e") {
+    renderBarChart(canvasId, labels, values, color = "#3b82f6") {
         const canvas = document.getElementById(canvasId);
         if (!canvas) return;
 
-        // Limpieza de instancia previa para evitar el error de "Canvas in use"
-        if (chartInstance) {
-            chartInstance.destroy();
+        if (chartVistaGeneral) {
+            chartVistaGeneral.destroy();
         }
 
         const ctx = canvas.getContext("2d");
-
-        chartInstance = new Chart(ctx, {
+        chartVistaGeneral = new Chart(ctx, {
             type: "bar",
             data: {
-                labels: labels, // Ahora pasamos el array de etiquetas
+                labels: labels,
                 datasets: [{
-                    label: "Asignaciones",
-                    data: values, // Ahora pasamos el array de números
+                    label: "Días de atraso",
+                    data: values,
                     backgroundColor: color,
-                    borderRadius: 4,
+                    borderRadius: 5,
+                    barPercentage: 0.6 // Barras más finas y elegantes
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: { display: false } // Quitamos leyendas innecesarias
+                },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: "#eef0f5" } },
+                    y: { 
+                        beginAtZero: true,
+                        title: { display: true, text: 'Días' },
+                        grid: { color: "#f3f4f6" }
+                    },
                     x: { grid: { display: false } }
                 }
             }
         });
     }
 };
-
-window.Charts = Charts;

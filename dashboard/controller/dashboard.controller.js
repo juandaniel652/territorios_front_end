@@ -112,27 +112,26 @@ export const Controller = {
     async cargarDashboardCompleto(rango = "1-20") {
         try {
             UIManager.showLoading(true);
-            
+
+            // 1. Obtenemos las sugerencias (que tienen los territorios del rango)
             const sugerencias = await Api.getSugerencias(rango);
-            UIManager.renderSugerencias(sugerencias.sugerencias || sugerencias);
+            const listaSugerencias = sugerencias.sugerencias || sugerencias;
+
+            // 2. Renderizamos las tarjetas de texto
+            UIManager.renderSugerencias(listaSugerencias);
         
-            // Buscamos el primer territorio disponible para mostrar algo al inicio
-            const numeroTerritorio = sugerencias.sugerencias?.[0]?.numero || 49;
-            const stats = await Api.getTerritorio(numeroTerritorio);
-            
-            // Verificamos que el contenedor sea visible
-            const contenedor = document.getElementById('contenedorGraficoDetalle');
-            if (contenedor) contenedor.style.display = 'block';
-        
+            // 3. Preparamos los datos para el gráfico de barras (Vista General)
             if (window.Charts && window.Charts.renderBarChart) {
-                // Definimos labels y values AQUÍ ADENTRO
-                const labels = ["Asignaciones Actuales"];
-                const values = [stats.asignaciones ? stats.asignaciones.length : 0];
-            
-                console.log("📊 Renderizando con:", { labels, values });
-                
-                // Llamamos a la función
-                window.Charts.renderBarChart('graficoProgreso', labels, values); 
+
+                // Extraemos los números de territorio para las etiquetas (Labels)
+                const labels = listaSugerencias.map(s => `T-${s.numero}`);
+
+                // Extraemos los días de atraso para las barras (Values)
+                // Si el campo se llama distinto (ej: 'dias'), cambialo acá
+                const values = listaSugerencias.map(s => s.dias_atraso || 0);
+
+                // Renderizamos en el canvas de arriba (asignacionesChart)
+                window.Charts.renderBarChart('asignacionesChart', labels, values, "#3b82f6"); 
             }
         
         } catch (error) {
