@@ -116,18 +116,22 @@ export const Controller = {
             const sugerencias = await Api.getSugerencias(rango);
             UIManager.renderSugerencias(sugerencias.sugerencias || sugerencias);
         
-            // DINÁMICO: Si hay sugerencias, tomamos el número del primer territorio de la lista
-            // Si no hay, por defecto usamos el 49 (o el que quieras)
-            const primerTerritorio = sugerencias.sugerencias?.[0]?.numero || 49;
+            // Buscamos el primer territorio disponible para mostrar algo al inicio
+            const numeroTerritorio = sugerencias.sugerencias?.[0]?.numero || 49;
+            const stats = await Api.getTerritorio(numeroTerritorio);
             
-            const stats = await Api.getTerritorio(primerTerritorio);
-            
+            // Verificamos que el contenedor sea visible
+            const contenedor = document.getElementById('contenedorGraficoDetalle');
+            if (contenedor) contenedor.style.display = 'block';
+        
             if (window.Charts && window.Charts.renderBarChart) {
-                // Extraemos los datos para que coincidan con los argumentos (canvasId, labels, values)
+                // Definimos labels y values AQUÍ ADENTRO
                 const labels = ["Asignaciones Actuales"];
                 const values = [stats.asignaciones ? stats.asignaciones.length : 0];
             
-                // LLAMADA CORREGIDA: Pasamos los parámetros por separado como pide tu renderBarChart
+                console.log("📊 Renderizando con:", { labels, values });
+                
+                // Llamamos a la función
                 window.Charts.renderBarChart('graficoProgreso', labels, values); 
             }
         
