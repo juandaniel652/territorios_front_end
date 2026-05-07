@@ -113,29 +113,22 @@ export const Controller = {
         try {
             UIManager.showLoading(true);
             
-            // Cargar sugerencias
             const sugerencias = await Api.getSugerencias(rango);
             UIManager.renderSugerencias(sugerencias.sugerencias || sugerencias);
         
-            // Cargar stats
-            const stats = await Api.getTerritorio(49);
+            // DINÁMICO: Si hay sugerencias, tomamos el número del primer territorio de la lista
+            // Si no hay, por defecto usamos el 49 (o el que quieras)
+            const primerTerritorio = sugerencias.sugerencias?.[0]?.numero || 49;
             
-            const canvasContainer = document.getElementById('contenedorGraficoDetalle');
+            const stats = await Api.getTerritorio(primerTerritorio);
             
-            if (stats && window.Charts && window.Charts.renderBarChart) {
-                // Mostramos el contenedor antes de renderizar
-                if (canvasContainer) canvasContainer.style.display = 'block';
+            if (window.Charts && window.Charts.renderBarChart) {
+                // Extraemos los datos para que coincidan con los argumentos (canvasId, labels, values)
+                const labels = ["Asignaciones Actuales"];
+                const values = [stats.asignaciones ? stats.asignaciones.length : 0];
             
-                const payload = {
-                    labels: ['Asignaciones'], 
-                    datasets: [{
-                        label: `Territorio ${stats.territorio || 49}`,
-                        data: [stats.asignaciones ? stats.asignaciones.length : 0],
-                        backgroundColor: '#16a34a'
-                    }]
-                };
-            
-                window.Charts.renderBarChart('graficoProgreso', payload); 
+                // LLAMADA CORREGIDA: Pasamos los parámetros por separado como pide tu renderBarChart
+                window.Charts.renderBarChart('graficoProgreso', labels, values); 
             }
         
         } catch (error) {
