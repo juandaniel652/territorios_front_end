@@ -112,25 +112,33 @@ export const Controller = {
     async cargarDashboardCompleto(rango = "1-20") {
         try {
             UIManager.showLoading(true);
-            
-            // 1. Traemos la lista de territorios (sugerencias)
             const response = await Api.getSugerencias(rango);
             const territorios = response.sugerencias || response;
-            
-            // 2. Renderizamos las tarjetas de texto
+        
             UIManager.renderSugerencias(territorios);
         
-            // 3. Renderizamos el gráfico de barras superior
             if (window.Charts && window.Charts.renderBarChart) {
-                // Mapeamos los datos: T-49, T-50, etc.
-                const labels = territorios.map(t => `T-${t.numero}`);
-                // Mapeamos los días de atraso
-                const values = territorios.map(t => t.dias_atraso || 0);
+                const hoy = new Date();
             
-                // Importante: Usar el ID del canvas de la Vista General
-                window.Charts.renderBarChart('asignacionesChart', labels, values, "#3b82f6"); 
+                // 1. Labels: T-2, T-3, etc.
+                const labels = territorios.map(t => `T-${t.numero}`);
+            
+                // 2. Cálculo de días de atraso
+                const values = territorios.map(t => {
+                    if (!t.ultima_fecha_completado) return 0;
+                    
+                    const fechaCompletado = new Date(t.ultima_fecha_completado);
+                    const diferenciaMs = hoy - fechaCompletado;
+                    const dias = Math.floor(diferenciaMs / (1000 * 60 * 60 * 24));
+                    
+                    return dias > 0 ? dias : 0; // Si es negativo (fecha futura), ponemos 0
+                });
+            
+                console.log("📊 Días calculados:", values);
+            
+                // 3. Renderizar en el gráfico superior
+                window.Charts.renderBarChart('asignacionesChart', labels, values, "#3b82f6");
             }
-        
         } catch (error) {
             console.error("❌ Error en dashboard:", error);
         } finally {

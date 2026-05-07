@@ -32,10 +32,16 @@ export const Charts = {
                 scales: {
                     y: { 
                         beginAtZero: true,
-                        title: { display: true, text: 'Días' },
+                        title: {
+                            display: true,
+                            text: 'Días desde último completado',
+                            font: { size: 12, weight: 'bold' }
+                        },
                         grid: { color: "#f3f4f6" }
                     },
-                    x: { grid: { display: false } }
+                    x: { 
+                        grid: { display: false } 
+                    }
                 }
             }
         });
