@@ -113,27 +113,28 @@ export const Controller = {
         try {
             UIManager.showLoading(true);
             
+            // Cargar sugerencias
             const sugerencias = await Api.getSugerencias(rango);
             UIManager.renderSugerencias(sugerencias.sugerencias || sugerencias);
         
+            // Cargar stats
             const stats = await Api.getTerritorio(49);
             
-            if (window.Charts && window.Charts.renderBarChart) {
-                // Mapeo basado en tu console.log:
-                const cantidadAsignaciones = stats.asignaciones ? stats.asignaciones.length : 0;
-                
+            const canvasContainer = document.getElementById('contenedorGraficoDetalle');
+            
+            if (stats && window.Charts && window.Charts.renderBarChart) {
+                // Mostramos el contenedor antes de renderizar
+                if (canvasContainer) canvasContainer.style.display = 'block';
+            
                 const payload = {
-                    labels: ['Total Asignaciones', 'Estado'], 
+                    labels: ['Asignaciones'], 
                     datasets: [{
                         label: `Territorio ${stats.territorio || 49}`,
-                        data: [cantidadAsignaciones, 1], // Usamos el .length del array que vimos en consola
-                        backgroundColor: 'rgba(22, 163, 74, 0.5)',
-                        borderColor: 'rgb(22, 163, 74)',
-                        borderWidth: 1
+                        data: [stats.asignaciones ? stats.asignaciones.length : 0],
+                        backgroundColor: '#16a34a'
                     }]
                 };
             
-                // Ejecutar el render
                 window.Charts.renderBarChart('graficoProgreso', payload); 
             }
         

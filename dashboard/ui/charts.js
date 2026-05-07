@@ -1,10 +1,14 @@
 // ui/charts.js
-let chartInstance = null;
+let instanceProgreso = null;
 
 export const Charts = {
     renderBarChart(canvasId, labels, values, color = "#22c55e") {
         const canvas = document.getElementById(canvasId);
         if (!canvas) return;
+
+        if (instanceProgreso) {
+            instanceProgreso.destroy();
+        }
 
         const ctx = canvas.getContext("2d");
         if (chartInstance) chartInstance.destroy();
