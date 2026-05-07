@@ -112,35 +112,38 @@ export const Controller = {
     async cargarDashboardCompleto(rango = "1-20") {
         try {
             UIManager.showLoading(true);
+            
+            // 1. Obtener territorios del rango seleccionado (ej: 1-20)
             const response = await Api.getSugerencias(rango);
             const territorios = response.sugerencias || response;
-        
+            
+            // 2. Renderizar las tarjetas de texto (lo que ya tenías)
             UIManager.renderSugerencias(territorios);
         
+            // 3. Renderizar el gráfico de barras profesional
             if (window.Charts && window.Charts.renderBarChart) {
                 const hoy = new Date();
             
-                // 1. Labels: T-2, T-3, etc.
+                // Labels dinámicos: T-1, T-2... T-20
                 const labels = territorios.map(t => `T-${t.numero}`);
             
-                // 2. Cálculo de días de atraso
+                // Cálculo de días reales basado en 'ultima_fecha_completado'
                 const values = territorios.map(t => {
                     if (!t.ultima_fecha_completado) return 0;
-                    
-                    const fechaCompletado = new Date(t.ultima_fecha_completado);
-                    const diferenciaMs = hoy - fechaCompletado;
-                    const dias = Math.floor(diferenciaMs / (1000 * 60 * 60 * 24));
-                    
-                    return dias > 0 ? dias : 0; // Si es negativo (fecha futura), ponemos 0
+                    const fecha = new Date(t.ultima_fecha_completado.replace(/-/g, '\/'));
+                    const diff = hoy - fecha;
+                    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    return dias > 0 ? dias : 0;
                 });
             
-                console.log("📊 Días calculados:", values);
-            
-                // 3. Renderizar en el gráfico superior
-                window.Charts.renderBarChart('asignacionesChart', labels, values, "#3b82f6");
+                // Color corporativo (un azul sobrio o verde esmeralda)
+                const colorCorporativo = "#2563eb"; // Azul profesional
+                
+                window.Charts.renderBarChart('asignacionesChart', labels, values, colorCorporativo);
             }
+        
         } catch (error) {
-            console.error("❌ Error en dashboard:", error);
+            console.error("❌ Error al cargar dashboard:", error);
         } finally {
             UIManager.showLoading(false);
         }

@@ -26,11 +26,23 @@ export const Charts = {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: { display: false } // Menos ruido visual
+                },
                 scales: {
-                    y: { beginAtZero: true },
-                    x: { grid: { display: false } }
-                }
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: "#f3f4f6", drawBorder: false },
+                        ticks: { color: "#6b7280", font: { size: 11 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: "#6b7280", font: { size: 10 } }
+                    }
+                },
+                // Añadimos esto para que las barras se vean más elegantes
+                barPercentage: 0.7,
+                categoryPercentage: 0.8
             }
         });
     }
