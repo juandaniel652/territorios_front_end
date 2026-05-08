@@ -19,8 +19,11 @@ export const Charts = {
                 datasets: [{
                     label: "Días de atraso",
                     data: values,
-                    backgroundColor: color,
-                    borderRadius: 5
+                    backgroundColor: color + 'CC', // El 'CC' le da un 80% de opacidad
+                    borderColor: color,
+                    borderWidth: 1,
+                    borderRadius: 4, // Bordes redondeados para estilo moderno
+                    hoverBackgroundColor: color
                 }]
             },
             options: {

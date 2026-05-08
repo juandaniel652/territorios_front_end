@@ -43,14 +43,34 @@ export const Controller = {
         try {
             const data = await Api.getSugerencias(rangoSeleccionado);
             const listaSugerida = data.sugerencias || data;
-
-            // El backend YA filtró por rango, solo renderizamos directo
+        
+            // 1. Renderiza las tarjetas de texto
             UIManager.renderSugerencias(listaSugerida);
+        
+            // 2. ¡CLAVE! Actualiza el gráfico con el mismo rango
+            // Esto hace que el Dashboard sea congruente con lo que ves arriba
+            this.actualizarSoloGrafico(listaSugerida);
+        
         } catch (error) {
-            console.error("❌ Error filtrando sugerencias:", error);
-            UIManager.mostrarErrorResultados("Error al procesar el rango de territorios.");
+            console.error("❌ Error:", error);
         } finally {
             UIManager.showLoading(false);
+        }
+    },
+    
+    // Creamos esta pequeña función de apoyo para no repetir código
+    actualizarSoloGrafico(territorios) {
+        if (window.Charts && window.Charts.renderBarChart) {
+            const hoy = new Date();
+            const labels = territorios.map(t => `T-${t.numero}`);
+            const values = territorios.map(t => {
+                if (!t.ultima_fecha_completado) return 0;
+                const fecha = new Date(t.ultima_fecha_completado.replace(/-/g, '\/'));
+                const diff = hoy - fecha;
+                return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+            });
+        
+            window.Charts.renderBarChart('asignacionesChart', labels, values, "#10b981");
         }
     },
 
@@ -130,7 +150,7 @@ export const Controller = {
                 // Cálculo de días reales basado en 'ultima_fecha_completado'
                 const values = territorios.map(t => t.dias_atraso || Math.floor(Math.random() * 30) + 1);
                 // Color corporativo (un azul sobrio o verde esmeralda)
-                const colorCorporativo = "#2563eb"; // Azul profesional
+                const colorCorporativo = "#10b981"; // Azul profesional
 
                 window.Charts.renderBarChart('asignacionesChart', labels, values, colorCorporativo);
             }
