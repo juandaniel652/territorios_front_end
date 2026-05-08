@@ -3,6 +3,9 @@ import { Api }        from "../model/api.service.js";
 import { Validators } from "../model/validators.js";
 import { UIManager }  from "../ui/ui.js";
 import { Charts }     from "../ui/charts.js";
+import { CONFIG } from "../config.js";
+
+const API_BASE = CONFIG.BASE_URL;
 
 export const Controller = {
     
@@ -91,36 +94,6 @@ export const Controller = {
 
     // --- FUNCIONES DE AGENDA ---
 
-    async prepararAgendaQuincenal(fechaInicio) {
-        UIManager.showLoading(true); 
-        try {
-            const plan = await Api.generarPlanQuincenal(fechaInicio);
-            UIManager.renderVistaPreviaAgenda(plan || []);
-        } catch (error) {
-            UIManager.mostrarMensaje("Error al generar propuesta.", "error");
-        } finally {
-            UIManager.showLoading(false);
-        }
-    },
-
-    async confirmarAgendaDefinitiva(planRecibido, conductorDefault, onSuccess) {
-        try {
-            const payload = {
-                conductor_default: conductorDefault || "Sin Asignar",
-                items: planRecibido.map(item => ({
-                    territorio_id: item.territorio_id,
-                    fecha_asignado: item.fecha, 
-                    turno: item.turno
-                }))
-            };
-            const result = await Api.confirmarAgenda(payload);
-            UIManager.mostrarMensaje(result.message, "success");
-            if (onSuccess) onSuccess();
-            this.cargarDashboardCompleto();
-        } catch (error) {
-            UIManager.mostrarMensaje(error.detail || "Error al impactar agenda.", "error");
-        }
-    },
 
     async cargarDashboardCompleto(rango = "1-20") {
         try {
@@ -155,14 +128,13 @@ export const Controller = {
             // Usamos directamente el valor que manda el backend
             // Si no existe, devolvemos 0
             const valor = t.dias_atraso !== undefined ? t.dias_atraso : 0;
-            
+
             // Un pequeño truco: si es 0, devolvemos 0.5 para que se vea
             // una línea verde mínima en el gráfico y no quede vacío.
             return valor === 0 ? 0.5 : valor;
         });
     },
     
-
     async obtenerDetalleTerritorio(numero) {
         const res = await Api.getTerritorio(numero);
         return {
@@ -170,5 +142,63 @@ export const Controller = {
             // Asegúrate de que esto sea lo que tu renderBarChart necesita:
             stats: res.estadisticas || res.proporciones || [10, 20, 30] 
         };
+    },
+
+    async generarPropuesta(fechaInicio) {
+        UIManager.showLoading(true);
+        try {
+            // Llama al endpoint que probamos antes en el navegador
+            const plan = await Api.generarPlanQuincenal(fechaInicio);
+            UIManager.renderizarPropuestaAgenda(plan);
+        } catch (error) {
+            console.error("Error al generar plan:", error);
+            UIManager.mostrarMensaje("No se pudo generar la propuesta", "error");
+        } finally {
+            UIManager.showLoading(false);
+        }
+    },
+
+    async confirmarAgenda() {
+        // Buscamos los inputs de texto que el usuario completó en la tabla de agenda
+        const inputs = document.querySelectorAll(".input-conductor");
+        
+        const asignaciones = Array.from(inputs).map(input => ({
+            territorio_id: parseInt(input.dataset.territorio),
+            fecha: input.dataset.fecha,
+            turno: input.dataset.turno,
+            conductor: input.value || "Sin asignar"
+        }));
+
+        if (asignaciones.length === 0) return;
+
+        try {
+            UIManager.showLoading(true);
+            // Enviamos el array al POST que creamos en el backend
+            await Api.confirmarAgenda({ asignaciones });
+
+            UIManager.mostrarMensaje("¡Agenda confirmada con éxito!", "success");
+
+            // Limpiamos la tabla de propuesta para que no se mande dos veces
+            document.getElementById("containerPropuesta").innerHTML = "";
+            document.getElementById("accionesPropuesta").classList.add("hidden");
+
+            // Actualizamos el historial de abajo
+            await this.cargarHistorial();
+        } catch (error) {
+            console.error("Error al confirmar:", error);
+            UIManager.mostrarMensaje("Error al guardar la agenda", "error");
+        } finally {
+            UIManager.showLoading(false);
+        }
+    },
+
+    async cargarHistorial() {
+        try {
+            // Llama a las últimas "salidas" o "asignaciones" confirmadas
+            const historial = await Api.getHistorialAgenda(); 
+            UIManager.renderizarHistorialAgenda(historial);
+        } catch (error) {
+            console.error("Error cargando historial:", error);
+        }
     }
 };

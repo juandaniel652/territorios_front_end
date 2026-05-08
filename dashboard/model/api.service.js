@@ -3,40 +3,12 @@ import { CONFIG, getHeaders, handleResponse } from "../config.js";
 
 export const Api = {
 
+    // --- TERRITORIOS & SUGERENCIAS ---
     async getSugerencias(rangoStr) {
         const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/sugerencias?rango=${rangoStr}`, {
             headers: getHeaders()
         });
         return handleResponse(res);
-    },
-
-    async obtenerSugerencias(rangoStr) {
-        try {
-            // Llamamos al método que definimos arriba
-            const data = await Api.getSugerencias(rangoStr);
-            
-            // Si el backend devuelve { sugerencias: [...] }, extraemos la lista
-            const listaSugerida = data.sugerencias || data; 
-        
-            const [min, max] = rangoStr.split('-').map(Number);
-        
-            // Filtrado de seguridad
-            const listaFiltrada = listaSugerida.filter(s => s.numero >= min && s.numero <= max);
-        
-            // IMPORTANTE: Asegurate de que UIManager esté disponible o importado
-            if (window.UIManager) {
-                window.UIManager.renderSugerencias(listaFiltrada);
-            }
-            
-            return listaFiltrada; // Por si el controller necesita el dato
-        
-        } catch (error) {
-            console.error("Error en obtenerSugerencias:", error);
-            if (window.UIManager) {
-                window.UIManager.mostrarErrorResultados("No se pudieron cargar las sugerencias.");
-            }
-            throw error;
-        }
     },
 
     async getTerritorio(numero) {
@@ -46,17 +18,19 @@ export const Api = {
         return handleResponse(res);
     },
 
+    // --- MOTOR DE AGENDA (Rutas sincronizadas con tu FastAPI) ---
     async generarPlanQuincenal(fechaInicio) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/generar-quincena`, {
-            method: 'POST',
-            headers: getHeaders(),
-            body: JSON.stringify({ fecha_inicio: fechaInicio })
+        // GET porque le pasamos la fecha por Query Params (?fecha_inicio=...)
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/generar-plan?fecha_inicio=${fechaInicio}`, {
+            method: 'GET',
+            headers: getHeaders()
         });
         return handleResponse(res);
     },
 
     async confirmarAgenda(payload) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/confirmar-agenda`, {
+        // POST porque enviamos el JSON con los conductores asignados
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/confirmar-agenda`, {
             method: 'POST',
             headers: getHeaders(),
             body: JSON.stringify(payload)
@@ -64,9 +38,19 @@ export const Api = {
         return handleResponse(res);
     },
 
-    async obtenerSalidasQuincena(fecha) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/historial?fecha=${fecha}`, {
+    async getHistorialAgenda() {
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/historial`, {
             headers: getHeaders()
+        });
+        return handleResponse(res);
+    },
+
+    // --- CRUD DE ASIGNACIONES INDIVIDUALES ---
+    async crearAsignacion(datos) {
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(datos)
         });
         return handleResponse(res);
     },

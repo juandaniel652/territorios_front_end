@@ -11,33 +11,55 @@ async function bootstrap() {
     // Inicializamos los selectores dinámicos de fechas (8 domingos atrás)
     UIManager.configurarSelectoresFechaAsignacion();
 
-    // 2. Vincular eventos de los botones de rango
-    const configurarRangos = () => {
-        const rangos = {
-            'btnRango1': '1-20',
-            'btnRango2': '21-40',
-            'btnRango3': '41-60'
-        };
+    // 2. Vincular eventos de los botones de rango (Sugerencias)
+    const btnBuscarSugerencias = document.getElementById("btnBuscarSugerencias");
+    if (btnBuscarSugerencias) {
+        btnBuscarSugerencias.addEventListener("click", () => {
+            const rango = document.getElementById("rangoSelect").value;
+            // Usamos el Controller para cargar las sugerencias
+            Controller.obtenerSugerencias(rango);
+        });
+    }
 
-        Object.entries(rangos).forEach(([id, valor]) => {
-            const btn = document.getElementById(id);
-            if (btn) {
-                btn.addEventListener('click', () => Controller.cargarDashboardCompleto(valor));
+    // 3. Eventos de la SECCIÓN AGENDA (Nuevos)
+    const btnGenerar = document.getElementById("btnGenerarPropuesta");
+    if (btnGenerar) {
+        btnGenerar.addEventListener("click", () => {
+            const fecha = document.getElementById("fechaInicioAgenda").value;
+            if (!fecha) return alert("Por favor, seleccioná una fecha de inicio.");
+            // OJO: Usamos 'Controller' que es como lo importaste arriba
+            Controller.generarPropuesta(fecha);
+        });
+    }
+
+    const btnConfirmar = document.getElementById("btnConfirmarAgenda");
+    if (btnConfirmar) {
+        btnConfirmar.addEventListener("click", () => {
+            if (confirm("¿Estás seguro de que querés guardar esta planificación?")) {
+                Controller.confirmarAgenda();
             }
         });
-    };
-    configurarRangos();
+    }
 
-    // 3. Estado inicial
+    // 4. Estado inicial
     UIManager.cambiarSeccion("btnDashboard");
 
     try {
+        // Cargamos los KPIs iniciales y el gráfico
         await Controller.cargarDashboardCompleto("1-20");
+        
+        // Cargamos el historial de agendas de forma silenciosa
+        await Controller.cargarHistorial(); 
+        
         console.log("✅ UI lista para interactuar");
     } catch (err) {
         console.error("Error al arrancar dashboard:", err);
-        if (err.status === 401) window.location.href = "../login/index.html";
+        // Si el error es de token expirado (401 o 403), redirigimos
+        if (err.status === 401 || err.status === 403) {
+            window.location.href = "../login/index.html";
+        }
     }
 }
 
+// Única ejecución al cargar el DOM
 document.addEventListener('DOMContentLoaded', bootstrap);

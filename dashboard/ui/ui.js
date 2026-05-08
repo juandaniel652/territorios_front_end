@@ -261,6 +261,95 @@ export const UIManager = {
             selectCompletado.appendChild(option);
         }
         selectCompletado.disabled = false;
+    },
+
+    renderizarPropuestaAgenda(propuesta) {
+        const contenedor = document.getElementById("containerPropuesta");
+        const acciones = document.getElementById("accionesPropuesta");
+        if (!contenedor) return;
+
+        if (!propuesta || propuesta.length === 0) {
+            contenedor.innerHTML = `<p class="p-8 text-center text-gray-400">No se encontraron territorios disponibles para estas fechas.</p>`;
+            acciones.classList.add("hidden");
+            return;
+        }
+
+        let html = `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Turno</th>
+                        <th>Territorio</th>
+                        <th>Zona</th>
+                        <th>Conductor / Encuentro</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        propuesta.forEach((item, index) => {
+            const fechaObj = new Date(item.fecha + "T00:00:00");
+            const fechaLegible = fechaObj.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+
+            html += `
+                <tr class="propuesta-row" data-index="${index}">
+                    <td class="font-medium text-gray-600">${fechaLegible}</td>
+                    <td><span class="badge-turno">${item.turno}</span></td>
+                    <td><span class="territorio-badge">T-${item.numero}</span></td>
+                    <td><span class="text-xs text-gray-400 font-mono">Z-${item.zona}</span></td>
+                    <td>
+                        <input type="text" 
+                               class="form-input text-xs input-conductor" 
+                               placeholder="Nombre del conductor..."
+                               data-territorio="${item.territorio_id}"
+                               data-fecha="${item.fecha}"
+                               data-turno="${item.turno}">
+                    </td>
+                </tr>`;
+        });
+
+        html += `</tbody></table>`;
+        contenedor.innerHTML = html;
+        acciones.classList.remove("hidden"); // Mostrar botón de confirmar
+    },
+
+    renderizarHistorialAgenda(asignaciones) {
+        const contenedor = document.getElementById("containerAgendaGuardada");
+        if (!contenedor) return;
+
+        if (!asignaciones || asignaciones.length === 0) {
+            contenedor.innerHTML = `<p class="p-8 text-center text-gray-400">No hay agendas registradas.</p>`;
+            return;
+        }
+
+        let html = `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Territorio</th>
+                        <th>Conductor</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        asignaciones.forEach(asig => {
+            html += `
+                <tr>
+                    <td class="font-mono text-xs">${asig.fecha}</td>
+                    <td><span class="territorio-id">#${asig.territorio_numero}</span></td>
+                    <td class="text-gray-700">${asig.conductor || '---'}</td>
+                    <td>
+                        <span class="badge ${asig.completado ? 'badge-success' : 'badge-ghost'} badge-sm">
+                            ${asig.completado ? 'Completado' : 'Pendiente'}
+                        </span>
+                    </td>
+                </tr>`;
+        });
+
+        html += `</tbody></table>`;
+        contenedor.innerHTML = html;
     }
 
 };
