@@ -314,32 +314,43 @@ export const UIManager = {
     },
 
     renderizarHistorialAgenda(historial) {
-        console.log(historial[0])
+        // 1. Verificamos que el historial sea un array
+        const registros = Array.isArray(historial) ? historial : [];
+        
         const tabla = document.getElementById("tablaHistorialAgenda");
-        if (!tabla) return;
-
-        if (!historial || historial.length === 0) {
-            tabla.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No hay registros recientes.</td></tr>`;
+        if (!tabla) {
+            console.error("❌ No se encontró el elemento #tablaHistorialAgenda en el HTML");
             return;
         }
 
-        tabla.innerHTML = historial.map(reg => {
-            // Mapeamos los nombres del backend a variables locales para el template
+        if (registros.length === 0) {
+            tabla.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500 italic">No hay registros recientes.</td></tr>`;
+            return;
+        }
+
+        // 2. Mapeo de datos (Usando los nombres exactos de tu backend)
+        tabla.innerHTML = registros.map(reg => {
             const fecha = reg.fecha_asignado || "---";
             const territorio = reg.territorio_id || "---";
-            // Si el backend no hace el JOIN con conductores, quizás recibís el ID
-            const conductor = reg.conductor_nombre || reg.conductor_id || "---"; 
-            const estado = reg.fecha_completado ? "Completado" : "Pendiente";
-            const badgeColor = reg.fecha_completado ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800";
+            const conductor = reg.conductor_nombre || (reg.conductor_id ? `Conductor #${reg.conductor_id}` : "---");
+            
+            // Estado basado en si tiene fecha de completado
+            const completado = !!reg.fecha_completado; 
+            const estadoTexto = completado ? "Completado" : "Pendiente";
+            const badgeColor = completado 
+                ? "bg-green-100 text-green-800 border border-green-200" 
+                : "bg-yellow-50 text-yellow-700 border border-yellow-100";
 
             return `
-                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td class="p-3 text-sm text-gray-600">${fecha}</td>
-                    <td class="p-3 text-sm font-medium text-gray-800">#${territorio}</td>
+                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors animate-in">
+                    <td class="p-3 text-sm text-gray-600 font-mono">${fecha}</td>
+                    <td class="p-3">
+                        <span class="font-bold text-gray-800">#${territorio}</span>
+                    </td>
                     <td class="p-3 text-sm text-gray-600">${conductor}</td>
                     <td class="p-3">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${badgeColor}">
-                            ${estado}
+                        <span class="px-2 py-1 text-[10px] font-bold uppercase rounded ${badgeColor}">
+                            ${estadoTexto}
                         </span>
                     </td>
                 </tr>
@@ -373,7 +384,7 @@ window.UI = {
     },
 
     manejarGenerarAgenda: async () => {
-        const fecha = document.getElementById("inputFechaInicio")?.value;
+        const fecha = document.getElementById("fechaInicioAgenda")?.value; // Cambiado de inputFechaInicio a fechaInicioAgenda
         if (!fecha) {
             alert("Por favor, selecciona una fecha de inicio.");
             return;

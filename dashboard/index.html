@@ -457,10 +457,24 @@
       
         <!-- Card 2: Historial de Agendas Guardadas -->
         <div class="form-card">
-          <h3 class="section-title">Historial de Agenda</h3>
-          <!-- ID CLAVE: containerAgendaGuardada (Aquí el JS inyectará el historial) -->
-          <div id="containerAgendaGuardada" class="table-wrapper">
-            <p class="p-8 text-center text-gray-400">Cargando historial...</p>
+        <h3 class="section-title">Historial de Agenda</h3>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Territorio</th>
+                  <th>Conductor</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tablaHistorialAgenda">
+                <!-- El JS inyectará los datos aquí -->
+                <tr>
+                  <td colspan="4" class="p-8 text-center text-gray-400">Cargando historial...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
