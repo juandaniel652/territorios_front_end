@@ -61,16 +61,8 @@ export const Controller = {
         // Creamos esta pequeña función de apoyo para no repetir código
     actualizarSoloGrafico(territorios) {
         if (window.Charts && window.Charts.renderBarChart) {
-            // Aseguramos que 'territorios' sea un array
-            const lista = Array.isArray(territorios) ? territorios : [];
-
-            // Usamos la misma lógica de cálculo centralizada
-            const values = this._calcularDiasAtraso(lista);
-            const labels = lista.map(t => `T-${t.numero}`);
-
-            console.log(`📊 Actualizando gráfico: ${labels.length} territorios encontrados.`);
-            console.log("📊 Valores calculados:", values);
-
+            const labels = territorios.map(t => `T-${t.numero}`);
+            const values = this._calcularDiasAtraso(territorios);
             window.Charts.renderBarChart('asignacionesChart', labels, values, "#10b981");
         }
     },
@@ -133,14 +125,22 @@ export const Controller = {
     async cargarDashboardCompleto(rango = "1-20") {
         try {
             UIManager.showLoading(true);
+
+            // 1. Pedir datos
             const response = await Api.getSugerencias(rango);
             const territorios = response.sugerencias || response;
 
+            // 2. Renderizar tarjetas
             UIManager.renderSugerencias(territorios);
 
+            // 3. Renderizar Gráfico
             if (window.Charts && window.Charts.renderBarChart) {
                 const labels = territorios.map(t => `T-${t.numero}`);
                 const values = this._calcularDiasAtraso(territorios);
+
+                console.log("📊 Datos cargados para gráfico:", { labels, values });
+
+                // Usamos el ID exacto de tu canvas
                 window.Charts.renderBarChart('asignacionesChart', labels, values, "#10b981");
             }
         } catch (error) {
@@ -153,24 +153,25 @@ export const Controller = {
     // 3. AGREGAMOS esta función privada para centralizar el cálculo
     _calcularDiasAtraso(territorios) {
         const hoy = new Date();
-        hoy.setHours(12, 0, 0, 0); // Evitamos problemas de zona horaria
-        
+        // Normalizamos hoy a medianoche para evitar errores de cálculo
+        hoy.setHours(0, 0, 0, 0);
+
         return territorios.map(t => {
-            // Si no hay fecha o es inválida, devolvemos 0
             if (!t.ultima_fecha_completado) return 0;
-            
+
             try {
-                // Limpiamos el string: tomamos solo YYYY-MM-DD
-                const soloFecha = t.ultima_fecha_completado.split('T')[0].split(' ')[0];
-                const fechaComp = new Date(soloFecha.replace(/-/g, '/'));
-                fechaComp.setHours(12, 0, 0, 0);
-            
+                // Limpieza del string de fecha de la DB
+                const fechaLimpia = t.ultima_fecha_completado.split(' ')[0].replace(/-/g, '/');
+                const fechaComp = new Date(fechaLimpia);
+                fechaComp.setHours(0, 0, 0, 0);
+
                 const diffMs = hoy.getTime() - fechaComp.getTime();
                 const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                
-                // Validamos que sea un número y no sea negativo
-                return (isNaN(dias) || dias < 0) ? 0 : dias;
+
+                // Si el cálculo falla, devolvemos 0
+                return isNaN(dias) ? 0 : Math.max(0, dias);
             } catch (e) {
+                console.error("Error en fecha T-" + t.numero, e);
                 return 0;
             }
         });
