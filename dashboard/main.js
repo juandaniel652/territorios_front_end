@@ -1,4 +1,3 @@
-// dashboard/main.js
 import { Controller } from './controller/dashboard.controller.js';
 import { UIManager }  from './ui/ui.js';
 import { initGlobalEvents } from './ui/events.js';
@@ -8,9 +7,11 @@ async function bootstrap() {
     
     // 1. Setup de UI y Eventos Globales
     initGlobalEvents(); 
-    if (UIManager.initDatePickers) UIManager.initDatePickers();
+    
+    // Inicializamos los selectores dinámicos de fechas (8 domingos atrás)
+    UIManager.configurarSelectoresFechaAsignacion();
 
-    // 2. Vincular eventos de los botones de rango (Limpio)
+    // 2. Vincular eventos de los botones de rango
     const configurarRangos = () => {
         const rangos = {
             'btnRango1': '1-20',
@@ -31,7 +32,6 @@ async function bootstrap() {
     UIManager.cambiarSeccion("btnDashboard");
 
     try {
-        // Carga inicial (una sola vez)
         await Controller.cargarDashboardCompleto("1-20");
         console.log("✅ UI lista para interactuar");
     } catch (err) {
@@ -40,5 +40,4 @@ async function bootstrap() {
     }
 }
 
-// Un solo punto de entrada
 document.addEventListener('DOMContentLoaded', bootstrap);

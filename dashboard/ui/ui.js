@@ -14,7 +14,38 @@ import { Spanish } from "flatpickr/dist/l10n/es.js";
  * Se encarga de la manipulación del DOM y delegar a componentes especializados (Tables, Charts)
  */
 export const UIManager = {
-    // --- RENDERIZADO DE ASIGNACIONES Y AGENDA ---
+
+    configurarSelectoresFechaAsignacion() {
+        const selectDomingo = document.getElementById("fechaAsignado");
+        const selectCompletado = document.getElementById("fechaCompletado");
+        if (!selectDomingo || !selectCompletado) return;
+
+        // Limpiamos y preparamos el primer select (Domingos)
+        selectDomingo.innerHTML = '<option value="">Seleccione Domingo de Inicio</option>';
+        selectCompletado.innerHTML = '<option value="">Primero elija el domingo</option>';
+        selectCompletado.disabled = true;
+
+        let fecha = new Date();
+        // Ajustamos al domingo más cercano (hoy o anterior)
+        fecha.setDate(fecha.getDate() - fecha.getDay());
+
+        for (let i = 0; i < 8; i++) {
+            const iso = fecha.toISOString().split('T')[0];
+            const label = fecha.toLocaleDateString('es-AR', { 
+                day: '2-digit', month: 'long', year: 'numeric' 
+            });
+            
+            const option = document.createElement('option');
+            option.value = iso;
+            option.textContent = `Semana del Dom. ${label}`;
+            selectDomingo.appendChild(option);
+
+            // Retrocedemos una semana
+            fecha.setDate(fecha.getDate() - 7);
+        }
+    },
+
+
     renderAsignaciones(territorio, asignaciones) {
         return Tables.renderAsignaciones(territorio, asignaciones);
     },
@@ -192,6 +223,38 @@ export const UIManager = {
             `;
         }
     },
+
+    actualizarDiasSemanaLaboral(fechaDomingo) {
+        const selectCompletado = document.getElementById("fechaCompletado");
+        if (!selectCompletado) return;
+
+        selectCompletado.innerHTML = '<option value="">Seleccione día de fin (Lunes-Sábado)</option>';
+        
+        if (!fechaDomingo) {
+            selectCompletado.disabled = true;
+            return;
+        }
+
+        // Creamos la fecha base (forzamos hora 00:00 para evitar desfasajes de zona horaria)
+        const base = new Date(fechaDomingo + "T00:00:00");
+
+        for (let i = 1; i <= 6; i++) {
+            const diaLab = new Date(base);
+            diaLab.setDate(base.getDate() + i);
+            
+            const iso = diaLab.toISOString().split('T')[0];
+            const label = diaLab.toLocaleDateString('es-AR', { 
+                weekday: 'long', day: '2-digit', month: '2-digit' 
+            });
+
+            const option = document.createElement('option');
+            option.value = iso;
+            option.textContent = label.toUpperCase();
+            selectCompletado.appendChild(option);
+        }
+        selectCompletado.disabled = false;
+    }
+
 };
 
 // --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---

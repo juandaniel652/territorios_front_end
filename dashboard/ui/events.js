@@ -1,4 +1,3 @@
-// frontend/dashboard/ui/events.js
 import { Modals } from "./modals.js";
 import { UIManager } from "./ui.js";
 import { Controller } from "../controller/dashboard.controller.js";
@@ -19,12 +18,8 @@ export function initGlobalEvents() {
         // --- 2. NAVEGACIÓN CANÓNICA ---
         const btnNav = target.closest(".nav-btn");
         if (btnNav) {
-            const sectionId = btnNav.id.replace('btn', 'seccion');
-            
-            // Usamos el UIManager para la parte visual
             UIManager.cambiarSeccion(btnNav.id); 
 
-            // Lógica específica según la sección
             if (btnNav.id === "btnAgenda") {
                 UIManager.showLoading(true);
                 try {
@@ -45,7 +40,6 @@ export function initGlobalEvents() {
 
             UIManager.showLoading(true);
             try {
-                // El controller hace el fetch y el UIManager renderiza el resultado
                 await Controller.prepararAgendaQuincenal(fecha);
             } catch (err) {
                 alert("Error al generar propuesta");
@@ -59,7 +53,6 @@ export function initGlobalEvents() {
         if (target.closest("#btnConfirmarAgenda")) {
             UIManager.showLoading(true);
             try {
-                // Suponiendo que guardas la propuesta actual en window o el controller la gestiona
                 await Controller.confirmarAgendaDefinitiva();
                 alert("✅ Agenda guardada correctamente");
             } catch (err) {
@@ -73,14 +66,11 @@ export function initGlobalEvents() {
         // --- 5. BUSCADOR DE SUGERENCIAS ---
         if (target.closest("#btnBuscarSugerencias")) {
             const select = document.getElementById("rangoSelect");
-            const rango = select?.value; // Captura "1-20", "21-40", etc.
-
+            const rango = select?.value;
             if (!rango) return;
         
             UIManager.showLoading(true);
             try {
-                // El Controller recibirá el string (ej: "21-40") 
-                // y él se encargará de filtrar y pedir el rango al API
                 await Controller.obtenerSugerencias(rango);
             } catch (err) {
                 console.error("Error al buscar sugerencias:", err);
@@ -117,21 +107,33 @@ export function initGlobalEvents() {
         }
     });
 
-    // Evento extra para el formulario de "Agregar Asignación"
+    // --- 8. LÓGICA DINÁMICA DE FECHAS (NUEVO) ---
+    document.addEventListener("change", (e) => {
+        if (e.target.id === "fechaAsignado") {
+            UIManager.actualizarDiasSemanaLaboral(e.target.value);
+        }
+    });
+
+    // --- 9. FORMULARIO AGREGAR ASIGNACIÓN ---
     const formAgregar = document.getElementById("asignacionForm");
     if (formAgregar) {
         formAgregar.onsubmit = async (e) => {
             e.preventDefault();
             UIManager.showLoading(true);
             try {
-                // Recolectar datos y enviar al controller
                 const formData = {
                     territorio: document.getElementById("numeroTerritorio").value,
                     conductor: document.getElementById("conductor").value,
-                    // ... etc
+                    fecha_asignado: document.getElementById("fechaAsignado").value,
+                    fecha_completado: document.getElementById("fechaCompletado").value,
+                    total_abarcado: document.getElementById("totalAbarcado").value
                 };
                 await Controller.crearAsignacion(formData);
                 formAgregar.reset();
+                // Resetear estado del segundo select
+                document.getElementById("fechaCompletado").disabled = true;
+            } catch (err) {
+                console.error("Error al crear asignación:", err);
             } finally {
                 UIManager.showLoading(false);
             }
