@@ -264,6 +264,7 @@ export const UIManager = {
     },
 
     renderizarPropuestaAgenda(propuesta) {
+        Tables.renderVistaPreviaAgenda(plan);
         const contenedor = document.getElementById("containerPropuesta");
         const acciones = document.getElementById("accionesPropuesta");
         if (!contenedor) return;

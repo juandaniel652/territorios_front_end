@@ -40,7 +40,8 @@ export function initGlobalEvents() {
 
             UIManager.showLoading(true);
             try {
-                await Controller.prepararAgendaQuincenal(fecha);
+                // Sincronizado con Controller.generarPropuesta
+                await Controller.generarPropuesta(fecha);
             } catch (err) {
                 alert("Error al generar propuesta");
             } finally {
@@ -51,14 +52,13 @@ export function initGlobalEvents() {
 
         // --- 4. ACCIONES DE AGENDA (CONFIRMAR) ---
         if (target.closest("#btnConfirmarAgenda")) {
-            UIManager.showLoading(true);
+            // Nota: El botón está dentro del HTML generado por Tables.js, 
+            // este listener global lo capturará perfectamente.
             try {
-                await Controller.confirmarAgendaDefinitiva();
-                alert("✅ Agenda guardada correctamente");
+                // Sincronizado con Controller.confirmarAgenda
+                await Controller.confirmarAgenda();
             } catch (err) {
-                console.error(err);
-            } finally {
-                UIManager.showLoading(false);
+                console.error("Error en la confirmación:", err);
             }
             return;
         }
