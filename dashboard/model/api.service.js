@@ -20,17 +20,16 @@ export const Api = {
 
     // --- MOTOR DE AGENDA (Rutas sincronizadas con tu FastAPI) ---
     async generarPlanQuincenal(fechaInicio) {
-        // GET porque le pasamos la fecha por Query Params (?fecha_inicio=...)
+        // En tu backend es GET y está en territorios
         const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/generar-plan?fecha_inicio=${fechaInicio}`, {
-            method: 'GET',
             headers: getHeaders()
         });
         return handleResponse(res);
     },
 
     async confirmarAgenda(payload) {
-        // POST porque enviamos el JSON con los conductores asignados
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/confirmar-agenda`, {
+        // IMPORTANTE: En tu backend está en /asignaciones/confirmar-agenda
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/confirmar-agenda`, {
             method: 'POST',
             headers: getHeaders(),
             body: JSON.stringify(payload)
@@ -39,6 +38,7 @@ export const Api = {
     },
 
     async getHistorialAgenda() {
+        // Ahora sí va a existir porque lo agregamos arriba
         const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/historial`, {
             headers: getHeaders()
         });
