@@ -58,11 +58,19 @@ export const Controller = {
         }
     },
     
-    // Creamos esta pequeña función de apoyo para no repetir código
+        // Creamos esta pequeña función de apoyo para no repetir código
     actualizarSoloGrafico(territorios) {
         if (window.Charts && window.Charts.renderBarChart) {
-            const values = this._calcularDiasAtraso(territorios);
-            const labels = territorios.map(t => `T-${t.numero}`);
+            // Aseguramos que 'territorios' sea un array
+            const lista = Array.isArray(territorios) ? territorios : [];
+
+            // Usamos la misma lógica de cálculo centralizada
+            const values = this._calcularDiasAtraso(lista);
+            const labels = lista.map(t => `T-${t.numero}`);
+
+            console.log(`📊 Actualizando gráfico: ${labels.length} territorios encontrados.`);
+            console.log("📊 Valores calculados:", values);
+
             window.Charts.renderBarChart('asignacionesChart', labels, values, "#10b981");
         }
     },
@@ -145,21 +153,26 @@ export const Controller = {
     // 3. AGREGAMOS esta función privada para centralizar el cálculo
     _calcularDiasAtraso(territorios) {
         const hoy = new Date();
-        // Forzamos mediodía para evitar problemas de zona horaria (UTC)
-        hoy.setHours(12, 0, 0, 0);
+        hoy.setHours(12, 0, 0, 0); // Evitamos problemas de zona horaria
         
         return territorios.map(t => {
+            // Si no hay fecha o es inválida, devolvemos 0
             if (!t.ultima_fecha_completado) return 0;
             
-            // Reemplaza guiones por barras y toma solo la parte de la fecha
-            const partes = t.ultima_fecha_completado.split('T')[0].split(' ')[0];
-            const fechaComp = new Date(partes.replace(/-/g, '/'));
-            fechaComp.setHours(12, 0, 0, 0);
-        
-            const diffMs = hoy.getTime() - fechaComp.getTime();
-            const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            try {
+                // Limpiamos el string: tomamos solo YYYY-MM-DD
+                const soloFecha = t.ultima_fecha_completado.split('T')[0].split(' ')[0];
+                const fechaComp = new Date(soloFecha.replace(/-/g, '/'));
+                fechaComp.setHours(12, 0, 0, 0);
             
-            return isNaN(dias) ? 0 : Math.max(0, dias);
+                const diffMs = hoy.getTime() - fechaComp.getTime();
+                const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                
+                // Validamos que sea un número y no sea negativo
+                return (isNaN(dias) || dias < 0) ? 0 : dias;
+            } catch (e) {
+                return 0;
+            }
         });
     },
 

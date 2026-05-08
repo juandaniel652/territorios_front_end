@@ -2,11 +2,10 @@
 let myChart = null;
 
 export const Charts = {
-    renderBarChart(canvasId, labels, values, color = "#3b82f6") {
+    renderBarChart(canvasId, labels, values, color = "#10b981") {
         const canvas = document.getElementById(canvasId);
         if (!canvas) return;
 
-        // Si ya existe un gráfico, lo destruimos para poder crear el nuevo
         const existingChart = Chart.getChart(canvasId);
         if (existingChart) {
             existingChart.destroy();
@@ -20,39 +19,55 @@ export const Charts = {
                 datasets: [{
                     label: "Días de atraso",
                     data: values,
-                    backgroundColor: color + 'CC', // El 'CC' le da un 80% de opacidad
-                    borderColor: color,
-                    borderWidth: 1,
-                    borderRadius: 4, // Bordes redondeados para estilo moderno
-                    hoverBackgroundColor: color
+                    // Usamos el color sólido para evitar errores de transparencia
+                    backgroundColor: color, 
+                    borderRadius: 5,
+                    borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: 500 // Animación rápida y sobria
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        // Esto asegura que las barras tengan espacio para crecer
-                        suggestedMax: 10, 
+                        suggestedMax: 15, // Un poco más de margen
                         ticks: {
-                            stepSize: 5, // Muestra de 5 en 5 días
-                            color: '#6b7280'
+                            stepSize: 2, // Escala de 2 en 2 días (más granular)
+                            color: '#6b7280',
+                            font: { size: 11 }
                         },
-                        grid: { color: '#f3f4f6' }
+                        grid: { color: '#f3f4f6', drawBorder: false }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#6b7280' }
+                        ticks: { 
+                            color: '#6b7280', 
+                            font: { size: 10 },
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
                     }
                 },
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1f2937',
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 12 },
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: (context) => ` Atraso: ${context.raw} días`
+                        }
+                    }
                 }
             }
         });
     }
 };
 
-// ESTA LÍNEA ES CLAVE:
 window.Charts = Charts;
