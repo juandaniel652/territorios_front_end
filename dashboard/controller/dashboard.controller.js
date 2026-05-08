@@ -150,8 +150,9 @@ export const Controller = {
         }
     },
 
+    
     _calcularDiasAtraso(territorios) {
-        // 1. Obtenemos la fecha de hoy y la "limpiamos" (solo día)
+        // 1. Obtenemos hoy a medianoche exacta
         const ahora = new Date();
         const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
         
@@ -159,23 +160,29 @@ export const Controller = {
             if (!t.ultima_fecha_completado) return 0;
             
             try {
-                // 2. Extraemos solo la parte YYYY-MM-DD para evitar problemas de horas
-                const match = t.ultima_fecha_completado.match(/(\d{4})-(\d{2})-(\d{2})/);
-                if (!match) return 0;
+                // 2. Extraemos año, mes y día manualmente (es lo más seguro en JS)
+                // Esto evita problemas de zona horaria que ponen la fecha en 0
+                const partes = t.ultima_fecha_completado.split('T')[0].split(' ')[0].split('-');
+                if (partes.length < 3) return 0;
             
-                // 3. Creamos la fecha del territorio (mes es 0-indexado en JS, por eso -1)
-                const fechaComp = new Date(match[1], match[2] - 1, match[3]);
+                const anio = parseInt(partes[0]);
+                const mes = parseInt(partes[1]) - 1; // Enero es 0
+                const dia = parseInt(partes[2]);
             
-                // 4. Calculamos la diferencia en milisegundos y pasamos a días
+                const fechaComp = new Date(anio, mes, dia);
+            
+                // 3. Calculamos la diferencia
                 const diffMs = hoy.getTime() - fechaComp.getTime();
                 const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
                 
-                // 5. DEBUG: Si querés ver por qué da 0, activá este log:
-                // console.log(`T-${t.numero}: Hoy(${hoy.toISOString()}) - Fecha(${fechaComp.toISOString()}) = ${dias} días`);
+                // 4. RETORNO SEGURO: 
+                // Si la cuenta da 0 (porque se hizo hoy), devolvemos 0.1 para que se vea una marquita.
+                // Si da NaN, devolvemos 0.
+                if (isNaN(dias)) return 0;
+                return dias <= 0 ? 0.2 : dias; 
             
-                return isNaN(dias) ? 0 : Math.max(0, dias);
             } catch (e) {
-                console.error("Error parseando fecha:", e);
+                console.error("Error crítico en fecha:", e);
                 return 0;
             }
         });
