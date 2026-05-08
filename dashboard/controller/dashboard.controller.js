@@ -150,28 +150,32 @@ export const Controller = {
         }
     },
 
-    // 3. AGREGAMOS esta función privada para centralizar el cálculo
     _calcularDiasAtraso(territorios) {
-        const hoy = new Date();
-        // Normalizamos hoy a medianoche para evitar errores de cálculo
-        hoy.setHours(0, 0, 0, 0);
-
+        // 1. Obtenemos la fecha de hoy y la "limpiamos" (solo día)
+        const ahora = new Date();
+        const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+        
         return territorios.map(t => {
             if (!t.ultima_fecha_completado) return 0;
-
+            
             try {
-                // Limpieza del string de fecha de la DB
-                const fechaLimpia = t.ultima_fecha_completado.split(' ')[0].replace(/-/g, '/');
-                const fechaComp = new Date(fechaLimpia);
-                fechaComp.setHours(0, 0, 0, 0);
-
+                // 2. Extraemos solo la parte YYYY-MM-DD para evitar problemas de horas
+                const match = t.ultima_fecha_completado.match(/(\d{4})-(\d{2})-(\d{2})/);
+                if (!match) return 0;
+            
+                // 3. Creamos la fecha del territorio (mes es 0-indexado en JS, por eso -1)
+                const fechaComp = new Date(match[1], match[2] - 1, match[3]);
+            
+                // 4. Calculamos la diferencia en milisegundos y pasamos a días
                 const diffMs = hoy.getTime() - fechaComp.getTime();
                 const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-                // Si el cálculo falla, devolvemos 0
+                
+                // 5. DEBUG: Si querés ver por qué da 0, activá este log:
+                // console.log(`T-${t.numero}: Hoy(${hoy.toISOString()}) - Fecha(${fechaComp.toISOString()}) = ${dias} días`);
+            
                 return isNaN(dias) ? 0 : Math.max(0, dias);
             } catch (e) {
-                console.error("Error en fecha T-" + t.numero, e);
+                console.error("Error parseando fecha:", e);
                 return 0;
             }
         });
