@@ -61,15 +61,8 @@ export const Controller = {
     // Creamos esta pequeña función de apoyo para no repetir código
     actualizarSoloGrafico(territorios) {
         if (window.Charts && window.Charts.renderBarChart) {
-            const hoy = new Date();
+            const values = this._calcularDiasAtraso(territorios);
             const labels = territorios.map(t => `T-${t.numero}`);
-            const values = territorios.map(t => {
-                if (!t.ultima_fecha_completado) return 0;
-                const fecha = new Date(t.ultima_fecha_completado.replace(/-/g, '\/'));
-                const diff = hoy - fecha;
-                return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
-            });
-        
             window.Charts.renderBarChart('asignacionesChart', labels, values, "#10b981");
         }
     },
@@ -132,34 +125,42 @@ export const Controller = {
     async cargarDashboardCompleto(rango = "1-20") {
         try {
             UIManager.showLoading(true);
-
-            // 1. Obtener territorios del rango seleccionado (ej: 1-20)
             const response = await Api.getSugerencias(rango);
             const territorios = response.sugerencias || response;
 
-            // 2. Renderizar las tarjetas de texto (lo que ya tenías)
             UIManager.renderSugerencias(territorios);
 
-            // 3. Renderizar el gráfico de barras profesional
             if (window.Charts && window.Charts.renderBarChart) {
-                const hoy = new Date();
-
-                // Labels dinámicos: T-1, T-2... T-20
                 const labels = territorios.map(t => `T-${t.numero}`);
-
-                // Cálculo de días reales basado en 'ultima_fecha_completado'
-                const values = territorios.map(t => t.dias_atraso || Math.floor(Math.random() * 30) + 1);
-                // Color corporativo (un azul sobrio o verde esmeralda)
-                const colorCorporativo = "#10b981"; // Azul profesional
-
-                window.Charts.renderBarChart('asignacionesChart', labels, values, colorCorporativo);
+                const values = this._calcularDiasAtraso(territorios);
+                window.Charts.renderBarChart('asignacionesChart', labels, values, "#10b981");
             }
-
         } catch (error) {
             console.error("❌ Error al cargar dashboard:", error);
         } finally {
             UIManager.showLoading(false);
         }
+    },
+
+    // 3. AGREGAMOS esta función privada para centralizar el cálculo
+    _calcularDiasAtraso(territorios) {
+        const hoy = new Date();
+        // Forzamos mediodía para evitar problemas de zona horaria (UTC)
+        hoy.setHours(12, 0, 0, 0);
+        
+        return territorios.map(t => {
+            if (!t.ultima_fecha_completado) return 0;
+            
+            // Reemplaza guiones por barras y toma solo la parte de la fecha
+            const partes = t.ultima_fecha_completado.split('T')[0].split(' ')[0];
+            const fechaComp = new Date(partes.replace(/-/g, '/'));
+            fechaComp.setHours(12, 0, 0, 0);
+        
+            const diffMs = hoy.getTime() - fechaComp.getTime();
+            const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            return isNaN(dias) ? 0 : Math.max(0, dias);
+        });
     },
 
     async obtenerDetalleTerritorio(numero) {
