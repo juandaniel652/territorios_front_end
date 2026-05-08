@@ -313,43 +313,38 @@ export const UIManager = {
         acciones.classList.remove("hidden"); // Mostrar botón de confirmar
     },
 
-    renderizarHistorialAgenda(asignaciones) {
-        const contenedor = document.getElementById("containerAgendaGuardada");
-        if (!contenedor) return;
+    renderizarHistorialAgenda(historial) {
+        console.log(historial[0])
+        const tabla = document.getElementById("tablaHistorialAgenda");
+        if (!tabla) return;
 
-        if (!asignaciones || asignaciones.length === 0) {
-            contenedor.innerHTML = `<p class="p-8 text-center text-gray-400">No hay agendas registradas.</p>`;
+        if (!historial || historial.length === 0) {
+            tabla.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No hay registros recientes.</td></tr>`;
             return;
         }
 
-        let html = `
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Territorio</th>
-                        <th>Conductor</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+        tabla.innerHTML = historial.map(reg => {
+            // Mapeamos los nombres del backend a variables locales para el template
+            const fecha = reg.fecha_asignado || "---";
+            const territorio = reg.territorio_id || "---";
+            // Si el backend no hace el JOIN con conductores, quizás recibís el ID
+            const conductor = reg.conductor_nombre || reg.conductor_id || "---"; 
+            const estado = reg.fecha_completado ? "Completado" : "Pendiente";
+            const badgeColor = reg.fecha_completado ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800";
 
-        asignaciones.forEach(asig => {
-            html += `
-                <tr>
-                    <td class="font-mono text-xs">${asig.fecha}</td>
-                    <td><span class="territorio-id">#${asig.territorio_numero}</span></td>
-                    <td class="text-gray-700">${asig.conductor || '---'}</td>
-                    <td>
-                        <span class="badge ${asig.completado ? 'badge-success' : 'badge-ghost'} badge-sm">
-                            ${asig.completado ? 'Completado' : 'Pendiente'}
+            return `
+                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td class="p-3 text-sm text-gray-600">${fecha}</td>
+                    <td class="p-3 text-sm font-medium text-gray-800">#${territorio}</td>
+                    <td class="p-3 text-sm text-gray-600">${conductor}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${badgeColor}">
+                            ${estado}
                         </span>
                     </td>
-                </tr>`;
-        });
-
-        html += `</tbody></table>`;
-        contenedor.innerHTML = html;
+                </tr>
+            `;
+        }).join("");
     }
 
 };
