@@ -159,34 +159,41 @@ export const Controller = {
     },
 
     async confirmarAgenda() {
-        // Buscamos los inputs de texto que el usuario completó en la tabla de agenda
-        const inputs = document.querySelectorAll(".input-conductor");
+        // Seleccionamos todas las filas de la tabla de agenda
+        const filas = document.querySelectorAll(".agenda-row");
         
-        const asignaciones = Array.from(inputs).map(input => ({
-            territorio_id: parseInt(input.dataset.territorio),
-            fecha: input.dataset.fecha,
-            turno: input.dataset.turno,
-            conductor: input.value || "Sin asignar"
-        }));
+        const items = Array.from(filas).map(fila => {
+            const inputConductor = fila.querySelector(".input-conductor");
+            const inputTerritorio = fila.querySelector(".territory-input");
+            const cellEncuentro = fila.querySelector(".encounter-cell");
 
-        if (asignaciones.length === 0) return;
+            return {
+                territorio_id: parseInt(fila.dataset.territorioId), // ID real de la DB
+                conductor: inputConductor.value || "Sin asignar",
+                fecha_asignado: fila.dataset.fecha,
+                turno: fila.dataset.turno,
+                encuentro: cellEncuentro.innerText || "Salón del Reino"
+            };
+        });
+
+        if (items.length === 0) {
+            UIManager.mostrarMensaje("No hay datos para confirmar", "error");
+            return;
+        }
 
         try {
             UIManager.showLoading(true);
-            // Enviamos el array al POST que creamos en el backend
-            await Api.confirmarAgenda({ asignaciones });
+            // Enviamos el objeto AgendaConfirmar esperado por el Backend
+            await Api.confirmarAgenda({ items: items });
 
-            UIManager.mostrarMensaje("¡Agenda confirmada con éxito!", "success");
-
-            // Limpiamos la tabla de propuesta para que no se mande dos veces
+            UIManager.mostrarMensaje("¡Agenda confirmada y archivada!", "success");
+            
+            // Limpieza y refresco
             document.getElementById("containerPropuesta").innerHTML = "";
-            document.getElementById("accionesPropuesta").classList.add("hidden");
-
-            // Actualizamos el historial de abajo
-            await this.cargarHistorial();
+            this.cargarDashboardCompleto(); 
         } catch (error) {
             console.error("Error al confirmar:", error);
-            UIManager.mostrarMensaje("Error al guardar la agenda", "error");
+            UIManager.mostrarMensaje(error.detail || "Error al guardar la agenda", "error");
         } finally {
             UIManager.showLoading(false);
         }

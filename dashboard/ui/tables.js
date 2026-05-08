@@ -140,24 +140,24 @@ export const Tables = {
         const diaNombre = fechaObj.toLocaleDateString('es-AR', { weekday: 'long' });
 
         return `
-        <tr class="hover:bg-green-50/30 transition-colors ${claseSemana}" 
+        <tr class="hover:bg-green-50/30 transition-colors ${claseSemana} agenda-row" 
             data-fecha="${item.fecha}" 
-            data-turno="${item.turno}">
+            data-turno="${item.turno}"
+            data-territorio-id="${item.territorio_id}"> 
             <td class="p-4">
                 <span class="capitalize font-bold text-gray-700">${diaNombre}</span> 
                 <span class="text-[10px] text-green-600 font-bold ml-1 bg-green-50 px-2 py-0.5 rounded border border-green-100">${item.turno}</span>
             </td>
-            <td class="p-4 editable-cell encounter-cell text-sm text-gray-400 italic focus:text-gray-800 focus:not-italic outline-none" 
-                contenteditable="true" 
-                data-placeholder="Definir encuentro..."></td>
+            <td class="p-4 encounter-cell text-sm text-gray-400 italic focus:text-gray-800 focus:not-italic outline-none" 
+                contenteditable="true">Salón del Reino</td>
             <td class="p-4 text-center">
                 <input type="number" 
-                       value="${item.numero}" 
-                       class="w-12 text-center font-bold text-green-700 bg-green-50/50 rounded border border-transparent focus:border-green-500 outline-none territory-input shadow-inner" />
+                        value="${item.numero}" 
+                        class="w-12 text-center font-bold text-green-700 bg-green-50/50 rounded border border-transparent focus:border-green-500 outline-none territory-input shadow-inner" />
             </td>
             <td class="p-4">
                 <input type="text" list="listaConductores" 
-                       class="w-full bg-transparent text-sm border-b border-gray-100 focus:border-green-600 outline-none placeholder:text-gray-300" 
+                       class="input-conductor w-full bg-transparent text-sm border-b border-gray-100 focus:border-green-600 outline-none placeholder:text-gray-300" 
                        placeholder="Nombre del conductor" />
             </td>
         </tr>`;
