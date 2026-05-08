@@ -20,7 +20,6 @@ export const UIManager = {
         const selectCompletado = document.getElementById("fechaCompletado");
         if (!selectDomingo || !selectCompletado) return;
 
-        // Limpiamos y preparamos el primer select (Domingos)
         selectDomingo.innerHTML = '<option value="">Seleccione Domingo de Inicio</option>';
         selectCompletado.innerHTML = '<option value="">Primero elija el domingo</option>';
         selectCompletado.disabled = true;
@@ -31,20 +30,23 @@ export const UIManager = {
 
         for (let i = 0; i < 8; i++) {
             const iso = fecha.toISOString().split('T')[0];
-            const label = fecha.toLocaleDateString('es-AR', { 
-                day: '2-digit', month: 'long', year: 'numeric' 
+            
+            // Formato: "03 de Mayo de 2026"
+            const labelFecha = fecha.toLocaleDateString('es-AR', { 
+                day: '2-digit', 
+                month: 'long', 
+                year: 'numeric' 
             });
             
             const option = document.createElement('option');
             option.value = iso;
-            option.textContent = `Semana del Dom. ${label}`;
+            // Resultado: "Semana desde el Domingo 03 de Mayo de 2026"
+            option.textContent = `Semana desde el Domingo ${labelFecha}`;
             selectDomingo.appendChild(option);
 
-            // Retrocedemos una semana
             fecha.setDate(fecha.getDate() - 7);
         }
     },
-
 
     renderAsignaciones(territorio, asignaciones) {
         return Tables.renderAsignaciones(territorio, asignaciones);
@@ -228,14 +230,13 @@ export const UIManager = {
         const selectCompletado = document.getElementById("fechaCompletado");
         if (!selectCompletado) return;
 
-        selectCompletado.innerHTML = '<option value="">Seleccione día de fin (Lunes-Sábado)</option>';
+        selectCompletado.innerHTML = '<option value="">Seleccione día de fin</option>';
         
         if (!fechaDomingo) {
             selectCompletado.disabled = true;
             return;
         }
 
-        // Creamos la fecha base (forzamos hora 00:00 para evitar desfasajes de zona horaria)
         const base = new Date(fechaDomingo + "T00:00:00");
 
         for (let i = 1; i <= 6; i++) {
@@ -243,13 +244,20 @@ export const UIManager = {
             diaLab.setDate(base.getDate() + i);
             
             const iso = diaLab.toISOString().split('T')[0];
-            const label = diaLab.toLocaleDateString('es-AR', { 
-                weekday: 'long', day: '2-digit', month: '2-digit' 
-            });
+            
+            // Nombre del día (Lunes, Martes...)
+            const nombreDia = diaLab.toLocaleDateString('es-AR', { weekday: 'long' });
+            // Fecha (04-05-2026)
+            const fechaNumerica = diaLab.toLocaleDateString('es-AR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }).replace(/\//g, '-'); // Cambiamos / por - para que quede 04-05-2026
 
             const option = document.createElement('option');
             option.value = iso;
-            option.textContent = label.toUpperCase();
+            // Resultado: "Lunes 04-05-2026"
+            option.textContent = `${nombreDia.charAt(0).toUpperCase() + nombreDia.slice(1)} ${fechaNumerica}`;
             selectCompletado.appendChild(option);
         }
         selectCompletado.disabled = false;
