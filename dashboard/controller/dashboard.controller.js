@@ -150,43 +150,18 @@ export const Controller = {
         }
     },
 
-    
     _calcularDiasAtraso(territorios) {
-        // 1. Obtenemos hoy a medianoche exacta
-        const ahora = new Date();
-        const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
-        
         return territorios.map(t => {
-            if (!t.ultima_fecha_completado) return 0;
+            // Usamos directamente el valor que manda el backend
+            // Si no existe, devolvemos 0
+            const valor = t.dias_atraso !== undefined ? t.dias_atraso : 0;
             
-            try {
-                // 2. Extraemos año, mes y día manualmente (es lo más seguro en JS)
-                // Esto evita problemas de zona horaria que ponen la fecha en 0
-                const partes = t.ultima_fecha_completado.split('T')[0].split(' ')[0].split('-');
-                if (partes.length < 3) return 0;
-            
-                const anio = parseInt(partes[0]);
-                const mes = parseInt(partes[1]) - 1; // Enero es 0
-                const dia = parseInt(partes[2]);
-            
-                const fechaComp = new Date(anio, mes, dia);
-            
-                // 3. Calculamos la diferencia
-                const diffMs = hoy.getTime() - fechaComp.getTime();
-                const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                
-                // 4. RETORNO SEGURO: 
-                // Si la cuenta da 0 (porque se hizo hoy), devolvemos 0.1 para que se vea una marquita.
-                // Si da NaN, devolvemos 0.
-                if (isNaN(dias)) return 0;
-                return dias <= 0 ? 0.2 : dias; 
-            
-            } catch (e) {
-                console.error("Error crítico en fecha:", e);
-                return 0;
-            }
+            // Un pequeño truco: si es 0, devolvemos 0.5 para que se vea
+            // una línea verde mínima en el gráfico y no quede vacío.
+            return valor === 0 ? 0.5 : valor;
         });
     },
+    
 
     async obtenerDetalleTerritorio(numero) {
         const res = await Api.getTerritorio(numero);
