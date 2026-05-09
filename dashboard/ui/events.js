@@ -119,24 +119,41 @@ export function initGlobalEvents() {
     if (formAgregar) {
         formAgregar.onsubmit = async (e) => {
             e.preventDefault();
+            
+            // Capturamos valores para validar antes de enviar
+            const conductorNombre = document.getElementById("conductor").value.trim();
+            const fechaAsig = document.getElementById("fechaAsignado").value;
+
+            // Validación simple en el front para evitar viajes innecesarios
+            if (!conductorNombre) {
+                alert("El nombre del conductor es obligatorio.");
+                return;
+            }
+
+            const formData = {
+                // 1. CLAVE: Debe ser numero_territorio (como en tu schema.py)
+                numero_territorio: parseInt(document.getElementById("numeroTerritorio").value),
+                // 2. Conductor ya limpio con trim()
+                conductor: conductorNombre,
+                // 3. Formato YYYY-MM-DD (el input type="date" ya lo da así)
+                fecha_asignado: fechaAsig,
+                // 4. Si está vacío, null (que Pydantic lo toma como None)
+                fecha_completado: document.getElementById("fechaCompletado").value || null,
+                // 5. Valor por defecto si no hay nada
+                cantidad_abarcado: document.getElementById("totalAbarcado").value || "Completo"
+            };
+
+            console.log("📤 Enviando a FastAPI:", formData);
+
             UIManager.showLoading(true);
             try {
-                const formData = {
-                    // Usamos territorio_id y lo convertimos a número
-                    territorio_id: parseInt(document.getElementById("numeroTerritorio").value),
-                    conductor: document.getElementById("conductor").value,
-                    fecha_asignado: document.getElementById("fechaAsignado").value,
-                    fecha_completado: document.getElementById("fechaCompletado").value || null,
-                    // Usamos cantidad_abarcado para que coincida con tu historial de DB
-                    cantidad_abarcado: document.getElementById("totalAbarcado").value || "Completo"
-                };
-
                 await Controller.crearAsignacion(formData);
-                
                 formAgregar.reset();
-                document.getElementById("fechaCompletado").disabled = true;
+                UIManager.mostrarMensaje("✅ Asignación creada con éxito", "success");
             } catch (err) {
-                console.error("Error al crear asignación:", err);
+                console.error("❌ Error en la creación:", err);
+                // Si el backend lanza el ValueError del validator, lo verás acá
+                alert("Error al guardar: " + err.message);
             } finally {
                 UIManager.showLoading(false);
             }

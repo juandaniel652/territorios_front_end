@@ -47,12 +47,11 @@ export const Api = {
 
     // --- CRUD DE ASIGNACIONES INDIVIDUALES ---
     async crearAsignacion(datos) {
-        // Agregamos la / al final para evitar el redirect 307
-        const url = `${CONFIG.BASE_URL}/api/v1/asignaciones/`; 
+        // QUITAMOS la barra final. FastAPI es muy estricto con esto.
+        const url = `${CONFIG.BASE_URL}/api/v1/asignaciones`; 
         
         const res = await fetch(url, {
             method: 'POST',
-            // getHeaders() DEBE devolver: { "Authorization": "Bearer ...", "Content-Type": "application/json" }
             headers: getHeaders(), 
             body: JSON.stringify(datos)
         });
