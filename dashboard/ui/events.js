@@ -116,9 +116,11 @@ export function initGlobalEvents() {
 
     // --- 9. FORMULARIO AGREGAR ASIGNACIÓN ---
     const formAgregar = document.getElementById("asignacionForm");
+    console.log("🔍 ¿Formulario encontrado?:", formAgregar ? "SÍ" : "NO");
     if (formAgregar) {
         formAgregar.onsubmit = async (e) => {
             e.preventDefault();
+            console.log("Btn Guardar clickeado - Iniciando captura...");
             UIManager.showLoading(true);
             try {
                 const formData = {
@@ -128,6 +130,7 @@ export function initGlobalEvents() {
                     fecha_completado: document.getElementById("fechaCompletado").value,
                     total_abarcado: document.getElementById("totalAbarcado").value
                 };
+                console.log("📦 Datos capturados para enviar:", formData);
                 await Controller.crearAsignacion(formData);
                 formAgregar.reset();
                 // Resetear estado del segundo select
