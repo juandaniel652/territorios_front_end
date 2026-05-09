@@ -27,17 +27,21 @@ export const Controller = {
     },
 
     async crearAsignacion(asignacionData, onSuccess) {
-        if (!asignacionData.numero_territorio || !asignacionData.conductor || !asignacionData.fecha_asignado) {
-            UIManager.mostrarMensaje("Faltan datos esenciales.", "error");
+        // CAMBIO: Validamos 'territorio_id' (que es lo que capturamos ahora)
+        if (!asignacionData.territorio_id || !asignacionData.conductor || !asignacionData.fecha_asignado) {
+            UIManager.mostrarMensaje("Faltan datos esenciales (Territorio, Conductor o Fecha).", "error");
             return;
         }
+        
         try {
             const result = await Api.crearAsignacion(asignacionData);
-            UIManager.mostrarMensaje(result.message || "Guardado con éxito.", "success");
+            UIManager.mostrarMensaje("✅ Guardado con éxito.", "success");
             if (onSuccess) onSuccess();
-            this.cargarDashboardCompleto(); // Recargar tras crear
+            this.cargarDashboardCompleto(); 
         } catch (error) {
-            UIManager.mostrarMensaje(error.detail || "Error al guardar.", "error");
+            console.error("Error al guardar:", error);
+            // Si el error viene de FastAPI, mostramos el detalle
+            UIManager.mostrarMensaje(error.detail || "Error al guardar en el servidor.", "error");
         }
     },
 

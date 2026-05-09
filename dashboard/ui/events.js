@@ -116,24 +116,24 @@ export function initGlobalEvents() {
 
     // --- 9. FORMULARIO AGREGAR ASIGNACIÓN ---
     const formAgregar = document.getElementById("asignacionForm");
-    console.log("🔍 ¿Formulario encontrado?:", formAgregar ? "SÍ" : "NO");
     if (formAgregar) {
         formAgregar.onsubmit = async (e) => {
             e.preventDefault();
-            console.log("Btn Guardar clickeado - Iniciando captura...");
             UIManager.showLoading(true);
             try {
                 const formData = {
-                    territorio: document.getElementById("numeroTerritorio").value,
+                    // Usamos territorio_id y lo convertimos a número
+                    territorio_id: parseInt(document.getElementById("numeroTerritorio").value),
                     conductor: document.getElementById("conductor").value,
                     fecha_asignado: document.getElementById("fechaAsignado").value,
-                    fecha_completado: document.getElementById("fechaCompletado").value,
-                    total_abarcado: document.getElementById("totalAbarcado").value
+                    fecha_completado: document.getElementById("fechaCompletado").value || null,
+                    // Usamos cantidad_abarcado para que coincida con tu historial de DB
+                    cantidad_abarcado: document.getElementById("totalAbarcado").value || "Completo"
                 };
-                console.log("📦 Datos capturados para enviar:", formData);
+
                 await Controller.crearAsignacion(formData);
+                
                 formAgregar.reset();
-                // Resetear estado del segundo select
                 document.getElementById("fechaCompletado").disabled = true;
             } catch (err) {
                 console.error("Error al crear asignación:", err);
