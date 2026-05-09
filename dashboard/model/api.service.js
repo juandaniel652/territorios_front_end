@@ -47,11 +47,16 @@ export const Api = {
 
     // --- CRUD DE ASIGNACIONES INDIVIDUALES ---
     async crearAsignacion(datos) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/`, {
+        // Agregamos la / al final para evitar el redirect 307
+        const url = `${CONFIG.BASE_URL}/api/v1/asignaciones/`; 
+        
+        const res = await fetch(url, {
             method: 'POST',
-            headers: getHeaders(),
+            // getHeaders() DEBE devolver: { "Authorization": "Bearer ...", "Content-Type": "application/json" }
+            headers: getHeaders(), 
             body: JSON.stringify(datos)
         });
+
         return handleResponse(res);
     },
 
