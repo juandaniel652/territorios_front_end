@@ -1,0 +1,7 @@
+2. ¿Cómo impacta esto en tu UI (React/DaisyUI)?
+
+Como buscás un diseño "sobrio y corporativo", no pongas solo el texto. Podés usar componentes visuales para representar ese "resto/5":
+
+    Planillas completas: Un badge elegante o un icono de check dorado.
+
+    Planilla en curso: Una barra de progreso de DaisyUI que se llene según el resto. Si el resto es 3, la barra está al 60%.
