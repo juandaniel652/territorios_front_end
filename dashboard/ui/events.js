@@ -113,12 +113,13 @@ async function handleAsignacionSubmit(e) {
 
     UIManager.showLoading(true);
     try {
-        await Controller.crearAsignacion(formData);
-        e.target.reset(); // Reinicia el formulario usando el evento
-        UIManager.mostrarMensaje("✅ Asignación creada con éxito", "success");
+        // Le pasamos el callback () => e.target.reset() como 'onSuccess'
+        await Controller.crearAsignacion(formData, () => {
+            e.target.reset();
+            console.log("🧹 Formulario reseteado tras confirmación exitosa.");
+        });
     } catch (err) {
-        console.error("❌ Error en la creación:", err);
-        alert("Error al guardar: " + err.message);
+        console.error("❌ Error en la cadena de ejecución del submit:", err);
     } finally {
         UIManager.showLoading(false);
     }

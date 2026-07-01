@@ -27,21 +27,49 @@ export const Controller = {
     },
 
     async crearAsignacion(asignacionData, onSuccess) {
-        // CAMBIO: Validamos 'territorio_id' (que es lo que capturamos ahora)
-        if (!asignacionData.territorio_id || !asignacionData.conductor || !asignacionData.fecha_asignado) {
+        console.log("📥 Controller recibió los datos para validar:", asignacionData);
+
+        // CORREGIDO: Validamos 'numero_territorio' que es lo que viene de events.js y espera el backend
+        if (!asignacionData.numero_territorio || !asignacionData.conductor || !asignacionData.fecha_asignado) {
+            console.error("❌ Validación fallida en Controller. Faltan propiedades críticas:", {
+                numero_territorio: asignacionData.numero_territorio,
+                conductor: asignacionData.conductor,
+                fecha_asignado: asignacionData.fecha_asignado
+            });
             UIManager.mostrarMensaje("Faltan datos esenciales (Territorio, Conductor o Fecha).", "error");
             return;
         }
         
         try {
+            console.log("🚀 Disparando petición HTTP vía Api.crearAsignacion()...");
             const result = await Api.crearAsignacion(asignacionData);
+            
+            console.log("✅ Respuesta exitosa del Servidor:", result);
             UIManager.mostrarMensaje("✅ Guardado con éxito.", "success");
-            if (onSuccess) onSuccess();
+            
+            if (onSuccess) {
+                onSuccess();
+            }
+            
+            // Refresca las tarjetas y gráficos del Dashboard principal
             this.cargarDashboardCompleto(); 
         } catch (error) {
-            console.error("Error al guardar:", error);
-            // Si el error viene de FastAPI, mostramos el detalle
-            UIManager.mostrarMensaje(error.detail || "Error al guardar en el servidor.", "error");
+            console.error("❌ Error atrapado en Controller.crearAsignacion:", error);
+            
+            // Logueamos la estructura completa del error para inspección directa
+            console.dir(error);
+
+            // Manejo robusto de la respuesta detallada de FastAPI (422 u otros)
+            let mensajeError = "Error al guardar en el servidor.";
+            if (error && error.detail) {
+                mensajeError = typeof error.detail === 'string' 
+                    ? error.detail 
+                    : JSON.stringify(error.detail);
+            } else if (error && error.message) {
+                mensajeError = error.message;
+            }
+
+            UIManager.mostrarMensaje(`❌ ${mensajeError}`, "error");
         }
     },
 
