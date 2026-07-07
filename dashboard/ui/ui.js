@@ -314,51 +314,51 @@ export const UIManager = {
         acciones.classList.remove("hidden"); // Mostrar botón de confirmar
     },
 
-    renderizarHistorialAgenda(salidas) {
-        // 1. Verificamos que sea un array
-        const registros = Array.isArray(salidas) ? salidas : [];
-        
+    renderizarHistorialAgenda(propuesta) {
+        const semanas = Array.isArray(propuesta) ? propuesta : [];
         const tabla = document.getElementById("tablaHistorialAgenda");
         if (!tabla) {
             console.error("❌ No se encontró el elemento #tablaHistorialAgenda en el HTML");
             return;
         }
     
-        if (registros.length === 0) {
-            tabla.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500 italic">No hay salidas propuestas.</td></tr>`;
+        const hayDatos = semanas.some(s => Array.isArray(s.salidas) && s.salidas.length > 0);
+        if (!hayDatos) {
+            tabla.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-gray-500 italic">No hay territorios propuestos.</td></tr>`;
             return;
         }
     
-        // 2. Mapeo de datos (nombres exactos de /agenda/sugerir-combinada)
-        tabla.innerHTML = registros.map(reg => {
-            const fecha = reg.fecha || "---";
-            const territorio = reg.territorio_numero || reg.territorio_id || "---";
-            const conductor = reg.conductor_nombre || "Sin asignar";
+        tabla.innerHTML = semanas.map(semana => {
+            const salidas = semana.salidas || [];
+            if (salidas.length === 0) return "";
         
-            // Estado basado en si ya tiene conductor asignado
-            const asignado = !!reg.conductor_id;
-            const estadoTexto = asignado ? "Asignado" : "Sin asignar";
-            const badgeColor = asignado
-                ? "bg-green-100 text-green-800 border border-green-200"
-                : "bg-yellow-50 text-yellow-700 border border-yellow-100";
+            const filas = salidas.map((s, i) => {
+                const horario = s.horario || "---";
+                const territorio = s.territorio_numero || s.territorio_id || "---";
+                const zebra = i % 2 === 0 ? "bg-white" : "bg-green-50";
+            
+                return `
+                    <tr class="${zebra} border-b border-green-100">
+                        <td class="p-2 text-sm font-semibold text-gray-800 text-center">${horario}</td>
+                        <td class="p-2 text-sm font-bold text-green-700 text-center font-mono">${territorio}</td>
+                    </tr>`;
+            }).join("");
         
             return `
-                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors animate-in">
-                    <td class="p-3 text-sm text-gray-600 font-mono">${fecha}</td>
-                    <td class="p-3">
-                        <span class="font-bold text-gray-800">#${territorio}</span>
-                    </td>
-                    <td class="p-3 text-sm text-gray-600">${conductor}</td>
-                    <td class="p-3">
-                        <span class="px-2 py-1 text-[10px] font-bold uppercase rounded ${badgeColor}">
-                            ${estadoTexto}
-                        </span>
+                <tr>
+                    <td colspan="2" class="p-2 text-center font-bold text-white bg-gray-900 uppercase text-xs tracking-wide">
+                        Semana ${semana.semana_numero} · ${semana.rango_fechas}
                     </td>
                 </tr>
+                <tr class="bg-green-600 text-white text-xs uppercase">
+                    <th class="p-2 font-bold">Horario</th>
+                    <th class="p-2 font-bold">Territorio</th>
+                </tr>
+                ${filas}
             `;
         }).join("");
     }
-
+    
 };
 
 // --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---
