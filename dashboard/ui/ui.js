@@ -321,29 +321,29 @@ export const UIManager = {
             console.error("❌ No se encontró el elemento #tablaHistorialAgenda en el HTML");
             return;
         }
-    
+
         const hayDatos = semanas.some(s => Array.isArray(s.salidas) && s.salidas.length > 0);
         if (!hayDatos) {
             tabla.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-gray-500 italic">No hay territorios propuestos.</td></tr>`;
             return;
         }
-    
+
         tabla.innerHTML = semanas.map(semana => {
             const salidas = semana.salidas || [];
             if (salidas.length === 0) return "";
-        
+
             const filas = salidas.map((s, i) => {
                 const horario = s.horario || "---";
                 const territorio = s.territorio_numero || s.territorio_id || "---";
                 const zebra = i % 2 === 0 ? "bg-white" : "bg-green-50";
-            
+
                 return `
                     <tr class="${zebra} border-b border-green-100">
                         <td class="p-2 text-sm font-semibold text-gray-800 text-center">${horario}</td>
                         <td class="p-2 text-sm font-bold text-green-700 text-center font-mono">${territorio}</td>
                     </tr>`;
             }).join("");
-        
+
             return `
                 <tr>
                     <td colspan="2" class="p-2 text-center font-bold text-white bg-gray-900 uppercase text-xs tracking-wide">
@@ -358,7 +358,7 @@ export const UIManager = {
             `;
         }).join("");
     }
-    
+
 };
 
 // --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---
@@ -368,17 +368,17 @@ window.UI = {
     verAgendaGuardada: async () => {
         console.log("📅 Accediendo a la sección Agenda...");
         
-        // 1. Lógica Visual (Mostrar/Ocultar)
         document.querySelectorAll('.section-base, section').forEach(s => s.classList.add('hidden'));
         const seccion = document.getElementById('seccionAgenda');
         if (seccion) {
             seccion.classList.remove('hidden');
         }
-
-        // 2. Lógica de Datos (Llamar al backend)
+    
         try {
-            // Llamamos al controller para que traiga los datos frescos
-            await Controller.cargarDashboardCompleto("1-20");
+            await Promise.all([
+                Controller.cargarDashboardCompleto("1-20"),
+                Controller.cargarHistorial()
+            ]);
         } catch (err) {
             console.error("❌ Error al refrescar datos desde la agenda:", err);
         }
