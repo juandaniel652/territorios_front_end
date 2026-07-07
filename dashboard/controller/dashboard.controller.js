@@ -233,9 +233,13 @@ export const Controller = {
 
     async cargarHistorial() {
         try {
-            // Llama a las últimas "salidas" o "asignaciones" confirmadas
-            const historial = await Api.getHistorialAgenda(); 
-            UIManager.renderizarHistorialAgenda(historial);
+            // Trae la propuesta combinada (array de semanas, cada una con .salidas)
+            const propuesta = await Api.getSugerenciaCombinada();
+        
+            // Aplanamos todas las salidas de todas las semanas en un solo array
+            const salidas = (propuesta || []).flatMap(semana => semana.salidas || []);
+        
+            UIManager.renderizarHistorialAgenda(salidas);
         } catch (error) {
             console.error("Error cargando historial:", error);
         }

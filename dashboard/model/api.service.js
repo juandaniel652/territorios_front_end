@@ -45,6 +45,14 @@ export const Api = {
         return handleResponse(res);
     },
 
+    async getSugerenciaCombinada() {
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/agenda/sugerir-combinada`, {
+            headers: getHeaders()
+        });
+        const data = await handleResponse(res);
+        return data.propuesta; // solo lo que te interesa, descartamos conductores_disponibles
+    },
+
     // --- CRUD DE ASIGNACIONES INDIVIDUALES ---
     async crearAsignacion(datos) {
         // QUITAMOS la barra final. FastAPI es muy estricto con esto.
