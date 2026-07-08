@@ -351,8 +351,8 @@ export const UIManager = {
                     </td>
                 </tr>
                 <tr style="background: var(--green-600);">
-                    <th class="p-2 font-bold text-xs uppercase" style="color: #ffffff5f;">Horario</th>
-                    <th class="p-2 font-bold text-xs uppercase" style="color: #ffffff5f;">Territorio</th>
+                    <th class="p-2 text-center font-bold text-xs uppercase" style="color: #0000000;">Horario</th>
+                    <th class="p-2 text-center font-bold text-xs uppercase" style="color: #0000000;">Territorio</th>
                 </tr>
                 ${filas}
             `;
