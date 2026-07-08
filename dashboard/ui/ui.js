@@ -321,44 +321,44 @@ export const UIManager = {
             console.error("❌ No se encontró el elemento #tablaHistorialAgenda en el HTML");
             return;
         }
-    
+
         const hayDatos = semanas.some(s => Array.isArray(s.salidas) && s.salidas.length > 0);
         if (!hayDatos) {
             tabla.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-gray-500 italic">No hay territorios propuestos.</td></tr>`;
             return;
         }
-    
+
         tabla.innerHTML = semanas.map(semana => {
             const salidas = semana.salidas || [];
             if (salidas.length === 0) return "";
-        
+
             const filas = salidas.map((s, i) => {
                 const horario = s.horario || "---";
                 const territorio = s.territorio_numero || s.territorio_id || "---";
                 const zebra = i % 2 === 0 ? "bg-white" : "bg-green-50";
-            
+
                 return `
                     <tr class="${zebra} border-b border-green-100">
                         <td class="p-2 text-sm font-semibold text-center" style="color: var(--gray-800);">${horario}</td>
                         <td class="p-2 text-sm font-bold text-center font-mono" style="color: var(--green-600);">${territorio}</td>
                     </tr>`;
             }).join("");
-        
+
             return `
                 <tr>
                     <td colspan="2" class="p-2 text-center font-bold uppercase text-xs tracking-wide" style="background: var(--gray-900); color: #ffffff;">
-                        Semana ${semana.semana_numero} · ${semana.rango_fechas}
+                        ${semana.rango_fechas}
                     </td>
                 </tr>
                 <tr style="background: var(--green-600);">
-                    <th class="p-2 font-bold text-xs uppercase" style="color: #ffffff;">Horario</th>
-                    <th class="p-2 font-bold text-xs uppercase" style="color: #ffffff;">Territorio</th>
+                    <th class="p-2 font-bold text-xs uppercase" style="color: #ffffff5f;">Horario</th>
+                    <th class="p-2 font-bold text-xs uppercase" style="color: #ffffff5f;">Territorio</th>
                 </tr>
                 ${filas}
             `;
         }).join("");
     }
-    
+
 };
 
 // --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---
