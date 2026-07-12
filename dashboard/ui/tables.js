@@ -5,7 +5,7 @@ export const Tables = {
         const container = document.getElementById("resultadoTerritorio");
         if (!container) return;
 
-        if (!asignaciones.length) {
+        if (!asignaciones.length)|| (numero <= 0)  {
             container.innerHTML = `<p class="result-empty">Sin asignaciones para el territorio <strong>${numero}</strong>.</p>`;
             return;
         }
