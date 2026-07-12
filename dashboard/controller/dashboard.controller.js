@@ -19,7 +19,7 @@ export const Controller = {
         try {
             // OJO: Recordá que Api.getTerritorio debe estar en api.service.js
             const territorio = await Api.getTerritorio(numero);
-            UIManager.renderAsignaciones(territorio.numero, territorio.asignaciones);
+            UIManager.renderAsignaciones(territorio.territorio, territorio.asignaciones);
         } catch (error) {
             console.error("❌ Error en consulta:", error);
             UIManager.mostrarMensaje("Error al obtener datos", "error");
