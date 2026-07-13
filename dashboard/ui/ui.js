@@ -94,10 +94,7 @@ export const UIManager = {
                         ● ${estilo.label}
                     </p>
                 </div>
-                <button class="btn-primary-sm" onclick="window.UI.seleccionarTerritorio(${s.numero})" 
-                        style="padding: 6px 10px; font-size: 11px; background: ${s.severidad === 'critico' ? '#171b24' : ''}">
-                    Asignar
-                </button>
+                
             `;
             contenedor.appendChild(card);
         });
