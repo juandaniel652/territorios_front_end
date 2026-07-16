@@ -8,7 +8,7 @@ export const Modals = {
         // Seteamos valores básicos
         const inputId = document.getElementById("editId");
         const inputConductor = document.getElementById("editConductor");
-        const inputCantidad = document.getElementById("editCantidad");
+        const inputCantidad = document.getElementById("totalAbarcado");
         const inputTerritorio = document.getElementById("editTerritorio"); // Asegúrate de tener este input para el número
         
         if (inputId) inputId.value = data.id || "";
