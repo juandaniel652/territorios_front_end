@@ -189,25 +189,30 @@ async function handleAsignacionEditSubmit(e) {
 export function initGlobalEvents() {
     console.log("🚀 Orquestador de eventos inicializado (Modular)");
 
-    // Listener único de Clics
     document.addEventListener("click", async (e) => {
         const target = e.target;
 
         if (target.closest("#btnLogout")) return handleLogout();
-        
-        const btnNav = target.closest(".nav-btn");
-        if (btnNav) return await handleNavegacion(btnNav);
 
-        if (target.closest("#btnGenerarPropuesta")) return await handleGenerarPropuesta();
-
-        if (target.closest("#btnConfirmarAgenda")) return await handleConfirmarAgenda();
-
-        if (target.closest("#btnBuscarSugerencias")) return await handleBuscarSugerencias();
-
-        if (target.closest("#consultarBtn")) return await handleConsultarTerritorio();
-
-        // Si maneja modales, corta la ejecución
+        // 1. 💡 Primero procesamos los modales. Si el clic fue en un botón de edición o cerrar, 
+        // handleModals devolverá true y cortará la ejecución inmediatamente.
         if (handleModals(target)) return;
+
+        // 2. Ahora evaluamos si es un botón de navegación del menú
+        const btnNav = target.closest(".nav-btn");
+        if (btnNav) {
+            // Evitamos falsos positivos: si el botón es de edición, no navegamos
+            if (btnNav.classList.contains('btn-row-edit') || btnNav.id?.includes('Edit')) {
+                return;
+            }
+            return await handleNavegacion(btnNav);
+        }
+
+        // 3. Resto de eventos comunes
+        if (target.closest("#btnGenerarPropuesta")) return await handleGenerarPropuesta();
+        if (target.closest("#btnConfirmarAgenda")) return await handleConfirmarAgenda();
+        if (target.closest("#btnBuscarSugerencias")) return await handleBuscarSugerencias();
+        if (target.closest("#consultarBtn")) return await handleConsultarTerritorio();
     });
 
     // Lógica dinámica de fechas
