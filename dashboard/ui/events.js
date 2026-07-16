@@ -75,18 +75,29 @@ async function handleConsultarTerritorio() {
 }
 
 function handleModals(target) {
+    // 1. Si el clic se hizo en el botón de editar de la fila
     const btnEdit = target.closest(".btn-row-edit");
     if (btnEdit) {
-        // Al dataset le pasamos la info de la fila directamente
         Modals.abrirEdicion(btnEdit.dataset);
         return true;
     }
 
-    if (target.closest("#btnCancelEdit, #btnCancelDelete, .modal-overlay")) {
+    // 2. 💡 NUEVO: Si el clic ocurrió DENTRO de la caja de contenido del modal (los formularios, inputs, etc.)
+    // Evitamos que se procese como un cierre o un clic de navegación externa.
+    if (target.closest(".modal-box") || target.closest(".modal-content")) {
+        // Permitimos que el navegador maneje el clic de forma nativa (escribir, abrir flatpickr, etc.)
+        // Pero le decimos a nuestro orquestador que NO ejecute lógicas de cierre ni de cambio de sección.
+        return false; 
+    }
+
+    // 3. Si el usuario hace clic específicamente en los botones de cancelar, 
+    // o EN EL FONDO translúcido del modal (.modal-overlay) para cerrarlo:
+    if (target.closest("#btnCancelEdit, #btnCancelDelete") || target.classList.contains("modal-overlay")) {
         Modals.cerrarEdicion();
         Modals.cerrarConfirmar();
         return true;
     }
+
     return false;
 }
 
