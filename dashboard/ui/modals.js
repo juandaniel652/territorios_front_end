@@ -3,28 +3,43 @@ export const Modals = {
         const modal = document.getElementById("modalEdicion");
         if (!modal) return;
         
+        console.log("✏️ Abriendo edición con datos recibidos de la fila:", data);
+        
         // Seteamos valores básicos
         const inputId = document.getElementById("editId");
         const inputConductor = document.getElementById("editConductor");
         const inputCantidad = document.getElementById("editCantidad");
+        const inputTerritorio = document.getElementById("editTerritorio"); // Asegúrate de tener este input para el número
         
         if (inputId) inputId.value = data.id || "";
         if (inputConductor) inputConductor.value = data.conductor || "";
-        if (inputCantidad) inputCantidad.value = data.cantidad_abarcado || "";
+        if (inputCantidad) inputCantidad.value = data.cantidad_abarcado || data.cantidadAbarcado || "";
+        if (inputTerritorio) inputTerritorio.value = data.numero_territorio || data.numeroTerritorio || "";
         
         const inputAsignado = document.getElementById("editFechaAsignado");
         const inputCompletado = document.getElementById("editFechaCompletado");
         
-        // Actualizamos fechas de forma segura
+        // 💡 Normalizamos las fechas tolerando camelCase y guion_bajo
+        const rawAsignado = data.fecha_asignado || data.fechaAsignado || "";
+        const rawCompletado = data.fecha_completado || data.fechaCompletado || "";
+
+        // Limpiamos la fecha quedándonos solo con la sección YYYY-MM-DD
+        const fechaAsignadoLimpia = rawAsignado.split("T")[0];
+        const fechaCompletadoLimpia = rawCompletado.split("T")[0];
+
+        // Actualizamos fechas de forma segura en los inputs y en Flatpickr
         if (inputAsignado) {
-            inputAsignado.value = data.fecha_asignado || "";
-            // Solo llamamos a setDate si flatpickr ya se inicializó sobre el elemento
-            inputAsignado._flatpickr?.setDate(data.fecha_asignado || "", false);
+            inputAsignado.value = fechaAsignadoLimpia;
+            if (inputAsignado._flatpickr) {
+                inputAsignado._flatpickr.setDate(fechaAsignadoLimpia, false);
+            }
         }
 
         if (inputCompletado) {
-            inputCompletado.value = data.fecha_completado || "";
-            inputCompletado._flatpickr?.setDate(data.fecha_completado || "", false);
+            inputCompletado.value = fechaCompletadoLimpia;
+            if (inputCompletado._flatpickr) {
+                inputCompletado._flatpickr.setDate(fechaCompletadoLimpia, false);
+            }
         }
         
         modal.classList.remove("hidden");
@@ -36,7 +51,6 @@ export const Modals = {
         if (modal) modal.classList.add("hidden");
     },
 
-    // Busca esta función en tu modals.js original
     abrirConfirmarEliminacion(id, conductor, fecha) {
         const modal = document.getElementById("modalConfirm");
         const infoText = document.getElementById("confirmInfoText"); 
@@ -44,7 +58,6 @@ export const Modals = {
 
         if (inputId) inputId.value = id;
         
-        // Si encontrás el elemento p, ponés el texto detallado
         if (infoText) {
             infoText.innerHTML = `Vas a eliminar la asignación de <strong>${conductor || "N/A"}</strong> del día <strong>${fecha || "N/A"}</strong>.`;
         }

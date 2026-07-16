@@ -77,6 +77,7 @@ async function handleConsultarTerritorio() {
 function handleModals(target) {
     const btnEdit = target.closest(".btn-row-edit");
     if (btnEdit) {
+        // Al dataset le pasamos la info de la fila directamente
         Modals.abrirEdicion(btnEdit.dataset);
         return true;
     }
@@ -89,8 +90,7 @@ function handleModals(target) {
     return false;
 }
 
-// Handler separado para el submit del formulario de asignación
-// Handler separado para el submit del formulario de asignación
+// Handler para agregar una nueva asignación
 async function handleAsignacionSubmit(e) {
     e.preventDefault();
     
@@ -109,11 +109,7 @@ async function handleAsignacionSubmit(e) {
         return;
     }
 
-    // 💡 Sanitización crítica para FastAPI/Pydantic:
-    // Si la fecha está vacía (""), mandamos null. Si no, mandamos la fecha.
     const fechaCompletado = (fechaCompRaw && fechaCompRaw.trim() !== "") ? fechaCompRaw : null;
-    
-    // Aseguramos que 'cantidad_abarcado' sea un string y nunca vaya vacío.
     const cantidadAbarcado = (totalAbarcadoRaw && totalAbarcadoRaw.trim() !== "") ? totalAbarcadoRaw.trim() : "Completo";
 
     const formData = {
@@ -124,16 +120,63 @@ async function handleAsignacionSubmit(e) {
         cantidad_abarcado: cantidadAbarcado
     };
 
-    console.log("📤 Enviando a FastAPI desde handler aislado:", formData);
+    console.log("📤 Guardando nueva asignación:", formData);
 
     UIManager.showLoading(true);
     try {
         await Controller.crearAsignacion(formData, () => {
             e.target.reset();
-            console.log("🧹 Formulario reseteado tras confirmación exitosa.");
+            console.log("🧹 Formulario de creación reseteado.");
         });
     } catch (err) {
-        console.error("❌ Error en la cadena de ejecución del submit:", err);
+        console.error("❌ Error al crear asignación:", err);
+    } finally {
+        UIManager.showLoading(false);
+    }
+}
+
+// 💡 NUEVO: Handler para procesar los cambios editados del modal
+async function handleAsignacionEditSubmit(e) {
+    e.preventDefault(); // ⚠️ EVITA QUE LA VENTANA SE RECARGUE E IMPIDE EL CIERRE AUTOMÁTICO
+    
+    const id = document.getElementById("editId").value;
+    const conductorNombre = document.getElementById("editConductor").value.trim();
+    const fechaAsig = document.getElementById("editFechaAsignado").value;
+    const fechaCompRaw = document.getElementById("editFechaCompletado").value;
+    const totalAbarcadoRaw = document.getElementById("editCantidad").value; 
+    const numeroTerritorio = document.getElementById("editTerritorio")?.value || "0";
+
+    if (!conductorNombre) {
+        alert("El nombre del conductor es obligatorio.");
+        return;
+    }
+
+    if (!fechaAsig) {
+        alert("La fecha de asignación es obligatoria.");
+        return;
+    }
+
+    const fechaCompletado = (fechaCompRaw && fechaCompRaw.trim() !== "") ? fechaCompRaw : null;
+    const cantidadAbarcado = (totalAbarcadoRaw && totalAbarcadoRaw.trim() !== "") ? totalAbarcadoRaw.trim() : "Completo";
+
+    const datosActualizados = {
+        numero_territorio: parseInt(numeroTerritorio, 10),
+        conductor: conductorNombre,
+        fecha_asignado: fechaAsig,
+        fecha_completado: fechaCompletado,
+        cantidad_abarcado: cantidadAbarcado
+    };
+
+    console.log(`💾 Enviando actualización para la asignación [ID: ${id}]:`, datosActualizados);
+
+    UIManager.showLoading(true);
+    try {
+        await Controller.editarAsignacion(id, datosActualizados, () => {
+            Modals.cerrarEdicion(); // Solo se cierra si la API responde con éxito 200
+            console.log("✅ Asignación modificada con éxito.");
+        });
+    } catch (err) {
+        console.error("❌ Error en la cadena de actualización:", err);
     } finally {
         UIManager.showLoading(false);
     }
@@ -174,9 +217,22 @@ export function initGlobalEvents() {
         }
     });
 
-    // Evento de Formulario con su handler asignado de forma limpia
+    // Evento de Formulario de Creación
     const formAgregar = document.getElementById("asignacionForm");
     if (formAgregar) {
         formAgregar.onsubmit = handleAsignacionSubmit;
+    }
+
+    // 💡 NUEVO: Vinculamos el formulario del modal de edición
+    const formEditar = document.getElementById("editAsignacionForm");
+    if (formEditar) {
+        formEditar.onsubmit = handleAsignacionEditSubmit;
+    } else {
+        // En caso de que tu formulario en el HTML no use ID sino una clase,
+        // o use directamente el ID del modal para su tag <form>
+        const formEditarAlternativo = document.querySelector("#modalEdicion form");
+        if (formEditarAlternativo) {
+            formEditarAlternativo.onsubmit = handleAsignacionEditSubmit;
+        }
     }
 }
