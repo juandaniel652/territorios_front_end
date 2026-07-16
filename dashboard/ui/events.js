@@ -90,30 +90,44 @@ function handleModals(target) {
 }
 
 // Handler separado para el submit del formulario de asignación
+// Handler separado para el submit del formulario de asignación
 async function handleAsignacionSubmit(e) {
     e.preventDefault();
     
     const conductorNombre = document.getElementById("conductor").value.trim();
     const fechaAsig = document.getElementById("fechaAsignado").value;
+    const fechaCompRaw = document.getElementById("fechaCompletado").value;
+    const totalAbarcadoRaw = document.getElementById("totalAbarcado").value;
 
     if (!conductorNombre) {
         alert("El nombre del conductor es obligatorio.");
         return;
     }
 
+    if (!fechaAsig) {
+        alert("La fecha de asignación es obligatoria.");
+        return;
+    }
+
+    // 💡 Sanitización crítica para FastAPI/Pydantic:
+    // Si la fecha está vacía (""), mandamos null. Si no, mandamos la fecha.
+    const fechaCompletado = (fechaCompRaw && fechaCompRaw.trim() !== "") ? fechaCompRaw : null;
+    
+    // Aseguramos que 'cantidad_abarcado' sea un string y nunca vaya vacío.
+    const cantidadAbarcado = (totalAbarcadoRaw && totalAbarcadoRaw.trim() !== "") ? totalAbarcadoRaw.trim() : "Completo";
+
     const formData = {
-        numero_territorio: parseInt(document.getElementById("numeroTerritorio").value),
+        numero_territorio: parseInt(document.getElementById("numeroTerritorio").value, 10),
         conductor: conductorNombre,
         fecha_asignado: fechaAsig,
-        fecha_completado: document.getElementById("fechaCompletado").value || null,
-        cantidad_abarcado: document.getElementById("totalAbarcado").value || "Completo"
+        fecha_completado: fechaCompletado,
+        cantidad_abarcado: cantidadAbarcado
     };
 
     console.log("📤 Enviando a FastAPI desde handler aislado:", formData);
 
     UIManager.showLoading(true);
     try {
-        // Le pasamos el callback () => e.target.reset() como 'onSuccess'
         await Controller.crearAsignacion(formData, () => {
             e.target.reset();
             console.log("🧹 Formulario reseteado tras confirmación exitosa.");

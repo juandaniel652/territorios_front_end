@@ -55,7 +55,6 @@ export const Api = {
 
     // --- CRUD DE ASIGNACIONES INDIVIDUALES ---
     async crearAsignacion(datos) {
-        // QUITAMOS la barra final. FastAPI es muy estricto con esto.
         const url = `${CONFIG.BASE_URL}/api/v1/asignaciones`; 
         
         const res = await fetch(url, {
@@ -67,6 +66,17 @@ export const Api = {
         return handleResponse(res);
     },
 
+    // 💡 Renombrado para coincidir semánticamente con las Asignaciones
+    async actualizarAsignacion(id, datos) {
+        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/${id}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify(datos)
+        });
+        return handleResponse(res);
+    },
+
+    
     async actualizarSalida(id, datos) {
         const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/${id}`, {
             method: 'PUT',

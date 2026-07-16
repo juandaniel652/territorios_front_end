@@ -104,11 +104,14 @@ export const Controller = {
 
     async editarAsignacion(id, campos, onSuccess) {
         try {
-            const result = await Api.actualizarSalida(id, campos);
-            UIManager.mostrarMensaje(result.message || "Actualizado.", "success");
+            // 💡 Ahora invoca correctamente a actualizarAsignacion
+            const result = await Api.actualizarAsignacion(id, campos);
+            UIManager.mostrarMensaje(result.message || "Actualizado con éxito.", "success");
             if (onSuccess) onSuccess();
+            this.cargarDashboardCompleto();
         } catch (error) {
-            UIManager.mostrarMensaje("Error al actualizar.", "error");
+            console.error("❌ Error al editar asignación:", error);
+            UIManager.mostrarMensaje("Error al actualizar la asignación.", "error");
         }
     },
 
