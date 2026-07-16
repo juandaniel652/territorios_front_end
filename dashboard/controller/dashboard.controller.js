@@ -102,9 +102,14 @@ export const Controller = {
         }
     },
 
-    // Función auxiliar local para convertir fechas (dentro del controlador o arriba de todo)
+    // =========================================================================
+    // FUNCIÓN AUXILIAR PARA CONVERTIR FECHAS DE "DD/MM/AAAA" A "YYYY-MM-DD"
+    // =========================================================================
     _deArgentinoAISO(fechaArg) {
         if (!fechaArg) return null;
+        // Si ya viene en formato ISO (YYYY-MM-DD), lo dejamos pasar tal cual
+        if (fechaArg.includes("-")) return fechaArg;
+        
         const partes = fechaArg.split("/"); // ["DD", "MM", "AAAA"]
         if (partes.length !== 3) return null;
         return `${partes[2]}-${partes[1]}-${partes[0]}`; // "AAAA-MM-DD"
@@ -114,21 +119,22 @@ export const Controller = {
         try {
             console.log("📥 Datos recibidos en el Controller para edición:", campos);
 
-            // 🇦🇷 Convertimos las fechas de formato argentino a ISO para FastAPI
+            // 1. Convertimos las fechas al formato ISO que exige FastAPI (YYYY-MM-DD)
             const fechaAsignadoISO = this._deArgentinoAISO(campos.fecha_asignado || campos.fechaAsignado);
             const fechaCompletadoISO = this._deArgentinoAISO(campos.fecha_completado || campos.fechaCompletado);
 
-            // 🛠️ Armamos el payload EXACTO que pide tu esquema de FastAPI
+            // 2. Construimos el payload EXACTO que espera el backend de FastAPI
+            // Evitamos enviar campos sobrantes como numero_territorio que causan el 422
             const payloadFiltrado = {
-                conductor: campos.conductor || "",
+                conductor: (campos.conductor || "").trim(),
                 fecha_asignado: fechaAsignadoISO,
-                fecha_completado: fechaCompletadoISO || null, // null si viene vacío para que FastAPI no explote
-                cantidad_abarcado: campos.cantidad || campos.cantidad_abarcado || campos.cantidad_abarcada || ""
+                fecha_completado: fechaCompletadoISO || null, // null nativo si está vacío
+                cantidad_abarcado: campos.cantidad_abarcado || campos.cantidad || "Completo"
             };
 
-            console.log("📤 Payload sanitizado que viaja a la API:", payloadFiltrado);
+            console.log("📤 Enviando payload sanitizado a FastAPI:", payloadFiltrado);
 
-            // Enviamos solo el payload limpio al backend
+            // 3. Invocamos correctamente a la API pasándole el payload limpio
             const result = await Api.actualizarAsignacion(id, payloadFiltrado);
             
             UIManager.mostrarMensaje(result.message || "Actualizado con éxito.", "success");
@@ -136,8 +142,15 @@ export const Controller = {
             if (onSuccess) onSuccess();
             this.cargarDashboardCompleto();
         } catch (error) {
-            console.error("❌ Error al editar asignación:", error);
+            console.error("❌ Error detallado al actualizar asignación:", error);
+            
+            // Si el error contiene detalles de validación de FastAPI, intentamos mostrarlos
+            if (error && typeof error === 'object' && error.detail) {
+                console.error("🔍 Detalles de validación del Backend:", error.detail);
+            }
+            
             UIManager.mostrarMensaje("Error al actualizar la asignación.", "error");
+            throw error; // Re-lanzamos para que events.js sepa que falló
         }
     },
 
