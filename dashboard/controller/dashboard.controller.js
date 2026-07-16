@@ -102,11 +102,37 @@ export const Controller = {
         }
     },
 
+    // Función auxiliar local para convertir fechas (dentro del controlador o arriba de todo)
+    _deArgentinoAISO(fechaArg) {
+        if (!fechaArg) return null;
+        const partes = fechaArg.split("/"); // ["DD", "MM", "AAAA"]
+        if (partes.length !== 3) return null;
+        return `${partes[2]}-${partes[1]}-${partes[0]}`; // "AAAA-MM-DD"
+    },
+
     async editarAsignacion(id, campos, onSuccess) {
         try {
-            // 💡 Ahora invoca correctamente a actualizarAsignacion
-            const result = await Api.actualizarAsignacion(id, campos);
+            console.log("📥 Datos recibidos en el Controller para edición:", campos);
+
+            // 🇦🇷 Convertimos las fechas de formato argentino a ISO para FastAPI
+            const fechaAsignadoISO = this._deArgentinoAISO(campos.fecha_asignado || campos.fechaAsignado);
+            const fechaCompletadoISO = this._deArgentinoAISO(campos.fecha_completado || campos.fechaCompletado);
+
+            // 🛠️ Armamos el payload EXACTO que pide tu esquema de FastAPI
+            const payloadFiltrado = {
+                conductor: campos.conductor || "",
+                fecha_asignado: fechaAsignadoISO,
+                fecha_completado: fechaCompletadoISO || null, // null si viene vacío para que FastAPI no explote
+                cantidad_abarcado: campos.cantidad || campos.cantidad_abarcado || campos.cantidad_abarcada || ""
+            };
+
+            console.log("📤 Payload sanitizado que viaja a la API:", payloadFiltrado);
+
+            // Enviamos solo el payload limpio al backend
+            const result = await Api.actualizarAsignacion(id, payloadFiltrado);
+            
             UIManager.mostrarMensaje(result.message || "Actualizado con éxito.", "success");
+            
             if (onSuccess) onSuccess();
             this.cargarDashboardCompleto();
         } catch (error) {
