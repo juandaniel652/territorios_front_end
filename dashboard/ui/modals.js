@@ -13,8 +13,12 @@ export const Modals = {
         
         if (inputId) inputId.value = data.id || "";
         if (inputConductor) inputConductor.value = data.conductor || "";
-        if (inputCantidad) inputCantidad.value = data.cantidad_abarcado || data.cantidadAbarcado || "";
-        if (inputTerritorio) inputTerritorio.value = data.numero_territorio || data.numeroTerritorio || "";
+        if (inputCantidad) {
+            inputCantidad.value = data.cantidad || data.cantidad_abarcado || data.cantidadAbarcado || "";
+        }
+        if (inputTerritorio) {
+            inputTerritorio.value = data.numero_territorio || data.numeroTerritorio || data.numero || "";
+        }
         
         const inputAsignado = document.getElementById("editFechaAsignado");
         const inputCompletado = document.getElementById("editFechaCompletado");
