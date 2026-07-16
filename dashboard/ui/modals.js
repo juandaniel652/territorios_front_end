@@ -27,22 +27,44 @@ export const Modals = {
         const rawAsignado = data.fecha_asignado || data.fechaAsignado || "";
         const rawCompletado = data.fecha_completado || data.fechaCompletado || "";
 
-        // Limpiamos la fecha quedándonos solo con la sección YYYY-MM-DD
         const fechaAsignadoLimpia = rawAsignado.split("T")[0];
         const fechaCompletadoLimpia = rawCompletado.split("T")[0];
 
-        // Actualizamos fechas de forma segura en los inputs y en Flatpickr
+        // Configuración regional para inicializar Flatpickr si no existiera en estos inputs
+        const flatpickrConfig = {
+            dateFormat: "Y-m-d",     // Formato real interno (para el backend)
+            altInput: true,          // Habilita el input visual amigable
+            altFormat: "d/m/Y",      // 🇦🇷 Formato argentino visual: DD/MM/AAAA
+        };
+
+        // Actualizamos Fecha Asignado
         if (inputAsignado) {
-            inputAsignado.value = fechaAsignadoLimpia;
             if (inputAsignado._flatpickr) {
+                // Si ya es un Flatpickr, le seteamos la fecha directamente y él se encarga de mostrarla en d/m/Y
                 inputAsignado._flatpickr.setDate(fechaAsignadoLimpia, false);
+            } else {
+                // Si es un input plano, inicializamos Flatpickr sobre él
+                if (typeof flatpickr !== "undefined") {
+                    const fp = flatpickr(inputAsignado, flatpickrConfig);
+                    fp.setDate(fechaAsignadoLimpia, false);
+                } else {
+                    // Fallback rústico si Flatpickr no cargó: convertimos YYYY-MM-DD a DD/MM/AAAA a mano
+                    inputAsignado.value = formatearFechaA_AR(fechaAsignadoLimpia);
+                }
             }
         }
 
+        // Actualizamos Fecha Completado
         if (inputCompletado) {
-            inputCompletado.value = fechaCompletadoLimpia;
             if (inputCompletado._flatpickr) {
                 inputCompletado._flatpickr.setDate(fechaCompletadoLimpia, false);
+            } else {
+                if (typeof flatpickr !== "undefined") {
+                    const fp = flatpickr(inputCompletado, flatpickrConfig);
+                    fp.setDate(fechaCompletadoLimpia, false);
+                } else {
+                    inputCompletado.value = formatearFechaA_AR(fechaCompletadoLimpia);
+                }
             }
         }
         
@@ -74,3 +96,11 @@ export const Modals = {
         if (modal) modal.classList.add("hidden");
     }
 };
+
+
+function formatearFechaA_AR(fechaISO) {
+    if (!fechaISO) return "";
+    const partes = fechaISO.split("-"); // [YYYY, MM, DD]
+    if (partes.length !== 3) return fechaISO;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`; // DD/MM/AAAA
+}
