@@ -71,6 +71,43 @@ export const Modals = {
     cerrarConfirmar() {
         const modal = document.getElementById("modalConfirm");
         if (modal) modal.classList.add("hidden");
+    },
+
+    abrirSesionExpirada() {
+        // Evitamos duplicar el modal si ya existe en pantalla
+        if (document.getElementById("modalSesionExpirada")) return;
+
+        // Limpiamos los tokens locales para evitar bucles de reintento fallidos
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
+
+        // Creamos la estructura del modal al vuelo de forma limpia y sobria
+        const modalHtml = `
+            <div id="modalSesionExpirada" class="modal-overlay" style="z-index: 9999; display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
+                <div class="modal-card" style="max-width: 400px; text-align: center; padding: 2rem; border-radius: 12px; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem; filter: grayscale(0.2);">🔒</div>
+                    <h3 style="margin: 0 0 0.75rem 0; font-family: 'Playfair Display', serif; color: #1e293b; font-size: 1.5rem;">Tu sesión ha expirado</h3>
+                    <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;">
+                        Por razones de seguridad, tu sesión finalizó. Por favor, iniciá sesión nuevamente para poder guardar tus cambios.
+                    </p>
+                    <button id="btnReconectar" class="btn-primary-sm" style="width: 100%; background: var(--green-600); padding: 0.75rem; font-weight: 600; border-radius: 6px; color: #fff; border: none; cursor: pointer; transition: background 0.2s;">
+                        Iniciar Sesión
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+        // Añadimos el evento para redireccionar al login de forma prolija
+        document.getElementById("btnReconectar").addEventListener("click", () => {
+            window.location.href = "frontend/login/index.html"; 
+        });
+
+        // Redirección automática de cortesía tras 6 segundos por si dejó la compu sola
+        setTimeout(() => {
+            window.location.href = "/login/";
+        }, 6000);
     }
 };
 
