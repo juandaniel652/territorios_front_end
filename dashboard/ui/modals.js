@@ -8,16 +8,21 @@ export const Modals = {
         // Seteamos valores básicos
         const inputId = document.getElementById("editId");
         const inputConductor = document.getElementById("editConductor");
-        const inputCantidad = document.getElementById("totalAbarcado");
-        const inputTerritorio = document.getElementById("editTerritorio"); // Asegúrate de tener este input para el número
+        const inputTerritorio = document.getElementById("editTerritorio");
+        
+        // CORRECCIÓN CLAVE: Apuntamos a 'editCantidad' que es el ID real en el HTML del modal
+        const inputCantidad = document.getElementById("editCantidad");
         
         if (inputId) inputId.value = data.id || "";
         if (inputConductor) inputConductor.value = data.conductor || "";
-        if (inputCantidad) {
-            inputCantidad.value = data.cantidad || data.cantidad_abarcado || data.cantidadAbarcado || "";
-        }
         if (inputTerritorio) {
             inputTerritorio.value = data.numero_territorio || data.numeroTerritorio || data.numero || "";
+        }
+        
+        // RECUPERAR CANTIDAD ABARCADA
+        if (inputCantidad) {
+            // Buscamos todas las variantes de nombre con las que pueda venir desde tu base de datos/backend
+            inputCantidad.value = data.cantidad_abarcada || data.cantidadAbarcado || data.cantidad_abarcado || data.cantidad || "";
         }
         
         const inputAsignado = document.getElementById("editFechaAsignado");
@@ -27,45 +32,17 @@ export const Modals = {
         const rawAsignado = data.fecha_asignado || data.fechaAsignado || "";
         const rawCompletado = data.fecha_completado || data.fechaCompletado || "";
 
+        // Limpiamos el formato ISO de la base de datos (se queda solo con YYYY-MM-DD)
         const fechaAsignadoLimpia = rawAsignado.split("T")[0];
         const fechaCompletadoLimpia = rawCompletado.split("T")[0];
 
-        // Configuración regional para inicializar Flatpickr si no existiera en estos inputs
-        const flatpickrConfig = {
-            dateFormat: "Y-m-d",     // Formato real interno (para el backend)
-            altInput: true,          // Habilita el input visual amigable
-            altFormat: "d/m/Y",      // 🇦🇷 Formato argentino visual: DD/MM/AAAA
-        };
-
-        // Actualizamos Fecha Asignado
+        // 🇦🇷 Cargamos las fechas formateadas directamente como texto simple en DD/MM/AAAA
         if (inputAsignado) {
-            if (inputAsignado._flatpickr) {
-                // Si ya es un Flatpickr, le seteamos la fecha directamente y él se encarga de mostrarla en d/m/Y
-                inputAsignado._flatpickr.setDate(fechaAsignadoLimpia, false);
-            } else {
-                // Si es un input plano, inicializamos Flatpickr sobre él
-                if (typeof flatpickr !== "undefined") {
-                    const fp = flatpickr(inputAsignado, flatpickrConfig);
-                    fp.setDate(fechaAsignadoLimpia, false);
-                } else {
-                    // Fallback rústico si Flatpickr no cargó: convertimos YYYY-MM-DD a DD/MM/AAAA a mano
-                    inputAsignado.value = formatearFechaA_AR(fechaAsignadoLimpia);
-                }
-            }
+            inputAsignado.value = formatearFechaA_AR(fechaAsignadoLimpia);
         }
 
-        // Actualizamos Fecha Completado
         if (inputCompletado) {
-            if (inputCompletado._flatpickr) {
-                inputCompletado._flatpickr.setDate(fechaCompletadoLimpia, false);
-            } else {
-                if (typeof flatpickr !== "undefined") {
-                    const fp = flatpickr(inputCompletado, flatpickrConfig);
-                    fp.setDate(fechaCompletadoLimpia, false);
-                } else {
-                    inputCompletado.value = formatearFechaA_AR(fechaCompletadoLimpia);
-                }
-            }
+            inputCompletado.value = formatearFechaA_AR(fechaCompletadoLimpia);
         }
         
         modal.classList.remove("hidden");
@@ -97,7 +74,7 @@ export const Modals = {
     }
 };
 
-
+// Función auxiliar para convertir YYYY-MM-DD a DD/MM/AAAA de forma limpia
 function formatearFechaA_AR(fechaISO) {
     if (!fechaISO) return "";
     const partes = fechaISO.split("-"); // [YYYY, MM, DD]
