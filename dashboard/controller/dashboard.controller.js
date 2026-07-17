@@ -119,38 +119,36 @@ export const Controller = {
         try {
             console.log("📥 Datos recibidos en el Controller para edición:", campos);
 
-            // 1. Convertimos las fechas al formato ISO que exige FastAPI (YYYY-MM-DD)
+            // 1. Convertimos fechas al formato ISO (YYYY-MM-DD)
             const fechaAsignadoISO = this._deArgentinoAISO(campos.fecha_asignado || campos.fechaAsignado);
             const fechaCompletadoISO = this._deArgentinoAISO(campos.fecha_completado || campos.fechaCompletado);
 
-            // 2. Construimos el payload EXACTO que espera el backend de FastAPI
-            // Evitamos enviar campos sobrantes como numero_territorio que causan el 422
+            // 2. Construimos el payload exacto
             const payloadFiltrado = {
                 conductor: (campos.conductor || "").trim(),
                 fecha_asignado: fechaAsignadoISO,
-                fecha_completado: fechaCompletadoISO || null, // null nativo si está vacío
+                fecha_completado: fechaCompletadoISO || null,
                 cantidad_abarcado: campos.cantidad_abarcado || campos.cantidad || "Completo"
             };
 
             console.log("📤 Enviando payload sanitizado a FastAPI:", payloadFiltrado);
 
-            // 3. Invocamos correctamente a la API pasándole el payload limpio
+            // 3. Enviamos el PUT a la API
             const result = await Api.actualizarAsignacion(id, payloadFiltrado);
             
-            UIManager.mostrarMensaje(result.message || "Actualizado con éxito.", "success");
-            
+            // 4. Si la API responde OK, ejecutamos el callback que cierra el modal
             if (onSuccess) onSuccess();
-            this.cargarDashboardCompleto();
+
+            // 5. ⚡ LA CLAVE: Volvemos a pedir y renderizar los datos actualizados de la lista
+            // Si tu método necesita un rango por defecto (ej. "1-20"), pasáselo:
+            await this.cargarDashboardCompleto("1-20"); 
+            
+            console.log("🔄 Dashboard recargado en tiempo real.");
+
         } catch (error) {
-            console.error("❌ Error detallado al actualizar asignación:", error);
-            
-            // Si el error contiene detalles de validación de FastAPI, intentamos mostrarlos
-            if (error && typeof error === 'object' && error.detail) {
-                console.error("🔍 Detalles de validación del Backend:", error.detail);
-            }
-            
-            UIManager.mostrarMensaje("Error al actualizar la asignación.", "error");
-            throw error; // Re-lanzamos para que events.js sepa que falló
+            console.error("❌ Error al actualizar asignación:", error);
+            alert("Error al actualizar la asignación.");
+            throw error;
         }
     },
 
