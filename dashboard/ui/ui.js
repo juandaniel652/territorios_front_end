@@ -1,10 +1,10 @@
 // dashboard/ui/ui.js
-import { DOM }              from "./dom.js";
-import { Tables }           from "./tables.js";
-import { Modals }           from "./modals.js";
-import { Charts }           from "./charts.js";
+import { DOM } from "./dom.js";
+import { Tables } from "./tables.js";
+import { Modals } from "./modals.js";
+import { Charts } from "./charts.js";
 import { initGlobalEvents } from "./events.js";
-import { DateFormatter }    from "./utils.js";
+import { DateFormatter } from "./utils.js";
 import { Controller } from "../controller/dashboard.controller.js";
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
@@ -14,81 +14,98 @@ import { Spanish } from "flatpickr/dist/l10n/es.js";
  * Se encarga de la manipulación del DOM y delegar a componentes especializados (Tables, Charts)
  */
 export const UIManager = {
+  configurarSelectoresFechaAsignacion() {
+    const selectDomingo = document.getElementById("fechaAsignado");
+    const selectCompletado = document.getElementById("fechaCompletado");
+    if (!selectDomingo || !selectCompletado) return;
 
-    configurarSelectoresFechaAsignacion() {
-        const selectDomingo = document.getElementById("fechaAsignado");
-        const selectCompletado = document.getElementById("fechaCompletado");
-        if (!selectDomingo || !selectCompletado) return;
+    selectDomingo.innerHTML =
+      '<option value="">Seleccione Domingo de Inicio</option>';
+    selectCompletado.innerHTML =
+      '<option value="">Primero elija el domingo</option>';
+    selectCompletado.disabled = true;
 
-        selectDomingo.innerHTML = '<option value="">Seleccione Domingo de Inicio</option>';
-        selectCompletado.innerHTML = '<option value="">Primero elija el domingo</option>';
-        selectCompletado.disabled = true;
+    let fecha = new Date();
+    // Ajustamos al domingo más cercano (hoy o anterior)
+    fecha.setDate(fecha.getDate() - fecha.getDay());
 
-        let fecha = new Date();
-        // Ajustamos al domingo más cercano (hoy o anterior)
-        fecha.setDate(fecha.getDate() - fecha.getDay());
+    for (let i = 0; i < 8; i++) {
+      const iso = fecha.toISOString().split("T")[0];
 
-        for (let i = 0; i < 8; i++) {
-            const iso = fecha.toISOString().split('T')[0];
-            
-            // Formato: "03 de Mayo de 2026"
-            const labelFecha = fecha.toLocaleDateString('es-AR', { 
-                day: '2-digit', 
-                month: 'long', 
-                year: 'numeric' 
-            });
-            
-            const option = document.createElement('option');
-            option.value = iso;
-            // Resultado: "Semana desde el Domingo 03 de Mayo de 2026"
-            option.textContent = `Semana desde el Domingo ${labelFecha}`;
-            selectDomingo.appendChild(option);
+      // Formato: "03 de Mayo de 2026"
+      const labelFecha = fecha.toLocaleDateString("es-AR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
 
-            fecha.setDate(fecha.getDate() - 7);
-        }
-    },
+      const option = document.createElement("option");
+      option.value = iso;
+      // Resultado: "Semana desde el Domingo 03 de Mayo de 2026"
+      option.textContent = `Semana desde el Domingo ${labelFecha}`;
+      selectDomingo.appendChild(option);
 
-    renderAsignaciones(territorio, asignaciones) {
-        return Tables.renderAsignaciones(territorio, asignaciones);
-    },
+      fecha.setDate(fecha.getDate() - 7);
+    }
+  },
 
-    renderVistaPreviaAgenda(plan, conductores = []) {
-        if (Tables && Tables.renderVistaPreviaAgenda) {
-            Tables.renderVistaPreviaAgenda(plan, conductores);
-        }
-    },
+  renderAsignaciones(territorio, asignaciones) {
+    return Tables.renderAsignaciones(territorio, asignaciones);
+  },
 
-    // --- DASHBOARD Y GRÁFICOS ---
-    renderSugerencias(sugerencias) {
-        const contenedor = document.getElementById("resultadoSugerencias");
-        if (!contenedor) return;
+  renderVistaPreviaAgenda(plan, conductores = []) {
+    if (Tables && Tables.renderVistaPreviaAgenda) {
+      Tables.renderVistaPreviaAgenda(plan, conductores);
+    }
+  },
 
-        contenedor.innerHTML = ""; // Limpiamos
+  // --- DASHBOARD Y GRÁFICOS ---
+  renderSugerencias(sugerencias) {
+    const contenedor = document.getElementById("resultadoSugerencias");
+    if (!contenedor) return;
 
-        if (sugerencias.length === 0) {
-            contenedor.innerHTML = `<p class="result-empty p-4">No hay territorios sugeridos en este rango.</p>`;
-            return;
-        }
+    contenedor.innerHTML = ""; // Limpiamos
 
-        // Definimos los colores corporativos según la severidad
-        const estilosSeveridad = {
-            'critico': { bg: '#fef2f2', border: '#fecaca', text: '#dc2626', label: 'CRÍTICO' },
-            'severo':  { bg: '#fffbeb', border: '#fef3c7', text: '#d97706', label: 'SEVERO' },
-            'normal':  { bg: '#f0fdf4', border: '#dcfce7', text: '#16a34a', label: 'NORMAL' }
-        };
+    if (sugerencias.length === 0) {
+      contenedor.innerHTML = `<p class="result-empty p-4">No hay territorios sugeridos en este rango.</p>`;
+      return;
+    }
 
-        sugerencias.forEach(s => {
-            const estilo = estilosSeveridad[s.severidad] || estilosSeveridad['normal'];
-            
-            const card = document.createElement("div");
-            card.className = "sugerencia-card animate-in";
-            // Aplicamos un borde sutil del color de la severidad
-            card.style.borderLeft = `4px solid ${estilo.text}`;
+    // Definimos los colores corporativos según la severidad
+    const estilosSeveridad = {
+      critico: {
+        bg: "#fef2f2",
+        border: "#fecaca",
+        text: "#dc2626",
+        label: "CRÍTICO",
+      },
+      severo: {
+        bg: "#fffbeb",
+        border: "#fef3c7",
+        text: "#d97706",
+        label: "SEVERO",
+      },
+      normal: {
+        bg: "#f0fdf4",
+        border: "#dcfce7",
+        text: "#16a34a",
+        label: "NORMAL",
+      },
+    };
 
-            card.innerHTML = `
+    sugerencias.forEach((s) => {
+      const estilo =
+        estilosSeveridad[s.severidad] || estilosSeveridad["normal"];
+
+      const card = document.createElement("div");
+      card.className = "sugerencia-card animate-in";
+      // Aplicamos un borde sutil del color de la severidad
+      card.style.borderLeft = `4px solid ${estilo.text}`;
+
+      card.innerHTML = `
                 <div class="sugerencia-card__num">${s.numero}</div>
                 <div class="sugerencia-card__info">
-                    <p class="sugerencia-card__last">Última vez: <strong>${s.ultima_fecha || 'Nunca'}</strong></p>
+                    <p class="sugerencia-card__last">Última vez: <strong>${s.ultima_fecha || "Nunca"}</strong></p>
                     <p class="sugerencia-card__days">Hace <strong>${s.dias_atraso}</strong> días</p>
                     <p class="sugerencia-card__sev" style="color: ${estilo.text}; font-weight: 600;">
                         ● ${estilo.label}
@@ -96,183 +113,207 @@ export const UIManager = {
                 </div>
                 
             `;
-            contenedor.appendChild(card);
-        });
-    },
+      contenedor.appendChild(card);
+    });
+  },
 
-    // --- PLANILLA S-13 (HISTORIAL TÉCNICO) ---
-    renderPlanillaS13(data) {
-        const tbody = document.getElementById("tbodyS13");
-        if (!tbody) return;
+  // --- PLANILLA S-13 (HISTORIAL TÉCNICO) ---
+  renderPlanillaS13(data) {
+    const tbody = document.getElementById("tbodyS13");
+    if (!tbody) return;
 
-        const registros = Array.isArray(data) ? data : [];
+    const registros = Array.isArray(data) ? data : [];
 
-        if (registros.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="12" class="p-4 text-center text-gray-400 italic">No hay datos para la planilla S-13</td></tr>`;
-            return;
-        }
+    if (registros.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="12" class="p-4 text-center text-gray-400 italic">No hay datos para la planilla S-13</td></tr>`;
+      return;
+    }
 
-        tbody.innerHTML = registros.map(terr => {
-            const historial = terr.historial || [];
-            let row = `<tr class="border-b border-black h-[42px]">
-                <td class="border-r border-black font-bold bg-gray-50 text-center">${String(terr.numero).padStart(2, '0')}</td>
-                <td class="border-r border-black text-[10px] text-center">${terr.ultima_fecha_anterior || '—'}</td>`;
-            
-            // Renderizamos 5 columnas de historial (estándar S-13)
-            for (let i = 0; i < 5; i++) {
-                const reg = historial[i];
-                if (reg) {
-                    row += `<td class="border-r border-black p-1 text-[9px]">
+    tbody.innerHTML = registros
+      .map((terr) => {
+        const historial = terr.historial || [];
+        let row = `<tr class="border-b border-black h-[42px]">
+                <td class="border-r border-black font-bold bg-gray-50 text-center">${String(terr.numero).padStart(2, "0")}</td>
+                <td class="border-r border-black text-[10px] text-center">${terr.ultima_fecha_anterior || "—"}</td>`;
+
+        // Renderizamos 5 columnas de historial (estándar S-13)
+        for (let i = 0; i < 5; i++) {
+          const reg = historial[i];
+          if (reg) {
+            row += `<td class="border-r border-black p-1 text-[9px]">
                         <strong>${reg.conductor}</strong><br><span class="text-gray-400">${reg.fecha_asignado}</span>
-                    </td><td class="border-r border-black text-[9px] text-center">${reg.fecha_completado || ''}</td>`;
-                } else {
-                    row += `<td class="border-r border-black"></td><td class="border-r border-black"></td>`;
-                }
-            }
-            return row + `</tr>`;
-        }).join("");
-    },
-
-    // --- NAVEGACIÓN Y ESTADOS ---
-    showLoading: function(estado) {
-        const loader = document.getElementById("mainLoader");
-        if (!loader) return;
-        loader.classList.toggle("hidden", !estado);
-        loader.style.display = estado ? "flex" : "none";
-    },
-
-    mostrarMensaje(texto, tipo = "success") {
-        const msg = document.getElementById("mensaje");
-        if (!msg) return;
-        msg.textContent = texto;
-        msg.className = tipo === "success" ? "text-green-600 font-bold p-2" : "text-red-600 font-bold p-2";
-        setTimeout(() => { msg.textContent = ""; msg.className = ""; }, 4000);
-    },
-
-    initDatePickers() {
-        const config = { locale: Spanish, dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y" };
-        document.querySelectorAll(".datepicker").forEach(el => flatpickr(el, config));
-    },
-
-    // Requisito para events.js: Navegación a la agenda
-    verAgendaGuardada() {
-        console.log("📅 Navegando a Agenda Quincenal...");
-        // 1. Ocultar todas las secciones base
-        document.querySelectorAll('.section-base, section').forEach(s => s.classList.add('hidden'));
-        
-        // 2. Mostrar la sección de agenda
-        const seccion = document.getElementById('seccionAgenda');
-        if (seccion) {
-            seccion.classList.remove('hidden');
-            seccion.classList.add('animate-in');
-        } else {
-            console.error("No se encontró la sección #seccionAgenda");
+                    </td><td class="border-r border-black text-[9px] text-center">${reg.fecha_completado || ""}</td>`;
+          } else {
+            row += `<td class="border-r border-black"></td><td class="border-r border-black"></td>`;
+          }
         }
-    },
+        return row + `</tr>`;
+      })
+      .join("");
+  },
 
-    limpiarResultados: function() {
-        const container = document.getElementById("containerResultados");
-        if (container) container.innerHTML = "";
-    },
+  // --- NAVEGACIÓN Y ESTADOS ---
+  showLoading: function (estado) {
+    const loader = document.getElementById("mainLoader");
+    if (!loader) return;
+    loader.classList.toggle("hidden", !estado);
+    loader.style.display = estado ? "flex" : "none";
+  },
 
-    cambiarSeccion: function(btnId) {
-        console.log("🔄 Cambiando sección para el botón:", btnId);
-        const sectionId = btnId.replace('btn', 'seccion');
-        const targetSection = document.getElementById(sectionId);
-        
-        if (targetSection) {
-            // Ocultar todas las secciones
-            document.querySelectorAll('section[id^="seccion"], .section-base').forEach(s => {
-                s.classList.add('hidden');
-            });
+  mostrarMensaje(texto, tipo = "success") {
+    const msg = document.getElementById("mensaje");
+    if (!msg) return;
+    msg.textContent = texto;
+    msg.className =
+      tipo === "success"
+        ? "text-green-600 font-bold p-2"
+        : "text-red-600 font-bold p-2";
+    setTimeout(() => {
+      msg.textContent = "";
+      msg.className = "";
+    }, 4000);
+  },
 
-            // Mostrar la elegida
-            targetSection.classList.remove('hidden');
-            targetSection.classList.add('animate-in');
-            
-            // Actualizar Header y Botones
-            const btn = document.getElementById(btnId);
-            if (btn) {
-                // Obtenemos el texto del botón (ej: "Sugerencias")
-                const nombreSeccion = btn.innerText.trim();
-                
-                // Actualizamos el título del Header principal
-                const headerTitle = document.getElementById("headerTitle");
-                if (headerTitle) {
-                    headerTitle.textContent = nombreSeccion;
-                }
-                
-                // Feedback visual en los botones
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
-        } else {
-            console.warn(`⚠️ No se encontró la sección: ${sectionId}`);
+  initDatePickers() {
+    const config = {
+      locale: Spanish,
+      dateFormat: "Y-m-d",
+      altInput: true,
+      altFormat: "d/m/Y",
+    };
+    document
+      .querySelectorAll(".datepicker")
+      .forEach((el) => flatpickr(el, config));
+  },
+
+  // Requisito para events.js: Navegación a la agenda
+  verAgendaGuardada() {
+    console.log("📅 Navegando a Agenda Quincenal...");
+    // 1. Ocultar todas las secciones base
+    document
+      .querySelectorAll(".section-base, section")
+      .forEach((s) => s.classList.add("hidden"));
+
+    // 2. Mostrar la sección de agenda
+    const seccion = document.getElementById("seccionAgenda");
+    if (seccion) {
+      seccion.classList.remove("hidden");
+      seccion.classList.add("animate-in");
+    } else {
+      console.error("No se encontró la sección #seccionAgenda");
+    }
+  },
+
+  limpiarResultados: function () {
+    const container = document.getElementById("containerResultados");
+    if (container) container.innerHTML = "";
+  },
+
+  cambiarSeccion: function (btnId) {
+    console.log("🔄 Cambiando sección para el botón:", btnId);
+    const sectionId = btnId.replace("btn", "seccion");
+    const targetSection = document.getElementById(sectionId);
+
+    if (targetSection) {
+      // Ocultar todas las secciones
+      document
+        .querySelectorAll('section[id^="seccion"], .section-base')
+        .forEach((s) => {
+          s.classList.add("hidden");
+        });
+
+      // Mostrar la elegida
+      targetSection.classList.remove("hidden");
+      targetSection.classList.add("animate-in");
+
+      // Actualizar Header y Botones
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        // Obtenemos el texto del botón (ej: "Sugerencias")
+        const nombreSeccion = btn.innerText.trim();
+
+        // Actualizamos el título del Header principal
+        const headerTitle = document.getElementById("headerTitle");
+        if (headerTitle) {
+          headerTitle.textContent = nombreSeccion;
         }
-        this.showLoading(false);
-    },
 
-    mostrarErrorResultados: function(mensaje) {
-        const container = document.getElementById("containerResultados");
-        if (container) {
-            container.innerHTML = `
+        // Feedback visual en los botones
+        document
+          .querySelectorAll(".nav-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+    } else {
+      console.warn(`⚠️ No se encontró la sección: ${sectionId}`);
+    }
+    this.showLoading(false);
+  },
+
+  mostrarErrorResultados: function (mensaje) {
+    const container = document.getElementById("containerResultados");
+    if (container) {
+      container.innerHTML = `
                 <div class="p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
                     <p class="font-medium">${mensaje}</p>
                 </div>
             `;
-        }
-    },
+    }
+  },
 
-    actualizarDiasSemanaLaboral(fechaDomingo) {
-        const selectCompletado = document.getElementById("fechaCompletado");
-        if (!selectCompletado) return;
+  actualizarDiasSemanaLaboral(fechaDomingo) {
+    const selectCompletado = document.getElementById("fechaCompletado");
+    if (!selectCompletado) return;
 
-        selectCompletado.innerHTML = '<option value="">Seleccione día de fin</option>';
-        
-        if (!fechaDomingo) {
-            selectCompletado.disabled = true;
-            return;
-        }
+    selectCompletado.innerHTML =
+      '<option value="">Seleccione día de fin</option>';
 
-        const base = new Date(fechaDomingo + "T00:00:00");
+    if (!fechaDomingo) {
+      selectCompletado.disabled = true;
+      return;
+    }
 
-        for (let i = 1; i <= 6; i++) {
-            const diaLab = new Date(base);
-            diaLab.setDate(base.getDate() + i);
-            
-            const iso = diaLab.toISOString().split('T')[0];
-            
-            // Nombre del día (Lunes, Martes...)
-            const nombreDia = diaLab.toLocaleDateString('es-AR', { weekday: 'long' });
-            // Fecha (04-05-2026)
-            const fechaNumerica = diaLab.toLocaleDateString('es-AR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            }).replace(/\//g, '-'); // Cambiamos / por - para que quede 04-05-2026
+    const base = new Date(fechaDomingo + "T00:00:00");
 
-            const option = document.createElement('option');
-            option.value = iso;
-            // Resultado: "Lunes 04-05-2026"
-            option.textContent = `${nombreDia.charAt(0).toUpperCase() + nombreDia.slice(1)} ${fechaNumerica}`;
-            selectCompletado.appendChild(option);
-        }
-        selectCompletado.disabled = false;
-    },
+    for (let i = 1; i <= 6; i++) {
+      const diaLab = new Date(base);
+      diaLab.setDate(base.getDate() + i);
 
-    renderizarPropuestaAgenda(propuesta) {
-        Tables.renderVistaPreviaAgenda(plan);
-        const contenedor = document.getElementById("containerPropuesta");
-        const acciones = document.getElementById("accionesPropuesta");
-        if (!contenedor) return;
+      const iso = diaLab.toISOString().split("T")[0];
 
-        if (!propuesta || propuesta.length === 0) {
-            contenedor.innerHTML = `<p class="p-8 text-center text-gray-400">No se encontraron territorios disponibles para estas fechas.</p>`;
-            acciones.classList.add("hidden");
-            return;
-        }
+      // Nombre del día (Lunes, Martes...)
+      const nombreDia = diaLab.toLocaleDateString("es-AR", { weekday: "long" });
+      // Fecha (04-05-2026)
+      const fechaNumerica = diaLab
+        .toLocaleDateString("es-AR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+        .replace(/\//g, "-"); // Cambiamos / por - para que quede 04-05-2026
 
-        let html = `
+      const option = document.createElement("option");
+      option.value = iso;
+      // Resultado: "Lunes 04-05-2026"
+      option.textContent = `${nombreDia.charAt(0).toUpperCase() + nombreDia.slice(1)} ${fechaNumerica}`;
+      selectCompletado.appendChild(option);
+    }
+    selectCompletado.disabled = false;
+  },
+
+  renderizarPropuestaAgenda(propuesta) {
+    Tables.renderVistaPreviaAgenda(plan);
+    const contenedor = document.getElementById("containerPropuesta");
+    const acciones = document.getElementById("accionesPropuesta");
+    if (!contenedor) return;
+
+    if (!propuesta || propuesta.length === 0) {
+      contenedor.innerHTML = `<p class="p-8 text-center text-gray-400">No se encontraron territorios disponibles para estas fechas.</p>`;
+      acciones.classList.add("hidden");
+      return;
+    }
+
+    let html = `
             <table class="data-table">
                 <thead>
                     <tr>
@@ -285,11 +326,15 @@ export const UIManager = {
                 </thead>
                 <tbody>`;
 
-        propuesta.forEach((item, index) => {
-            const fechaObj = new Date(item.fecha + "T00:00:00");
-            const fechaLegible = fechaObj.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+    propuesta.forEach((item, index) => {
+      const fechaObj = new Date(item.fecha + "T00:00:00");
+      const fechaLegible = fechaObj.toLocaleDateString("es-AR", {
+        weekday: "short",
+        day: "2-digit",
+        month: "2-digit",
+      });
 
-            html += `
+      html += `
                 <tr class="propuesta-row" data-index="${index}">
                     <td class="font-medium text-gray-600">${fechaLegible}</td>
                     <td><span class="badge-turno">${item.turno}</span></td>
@@ -304,136 +349,159 @@ export const UIManager = {
                                data-turno="${item.turno}">
                     </td>
                 </tr>`;
-        });
+    });
 
-        html += `</tbody></table>`;
-        contenedor.innerHTML = html;
-        acciones.classList.remove("hidden"); // Mostrar botón de confirmar
-    },
+    html += `</tbody></table>`;
+    contenedor.innerHTML = html;
+    acciones.classList.remove("hidden"); // Mostrar botón de confirmar
+  },
 
-    renderizarHistorialAgenda(propuesta) {
-        const semanas = Array.isArray(propuesta) ? propuesta : [];
-        const tabla = document.getElementById("tablaHistorialAgenda");
-        if (!tabla) {
-            console.error("❌ No se encontró el elemento #tablaHistorialAgenda en el HTML");
-            return;
-        }
+  renderizarHistorialAgenda(propuesta) {
+    const semanas = Array.isArray(propuesta) ? propuesta : [];
+    const tabla = document.getElementById("tablaHistorialAgenda");
+    if (!tabla) {
+      console.error(
+        "No se encontró el elemento #tablaHistorialAgenda en el HTML",
+      );
+      return;
+    }
 
-        const hayDatos = semanas.some(s => Array.isArray(s.salidas) && s.salidas.length > 0);
-        if (!hayDatos) {
-            tabla.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-gray-500 italic">No hay territorios propuestos.</td></tr>`;
-            return;
-        }
+    const hayDatos = semanas.some(
+      (s) => Array.isArray(s.salidas) && s.salidas.length > 0,
+    );
+    if (!hayDatos) {
+      tabla.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-500 italic">No hay territorios propuestos.</td></tr>`;
+      return;
+    }
 
-        tabla.innerHTML = semanas.map(semana => {
-            const salidas = semana.salidas || [];
-            if (salidas.length === 0) return "";
+    tabla.innerHTML = semanas
+      .map((semana) => {
+        const salidas = semana.salidas || [];
+        if (salidas.length === 0) return "";
 
-            const filas = salidas.map((s, i) => {
-                const horario = s.horario || "---";
-                const territorio = s.territorio_numero || s.territorio_id || "---";
-                const zebra = i % 2 === 0 ? "bg-white" : "bg-green-50";
+        const filas = salidas
+          .map((s, i) => {
+            const horario = s.horario || "---";
+            const territorio = s.territorio_numero || s.territorio_id || "---";
+            const zebra = i % 2 === 0 ? "bg-white" : "bg-green-50";
 
-                return `
+            // Tomamos el primer conductor sugerido de la lista de disponibles (priorizado por sexo)
+            const primerConductor =
+              s.conductores_disponibles && s.conductores_disponibles.length > 0
+                ? s.conductores_disponibles[0].nombre_completo
+                : s.conductor_nombre || "Sin asignar";
+
+            return `
                     <tr class="${zebra} border-b border-green-100">
                         <td class="p-2 text-sm font-semibold text-center" style="color: var(--gray-800);">${horario}</td>
                         <td class="p-2 text-sm font-bold text-center font-mono" style="color: var(--green-600);">${territorio}</td>
+                        <td class="p-2 text-sm font-medium text-center" style="color: var(--gray-800);">${primerConductor}</td>
                     </tr>`;
-            }).join("");
+          })
+          .join("");
 
-            return `
+        return `
                 <tr>
-                    <td colspan="2" class="p-2 text-center font-bold uppercase text-xs tracking-wide" style="background: var(--gray-900); color: #ffffff;">
+                    <td colspan="3" class="p-2 text-center font-bold uppercase text-xs tracking-wide" style="background: var(--gray-900); color: #ffffff;">
                         ${semana.rango_fechas}
                     </td>
                 </tr>
                 <tr style="background: var(--green-600);">
-                    <th class="p-2 text-center font-bold text-xs uppercase" style="color: #0000000;">Horario</th>
-                    <th class="p-2 text-center font-bold text-xs uppercase" style="color: #0000000;">Territorio</th>
+                    <th class="p-2 text-center font-bold text-xs uppercase" style="color: #201e1ed2;">Horarios</th>
+                    <th class="p-2 text-center font-bold text-xs uppercase" style="color: #201e1ed2;;">Territorio</th>
+                    <th class="p-2 text-center font-bold text-xs uppercase" style="color: #201e1ed2;;">Conductor</th>
                 </tr>
                 ${filas}
             `;
-        }).join("");
-    }
-
+      })
+      .join("");
+  },
 };
 
 // --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---
 // Inicialización controlada
 window.UI = {
-    // Esta función maneja el cambio de pestaña Y la carga de datos
-    verAgendaGuardada: async () => {
-        console.log("📅 Accediendo a la sección Agenda...");
-        
-        document.querySelectorAll('.section-base, section').forEach(s => s.classList.add('hidden'));
-        const seccion = document.getElementById('seccionAgenda');
-        if (seccion) {
-            seccion.classList.remove('hidden');
-        }
+  // Esta función maneja el cambio de pestaña Y la carga de datos
+  verAgendaGuardada: async () => {
+    console.log("📅 Accediendo a la sección Agenda...");
 
-        try {
-            await Promise.all([
-                Controller.cargarDashboardCompleto("1-20"),
-                Controller.cargarHistorial()
-            ]);
-        } catch (err) {
-            console.error("❌ Error al refrescar datos desde la agenda:", err);
-        }
-    },
+    document
+      .querySelectorAll(".section-base, section")
+      .forEach((s) => s.classList.add("hidden"));
+    const seccion = document.getElementById("seccionAgenda");
+    if (seccion) {
+      seccion.classList.remove("hidden");
+    }
 
-    manejarGenerarAgenda: async () => {
-        const fecha = document.getElementById("fechaInicioAgenda")?.value; // Cambiado de inputFechaInicio a fechaInicioAgenda
-        if (!fecha) {
-            alert("Por favor, selecciona una fecha de inicio.");
-            return;
-        }
-        console.log("🛠️ Generando propuesta para:", fecha);
-        await Controller.prepararAgendaQuincenal(fecha);
-    },
+    try {
+      await Promise.all([
+        Controller.cargarDashboardCompleto("1-20"),
+        Controller.cargarHistorial(),
+      ]);
+    } catch (err) {
+      console.error("❌ Error al refrescar datos desde la agenda:", err);
+    }
+  },
 
-    manejarConfirmarAgenda: async () => {
-        console.log("💾 Confirmando agenda definitiva...");
-        // Recolectamos los datos de la tabla que Tables.js renderizó
-        // Si no tienes una variable global, el controller debería buscar en el DOM
-        await Controller.confirmarAgendaDefinitiva(window.datosPropuestaActual || []);
-    },
+  manejarGenerarAgenda: async () => {
+    const fecha = document.getElementById("fechaInicioAgenda")?.value; // Cambiado de inputFechaInicio a fechaInicioAgenda
+    if (!fecha) {
+      alert("Por favor, selecciona una fecha de inicio.");
+      return;
+    }
+    console.log("🛠️ Generando propuesta para:", fecha);
+    await Controller.prepararAgendaQuincenal(fecha);
+  },
 
-    seleccionarTerritorio: async (numero) => {
-        console.log(`🎯 Seleccionando Territorio: ${numero}`);
-        
-        try {
-            UIManager.showLoading(true);
+  manejarConfirmarAgenda: async () => {
+    console.log("💾 Confirmando agenda definitiva...");
+    // Recolectamos los datos de la tabla que Tables.js renderizó
+    // Si no tienes una variable global, el controller debería buscar en el DOM
+    await Controller.confirmarAgendaDefinitiva(
+      window.datosPropuestaActual || [],
+    );
+  },
 
-            // 1. Obtener datos detallados del territorio desde el Controller
-            // Esto debería traer: { info, asignaciones, stats_grafico }
-            const datos = await Controller.obtenerDetalleTerritorio(numero);
+  seleccionarTerritorio: async (numero) => {
+    console.log(`🎯 Seleccionando Territorio: ${numero}`);
 
-            // 2. Actualizar el título del Dashboard
-            const headerTitle = document.getElementById("headerTitle");
-            if (headerTitle) headerTitle.textContent = `Dashboard: Territorio ${numero}`;
+    try {
+      UIManager.showLoading(true);
 
-            // 3. Renderizar el Historial (Tabla)
-            if (datos.asignaciones) {
-                UIManager.renderAsignaciones(numero, datos.asignaciones);
-            }
+      // 1. Obtener datos detallados del territorio desde el Controller
+      // Esto debería traer: { info, asignaciones, stats_grafico }
+      const datos = await Controller.obtenerDetalleTerritorio(numero);
 
-            // 4. Renderizar los Gráficos (Las barras que mencionás)
-            if (window.Charts && window.Charts.renderBarChart) {
-                // Usamos el nombre real: renderBarChart
-                // Y le pasamos el ID del canvas que confirmamos que debe existir
-                window.Charts.renderBarChart('graficoProgreso', datos.stats || datos);
-            }
+      // 2. Actualizar el título del Dashboard
+      const headerTitle = document.getElementById("headerTitle");
+      if (headerTitle)
+        headerTitle.textContent = `Dashboard: Territorio ${numero}`;
 
-            // 5. Opcional: Hacer scroll suave hasta los resultados o cambiar de pestaña
-            document.getElementById('seccionDashboard').scrollIntoView({ behavior: 'smooth' });
+      // 3. Renderizar el Historial (Tabla)
+      if (datos.asignaciones) {
+        UIManager.renderAsignaciones(numero, datos.asignaciones);
+      }
 
-        } catch (error) {
-            console.error("❌ Error al cargar detalle del territorio:", error);
-            UIManager.mostrarErrorResultados("No se pudo cargar la información del territorio.");
-        } finally {
-            UIManager.showLoading(false);
-        }
-    },
+      // 4. Renderizar los Gráficos (Las barras que mencionás)
+      if (window.Charts && window.Charts.renderBarChart) {
+        // Usamos el nombre real: renderBarChart
+        // Y le pasamos el ID del canvas que confirmamos que debe existir
+        window.Charts.renderBarChart("graficoProgreso", datos.stats || datos);
+      }
+
+      // 5. Opcional: Hacer scroll suave hasta los resultados o cambiar de pestaña
+      document
+        .getElementById("seccionDashboard")
+        .scrollIntoView({ behavior: "smooth" });
+    } catch (error) {
+      console.error("❌ Error al cargar detalle del territorio:", error);
+      UIManager.mostrarErrorResultados(
+        "No se pudo cargar la información del territorio.",
+      );
+    } finally {
+      UIManager.showLoading(false);
+    }
+  },
 };
 
 console.log("✅ window.UI vinculado con éxito al Controller");
