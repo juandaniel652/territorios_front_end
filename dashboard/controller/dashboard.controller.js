@@ -17,7 +17,6 @@ export const Controller = {
       return;
     }
     try {
-      // OJO: Recordá que Api.getTerritorio debe estar en api.service.js
       const territorio = await Api.getTerritorio(numero);
       UIManager.renderAsignaciones(
         territorio.territorio,
@@ -35,7 +34,6 @@ export const Controller = {
       asignacionData,
     );
 
-    // CORREGIDO: Validamos 'numero_territorio' que es lo que viene de events.js y espera el backend
     if (
       !asignacionData.numero_territorio ||
       !asignacionData.conductor ||
@@ -67,15 +65,11 @@ export const Controller = {
         onSuccess();
       }
 
-      // Refresca las tarjetas y gráficos del Dashboard principal
       this.cargarDashboardCompleto();
     } catch (error) {
       console.error("❌ Error atrapado en Controller.crearAsignacion:", error);
-
-      // Logueamos la estructura completa del error para inspección directa
       console.dir(error);
 
-      // Manejo robusto de la respuesta detallada de FastAPI (422 u otros)
       let mensajeError = "Error al guardar en el servidor.";
       if (error && error.detail) {
         mensajeError =
@@ -96,11 +90,7 @@ export const Controller = {
       const data = await Api.getSugerencias(rangoSeleccionado);
       const listaSugerida = data.sugerencias || data;
 
-      // 1. Renderiza las tarjetas de texto
       UIManager.renderSugerencias(listaSugerida);
-
-      // 2. ¡CLAVE! Actualiza el gráfico con el mismo rango
-      // Esto hace que el Dashboard sea congruente con lo que ves arriba
       this.actualizarSoloGrafico(listaSugerida);
     } catch (error) {
       console.error("❌ Error:", error);
@@ -109,7 +99,6 @@ export const Controller = {
     }
   },
 
-  // Creamos esta pequeña función de apoyo para no repetir código
   actualizarSoloGrafico(territorios) {
     if (window.Charts && window.Charts.renderBarChart) {
       const labels = territorios.map((t) => `T-${t.numero}`);
@@ -123,24 +112,19 @@ export const Controller = {
     }
   },
 
-  // =========================================================================
-  // FUNCIÓN AUXILIAR PARA CONVERTIR FECHAS DE "DD/MM/AAAA" A "YYYY-MM-DD"
-  // =========================================================================
   _deArgentinoAISO(fechaArg) {
     if (!fechaArg) return null;
-    // Si ya viene en formato ISO (YYYY-MM-DD), lo dejamos pasar tal cual
     if (fechaArg.includes("-")) return fechaArg;
 
-    const partes = fechaArg.split("/"); // ["DD", "MM", "AAAA"]
+    const partes = fechaArg.split("/");
     if (partes.length !== 3) return null;
-    return `${partes[2]}-${partes[1]}-${partes[0]}`; // "AAAA-MM-DD"
+    return `${partes[2]}-${partes[1]}-${partes[0]}`;
   },
 
   async editarAsignacion(id, campos, onSuccess) {
     try {
       console.log("📥 Datos recibidos en el Controller para edición:", campos);
 
-      // 1. Convertimos fechas al formato ISO (YYYY-MM-DD)
       const fechaAsignadoISO = this._deArgentinoAISO(
         campos.fecha_asignado || campos.fechaAsignado,
       );
@@ -148,7 +132,6 @@ export const Controller = {
         campos.fecha_completado || campos.fechaCompletado,
       );
 
-      // 2. Construimos el payload exacto
       const payloadFiltrado = {
         conductor: (campos.conductor || "").trim(),
         fecha_asignado: fechaAsignadoISO,
@@ -159,14 +142,9 @@ export const Controller = {
 
       console.log("📤 Enviando payload sanitizado a FastAPI:", payloadFiltrado);
 
-      // 3. Enviamos el PUT a la API
       const result = await Api.actualizarAsignacion(id, payloadFiltrado);
 
-      // 4. Si la API responde OK, ejecutamos el callback que cierra el modal
       if (onSuccess) onSuccess();
-
-      // 5. ⚡ LA CLAVE: Volvemos a pedir y renderizar los datos actualizados de la lista
-      // Si tu método necesita un rango por defecto (ej. "1-20"), pasáselo:
       await this.cargarDashboardCompleto("1-20");
 
       console.log("🔄 Dashboard recargado en tiempo real.");
@@ -189,20 +167,15 @@ export const Controller = {
     }
   },
 
-  // --- FUNCIONES DE AGENDA ---
-
   async cargarDashboardCompleto(rango = "1-20") {
     try {
       UIManager.showLoading(true);
 
-      // 1. Pedir datos de sugerencias/territorios
       const response = await Api.getSugerencias(rango);
       const territorios = response.sugerencias || response;
 
-      // 2. Renderizar tarjetas de sugerencias
       UIManager.renderSugerencias(territorios);
 
-      // 3. Renderizar Gráfico
       if (window.Charts && window.Charts.renderBarChart) {
         const labels = territorios.map((t) => `T-${t.numero}`);
         const values = this._calcularDiasAtraso(territorios);
@@ -217,25 +190,20 @@ export const Controller = {
         );
       }
 
-      // 4. ⚡ ACTUALIZAR KPIs DESDE LOS ENDPOINTS ⚡
       try {
-        // Ejecutamos las peticiones en paralelo
         const [totalPlanillasRes, planillasCompletasRes] = await Promise.all([
           Api.getTotalPlanillas().catch(() => null),
           Api.getTotalPlanillasCompletas().catch(() => null),
         ]);
 
-        // KPI 1: Total Territorios (obtenido de la cantidad de territorios recibidos o total único)
         const elTotalTerritorios = document.getElementById("totalAsignaciones");
         if (elTotalTerritorios) {
           elTotalTerritorios.textContent = 60;
         }
 
-        // KPI 2: Planillas Totales
         const elPlanillasTotales =
           document.getElementById("territoriosActivos");
         if (elPlanillasTotales && totalPlanillasRes !== null) {
-          // Extraemos el valor del JSON (ej: { total: 14 } o valor numérico directo)
           const totalPlanillasVal =
             typeof totalPlanillasRes === "object"
               ? (totalPlanillasRes.total ??
@@ -245,7 +213,6 @@ export const Controller = {
           elPlanillasTotales.textContent = totalPlanillasVal;
         }
 
-        // KPI 3: Planillas Completadas
         const elPlanillasCompletadas = document.getElementById(
           "asignacionesCompletadas",
         );
@@ -273,12 +240,7 @@ export const Controller = {
 
   _calcularDiasAtraso(territorios) {
     return territorios.map((t) => {
-      // Usamos directamente el valor que manda el backend
-      // Si no existe, devolvemos 0
       const valor = t.dias_atraso !== undefined ? t.dias_atraso : 0;
-
-      // Un pequeño truco: si es 0, devolvemos 0.5 para que se vea
-      // una línea verde mínima en el gráfico y no quede vacío.
       return valor === 0 ? 0.5 : valor;
     });
   },
@@ -287,7 +249,6 @@ export const Controller = {
     const res = await Api.getTerritorio(numero);
     return {
       asignaciones: res.asignaciones,
-      // Asegúrate de que esto sea lo que tu renderBarChart necesita:
       stats: res.estadisticas || res.proporciones || [10, 20, 30],
     };
   },
@@ -295,7 +256,6 @@ export const Controller = {
   async generarPropuesta(fechaInicio) {
     UIManager.showLoading(true);
     try {
-      // Llama al endpoint que probamos antes en el navegador
       const plan = await Api.generarPlanQuincenal(fechaInicio);
       UIManager.renderizarPropuestaAgenda(plan);
     } catch (error) {
@@ -307,19 +267,15 @@ export const Controller = {
   },
 
   async confirmarAgenda() {
-    // Seleccionamos todas las filas de la tabla de agenda
     const filas = document.querySelectorAll(".agenda-row");
 
     const items = Array.from(filas).map((fila) => {
       const selectConductor = fila.querySelector(".select-conductor");
-      const inputTerritorio = fila.querySelector(".territory-input");
       const cellEncuentro = fila.querySelector(".encounter-cell");
 
-      // Obtenemos el ID del conductor seleccionado en el select
       const conductorId = selectConductor.value
         ? parseInt(selectConductor.value)
         : null;
-      // Opcional: recuperamos el texto de la opción seleccionada para el nombre si el back lo pide
       const selectedOption =
         selectConductor.options[selectConductor.selectedIndex];
       const conductorNombre = selectedOption
@@ -328,8 +284,8 @@ export const Controller = {
 
       return {
         territorio_id: parseInt(fila.dataset.territorioId),
-        conductor_id: conductorId, // 📌 Mandamos el ID real seleccionado
-        conductor: conductorNombre, // Nombre por compatibilidad si lo usa el modelo
+        conductor_id: conductorId,
+        conductor: conductorNombre,
         fecha_asignado: fila.dataset.fecha,
         turno: fila.dataset.turno,
         punto_encuentro: cellEncuentro.innerText || "Salón del Reino",
@@ -362,23 +318,49 @@ export const Controller = {
 
   async cargarHistorial() {
     try {
-      const propuesta = await Api.getSugerenciaCombinada(); // array de semanas
-      UIManager.renderizarHistorialAgenda(propuesta); // pasa las semanas SIN aplanar
+      const propuesta = await Api.getSugerenciaCombinada();
+      UIManager.renderizarHistorialAgenda(propuesta);
     } catch (error) {
       console.error("Error cargando historial:", error);
     }
   },
 
-  // Planilla
-
+  // --- PLANILLA ---
   planillasCache: [],
   zonaActualPlanillas: null,
   anioActualPlanillas: null,
 
+  _prepararContenedoresPlanillas() {
+    // ⚡ Quita límites de ancho del HTML padre sin alterar los otros módulos
+    const seccion = document.getElementById("seccionPlanillaS13");
+    if (seccion) {
+      seccion.style.width = "100%";
+      seccion.style.maxWidth = "100%";
+      seccion.style.padding = "0";
+
+      const formCard = seccion.querySelector(".form-card");
+      if (formCard) {
+        formCard.style.width = "100%";
+        formCard.style.maxWidth = "100%";
+        formCard.style.border = "none";
+        formCard.style.padding = "0";
+        formCard.style.background = "transparent";
+        formCard.style.boxShadow = "none";
+      }
+    }
+
+    const container = document.getElementById("containerPlanillas");
+    if (container) {
+      container.style.width = "100%";
+      container.style.maxWidth = "100%";
+    }
+  },
+
   async initPlanillas() {
     try {
       UIManager.showLoading(true);
-      // 1. Consumimos el nuevo endpoint
+      this._prepararContenedoresPlanillas();
+
       this.planillasCache = await Api.getPlanillas();
       this.renderZonasPlanillas();
     } catch (error) {
@@ -397,23 +379,44 @@ export const Controller = {
     const btnVolver = document.getElementById("btnVolverPlanillas");
     const container = document.getElementById("containerPlanillas");
 
-    if (titulo) titulo.innerText = "Seleccione una Zona";
+    if (titulo) titulo.innerText = "Zonas Disponibles";
     if (btnVolver) btnVolver.classList.add("hidden");
     if (!container) return;
 
+    this._prepararContenedoresPlanillas();
+
     const zonas = [1, 2, 3];
 
-    container.innerHTML = zonas
-      .map(
-        (z) => `
-      <div class="card-zona" data-zona="${z}" style="background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-        <div style="font-size: 32px; margin-bottom: 8px;">📂</div>
-        <h4 style="font-size: 16px; font-weight: 600; color: var(--gray-900); margin: 0;">Zona ${z}</h4>
-        <p style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">Explorar años y planillas</p>
+    container.innerHTML = `
+      <div style="width: 100%; border: 1px solid var(--gray-100); border-radius: 8px; overflow: hidden; background: var(--white); font-family: var(--font-main); box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: var(--gray-50); border-bottom: 1px solid var(--gray-100); font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.05em;">
+          <span>Zona / Ubicación</span>
+          <span>Acción</span>
+        </div>
+        <div style="display: flex; flex-direction: column; width: 100%;">
+          ${zonas
+            .map(
+              (z) => `
+            <div class="card-zona" data-zona="${z}" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--gray-100); cursor: pointer; transition: background 0.15s ease; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="display: flex; align-items: center; color: var(--gray-600);">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                </div>
+                <div>
+                  <div style="font-size: 14px; font-weight: 600; color: var(--gray-900);">Zona ${z}</div>
+                  <div style="font-size: 12px; color: var(--gray-400); margin-top: 2px;">Explorar carpetas por año</div>
+                </div>
+              </div>
+              <div style="font-size: 13px; font-weight: 500; color: var(--green-600); font-family: var(--font-mono); white-space: nowrap;">
+                Explorar &rarr;
+              </div>
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
       </div>
-    `,
-      )
-      .join("");
+    `;
   },
 
   seleccionarZonaPlanillas(zona) {
@@ -424,27 +427,47 @@ export const Controller = {
     const btnVolver = document.getElementById("btnVolverPlanillas");
     const container = document.getElementById("containerPlanillas");
 
-    if (titulo) titulo.innerText = `Zona ${zona} — Seleccione un Año`;
+    if (titulo) titulo.innerText = `Zona ${zona} — Años`;
     if (btnVolver) btnVolver.classList.remove("hidden");
 
-    // Filtrar años únicos para esta zona
+    this._prepararContenedoresPlanillas();
+
     const anios = [
       ...new Set(
         this.planillasCache.filter((p) => p.zona === zona).map((p) => p.anio),
       ),
-    ].sort((a, b) => b - a); // Más recientes primero
+    ].sort((a, b) => b - a);
 
-    container.innerHTML = anios
-      .map(
-        (anio) => `
-      <div class="planilla-card-item" onclick="Controller.seleccionarAnioPlanillas(${anio})" style="background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-        <div style="font-size: 32px; margin-bottom: 8px;">📅</div>
-        <h4 style="font-size: 16px; font-weight: 600; color: var(--gray-900); margin: 0;">Año ${anio}</h4>
-        <p style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">Ver planillas registradas</p>
+    container.innerHTML = `
+      <div style="width: 100%; border: 1px solid var(--gray-100); border-radius: 8px; overflow: hidden; background: var(--white); font-family: var(--font-main); box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: var(--gray-50); border-bottom: 1px solid var(--gray-100); font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.05em;">
+          <span>Período</span>
+          <span>Acción</span>
+        </div>
+        <div style="display: flex; flex-direction: column; width: 100%;">
+          ${anios
+            .map(
+              (anio) => `
+            <div class="planilla-card-item" onclick="Controller.seleccionarAnioPlanillas(${anio})" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--gray-100); cursor: pointer; transition: background 0.15s ease; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="display: flex; align-items: center; color: var(--gray-600);">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                  <div style="font-size: 14px; font-weight: 600; color: var(--gray-900); font-family: var(--font-mono);">Año ${anio}</div>
+                  <div style="font-size: 12px; color: var(--gray-400); margin-top: 2px;">Planillas registradas en este período</div>
+                </div>
+              </div>
+              <div style="font-size: 13px; font-weight: 500; color: var(--green-600); font-family: var(--font-mono); white-space: nowrap;">
+                Abrir &rarr;
+              </div>
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
       </div>
-    `,
-      )
-      .join("");
+    `;
   },
 
   seleccionarAnioPlanillas(anio) {
@@ -454,34 +477,52 @@ export const Controller = {
     const container = document.getElementById("containerPlanillas");
 
     if (titulo)
-      titulo.innerText = `Zona ${this.zonaActualPlanillas} / Año ${anio} — Planillas`;
+      titulo.innerText = `Zona ${this.zonaActualPlanillas} / Año ${anio}`;
 
-    // Filtrar planillas por zona y año
+    this._prepararContenedoresPlanillas();
+
     const planillasFiltradas = this.planillasCache.filter(
       (p) => p.zona === this.zonaActualPlanillas && p.anio === anio,
     );
 
-    container.innerHTML = planillasFiltradas
-      .map(
-        (p) => `
-      <div onclick="Controller.abrirGoogleSheet('${p.spreadsheet_id}')" style="background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; text-align: left; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px;">
-        <div style="font-size: 24px;">📊</div>
-        <div style="overflow: hidden;">
-          <h4 style="font-size: 14px; font-weight: 600; color: var(--gray-900); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${p.nombre_planilla}">${p.nombre_planilla}</h4>
-          <p style="font-size: 11px; color: var(--green-600); margin-top: 2px; font-weight: 500;">Abrir en Google Sheets ↗</p>
+    container.innerHTML = `
+      <div style="width: 100%; border: 1px solid var(--gray-100); border-radius: 8px; overflow: hidden; background: var(--white); font-family: var(--font-main); box-sizing: border-box;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: var(--gray-50); border-bottom: 1px solid var(--gray-100); font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.05em;">
+          <span>Nombre de la Planilla</span>
+          <span>Enlace</span>
+        </div>
+        <div style="display: flex; flex-direction: column; width: 100%;">
+          ${planillasFiltradas
+            .map(
+              (p) => `
+            <div onclick="Controller.abrirGoogleSheet('${p.spreadsheet_id}')" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--gray-100); cursor: pointer; transition: background 0.15s ease; width: 100%; box-sizing: border-box;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+              <div style="display: flex; align-items: center; gap: 16px; overflow: hidden; padding-right: 16px;">
+                <div style="display: flex; align-items: center; color: var(--green-600); flex-shrink: 0;">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div style="overflow: hidden;">
+                  <div style="font-size: 14px; font-weight: 600; color: var(--gray-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${p.nombre_planilla}">
+                    ${p.nombre_planilla}
+                  </div>
+                  <div style="font-size: 11px; color: var(--gray-400); margin-top: 2px;">Google Sheets</div>
+                </div>
+              </div>
+              <div style="font-size: 13px; font-weight: 500; color: var(--green-600); font-family: var(--font-mono); white-space: nowrap; flex-shrink: 0;">
+                Abrir ↗
+              </div>
+            </div>
+          `,
+            )
+            .join("")}
         </div>
       </div>
-    `,
-      )
-      .join("");
+    `;
   },
 
   volverNivelPlanillas() {
     if (this.anioActualPlanillas !== null) {
-      // Si estamos en planillas, volvemos a selección de años
       this.seleccionarZonaPlanillas(this.zonaActualPlanillas);
     } else if (this.zonaActualPlanillas !== null) {
-      // Si estamos en años, volvemos a selección de zonas
       this.renderZonasPlanillas();
     }
   },
@@ -493,6 +534,3 @@ export const Controller = {
 };
 
 window.Controller = Controller;
-
-//FALTA AGREGAR DESD EENDPOINT MOSTRAR EN TIEMPO REAL PLANILLAS TOTALES Y PLANILLAS COMPLETAS TTOALES SON 6 YA ESTA
-//HECHO
