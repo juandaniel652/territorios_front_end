@@ -2,97 +2,135 @@
 import { CONFIG, getHeaders, handleResponse } from "../config.js";
 
 export const Api = {
+  // --- TERRITORIOS & SUGERENCIAS ---
+  async getSugerencias(rangoStr) {
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/api/v1/territorios/sugerencias?rango=${rangoStr}`,
+      {
+        headers: getHeaders(),
+      },
+    );
+    return handleResponse(res);
+  },
 
-    // --- TERRITORIOS & SUGERENCIAS ---
-    async getSugerencias(rangoStr) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/sugerencias?rango=${rangoStr}`, {
-            headers: getHeaders()
-        });
-        return handleResponse(res);
-    },
+  async getTerritorio(numero) {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/${numero}`, {
+      headers: getHeaders(),
+    });
+    return handleResponse(res);
+  },
 
-    async getTerritorio(numero) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/${numero}`, {
-            headers: getHeaders()
-        });
-        return handleResponse(res);
-    },
+  // --- MOTOR DE AGENDA (Rutas sincronizadas con tu FastAPI) ---
+  async generarPlanQuincenal(fechaInicio) {
+    // GET /api/v1/territorios/generar-plan?fecha_inicio=...
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/api/v1/territorios/generar-plan?fecha_inicio=${fechaInicio}`,
+      {
+        headers: getHeaders(),
+      },
+    );
+    return handleResponse(res);
+  },
 
-    // --- MOTOR DE AGENDA (Rutas sincronizadas con tu FastAPI) ---
-    async generarPlanQuincenal(fechaInicio) {
-        // GET /api/v1/territorios/generar-plan?fecha_inicio=...
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/generar-plan?fecha_inicio=${fechaInicio}`, {
-            headers: getHeaders()
-        });
-        return handleResponse(res);
-    },
+  async confirmarAgenda(payload) {
+    // IMPORTANTE: Cambiamos /asignaciones/ por /territorios/ para que coincida con tu backend
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/api/v1/territorios/confirmar-agenda`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(payload),
+      },
+    );
+    return handleResponse(res);
+  },
 
-    async confirmarAgenda(payload) {
-        // IMPORTANTE: Cambiamos /asignaciones/ por /territorios/ para que coincida con tu backend
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/territorios/confirmar-agenda`, {
-            method: 'POST',
-            headers: getHeaders(),
-            body: JSON.stringify(payload)
-        });
-        return handleResponse(res);
-    },
+  async getHistorialAgenda() {
+    // Ahora sí va a existir porque lo agregamos arriba
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/api/v1/asignaciones/historial`,
+      {
+        headers: getHeaders(),
+      },
+    );
+    return handleResponse(res);
+  },
 
-    async getHistorialAgenda() {
-        // Ahora sí va a existir porque lo agregamos arriba
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/historial`, {
-            headers: getHeaders()
-        });
-        return handleResponse(res);
-    },
+  async getSugerenciaCombinada() {
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/api/v1/agenda/sugerir-combinada`,
+      {
+        headers: getHeaders(),
+      },
+    );
+    const data = await handleResponse(res);
+    return data.propuesta; // solo lo que te interesa, descartamos conductores_disponibles
+  },
 
-    async getSugerenciaCombinada() {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/agenda/sugerir-combinada`, {
-            headers: getHeaders()
-        });
-        const data = await handleResponse(res);
-        return data.propuesta; // solo lo que te interesa, descartamos conductores_disponibles
-    },
+  // --- CRUD DE ASIGNACIONES INDIVIDUALES ---
+  async crearAsignacion(datos) {
+    const url = `${CONFIG.BASE_URL}/api/v1/asignaciones`;
 
-    // --- CRUD DE ASIGNACIONES INDIVIDUALES ---
-    async crearAsignacion(datos) {
-        const url = `${CONFIG.BASE_URL}/api/v1/asignaciones`; 
-        
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: getHeaders(), 
-            body: JSON.stringify(datos)
-        });
+    const res = await fetch(url, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(datos),
+    });
 
-        return handleResponse(res);
-    },
+    return handleResponse(res);
+  },
 
-    // 💡 Renombrado para coincidir semánticamente con las Asignaciones
-    async actualizarAsignacion(id, datos) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/${id}`, {
-            method: 'PUT',
-            headers: getHeaders(),
-            body: JSON.stringify(datos)
-        });
-        return handleResponse(res);
-    },
+  // 💡 Renombrado para coincidir semánticamente con las Asignaciones
+  async actualizarAsignacion(id, datos) {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/${id}`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify(datos),
+    });
+    return handleResponse(res);
+  },
 
-    
-    async actualizarSalida(id, datos) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/${id}`, {
-            method: 'PUT',
-            headers: getHeaders(),
-            body: JSON.stringify(datos)
-        });
-        return handleResponse(res);
-    },
+  async actualizarSalida(id, datos) {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/${id}`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify(datos),
+    });
+    return handleResponse(res);
+  },
 
-    async eliminarAsignacion(id) {
-        const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/${id}`, {
-            method: "DELETE",
-            headers: getHeaders()
-        });
-        return handleResponse(res);
-    }
+  async eliminarAsignacion(id) {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/v1/asignaciones/${id}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  // PLANILLAS (OBTENER TOTALES, Y COMPLETAS)
+  async getPlanillas() {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/v1/planillas/`, {
+      headers: getHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  async getTotalPlanillas() {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/v1/planillas/total`, {
+      headers: getHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  async getTotalPlanillasCompletas() {
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/api/v1/planillas/total-completas`,
+      {
+        headers: getHeaders(),
+      },
+    );
+    return handleResponse(res);
+  },
 };
 
 window.Api = Api;

@@ -1,168 +1,614 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es-AR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistema de Territorios</title>
-  <!-- Flatpickr (Calendario de fechas elegante) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <link rel="icon" href="../img/logo_planillas.ico" type="image/x-icon">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --gray-900:#171b24;--gray-800:#1e2330;--gray-700:#2b3245;--gray-600:#3c455c;
-      --gray-400:#6b7390;--gray-300:#9ba3bc;--gray-100:#eef0f5;--gray-50:#f5f6fa;
-      --green-700:#166534;--green-600:#16a34a;--green-500:#22c55e;
-      --green-100:#dcfce7;--green-50:#f0fdf4;--white:#ffffff;--danger:#dc2626;
-      --font-main:'DM Sans',system-ui,sans-serif;--font-mono:'DM Mono',monospace;
-    }
-    *{box-sizing:border-box;}
-    body{font-family:var(--font-main);background:var(--gray-50);}
-    ::-webkit-scrollbar{width:5px;}
-    ::-webkit-scrollbar-thumb{background:var(--gray-100);border-radius:3px;}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Territorios</title>
+    <!-- Flatpickr (Calendario de fechas elegante) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="icon" href="../img/logo_planillas.ico" type="image/x-icon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root {
+        --gray-900: #171b24;
+        --gray-800: #1e2330;
+        --gray-700: #2b3245;
+        --gray-600: #3c455c;
+        --gray-400: #6b7390;
+        --gray-300: #9ba3bc;
+        --gray-100: #eef0f5;
+        --gray-50: #f5f6fa;
+        --green-700: #166534;
+        --green-600: #16a34a;
+        --green-500: #22c55e;
+        --green-100: #dcfce7;
+        --green-50: #f0fdf4;
+        --white: #ffffff;
+        --danger: #dc2626;
+        --font-main: "DM Sans", system-ui, sans-serif;
+        --font-mono: "DM Mono", monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: var(--font-main);
+        background: var(--gray-50);
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--gray-100);
+        border-radius: 3px;
+      }
 
-    #sidebar{background:var(--gray-900);border-right:1px solid rgba(255,255,255,0.05);}
-    .sidebar-logo{padding:24px 24px 20px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;}
-    .sidebar-logo img{height:28px;filter:brightness(0) invert(1) opacity(0.85);}
-    .sidebar-logo span{font-size:13px;font-weight:600;color:var(--white);line-height:1.3;}
-    .sidebar-section{padding:20px 16px 8px;}
-    .sidebar-section-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--gray-400);font-family:var(--font-mono);padding:0 8px;margin-bottom:6px;}
-    .nav-btn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 12px;border-radius:8px;border:none;background:transparent;color:var(--gray-300);font-family:var(--font-main);font-size:13.5px;font-weight:500;cursor:pointer;transition:background 0.15s,color 0.15s;margin-bottom:2px;}
-    .nav-btn:hover{background:rgba(255,255,255,0.06);color:var(--white);}
-    .nav-btn.active{background:rgba(34,197,94,0.12);color:var(--green-500);}
-    .nav-btn svg{flex-shrink:0;opacity:0.7;}
-    .nav-btn.active svg{opacity:1;}
+      #sidebar {
+        background: var(--gray-900);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .sidebar-logo {
+        padding: 24px 24px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .sidebar-logo img {
+        height: 28px;
+        filter: brightness(0) invert(1) opacity(0.85);
+      }
+      .sidebar-logo span {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--white);
+        line-height: 1.3;
+      }
+      .sidebar-section {
+        padding: 20px 16px 8px;
+      }
+      .sidebar-section-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--gray-400);
+        font-family: var(--font-mono);
+        padding: 0 8px;
+        margin-bottom: 6px;
+      }
+      .nav-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        text-align: left;
+        padding: 9px 12px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: var(--gray-300);
+        font-family: var(--font-main);
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          color 0.15s;
+        margin-bottom: 2px;
+      }
+      .nav-btn:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--white);
+      }
+      .nav-btn.active {
+        background: rgba(34, 197, 94, 0.12);
+        color: var(--green-500);
+      }
+      .nav-btn svg {
+        flex-shrink: 0;
+        opacity: 0.7;
+      }
+      .nav-btn.active svg {
+        opacity: 1;
+      }
 
-    .page-header{background:var(--white);border-bottom:1px solid var(--gray-100);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
-    .page-header__title{font-size:16px;font-weight:600;color:var(--gray-900);margin:0;}
-    .page-header__sub{font-size:12px;color:var(--gray-400);margin:2px 0 0;}
-    .btn-logout{display:flex;align-items:center;gap:6px;padding:7px 14px;background:transparent;border:1px solid var(--gray-100);border-radius:7px;color:var(--gray-600);font-family:var(--font-main);font-size:13px;font-weight:500;cursor:pointer;transition:border-color 0.15s,color 0.15s,background 0.15s;}
-    .btn-logout:hover{border-color:var(--danger);color:var(--danger);background:#fef2f2;}
+      .page-header {
+        background: var(--white);
+        border-bottom: 1px solid var(--gray-100);
+        padding: 16px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .page-header__title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+      }
+      .page-header__sub {
+        font-size: 12px;
+        color: var(--gray-400);
+        margin: 2px 0 0;
+      }
+      .btn-logout {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        background: transparent;
+        border: 1px solid var(--gray-100);
+        border-radius: 7px;
+        color: var(--gray-600);
+        font-family: var(--font-main);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          color 0.15s,
+          background 0.15s;
+      }
+      .btn-logout:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+        background: #fef2f2;
+      }
 
-    .section-base{opacity:0;transform:translateY(8px);}
-    .animate-in{animation:fadeUp 0.28s ease-out forwards;}
-    @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+      .section-base {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      .animate-in {
+        animation: fadeUp 0.28s ease-out forwards;
+      }
+      @keyframes fadeUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;}
-    .kpi-card{background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:20px 24px;}
-    .kpi-card__label{font-size:11px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--gray-400);font-family:var(--font-mono);margin-bottom:10px;}
-    .kpi-card__value{font-size:32px;font-weight:600;color:var(--gray-900);line-height:1;margin-bottom:6px;}
-    .kpi-card__accent{color:var(--green-600);}
-    .kpi-card__hint{font-size:12px;color:var(--gray-400);}
-    .chart-card{background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:24px;}
-    .chart-card__title{font-size:14px;font-weight:600;color:var(--gray-900);margin:0 0 20px;}
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .kpi-card {
+        background: var(--white);
+        border: 1px solid var(--gray-100);
+        border-radius: 12px;
+        padding: 20px 24px;
+      }
+      .kpi-card__label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: var(--gray-400);
+        font-family: var(--font-mono);
+        margin-bottom: 10px;
+      }
+      .kpi-card__value {
+        font-size: 32px;
+        font-weight: 600;
+        color: var(--gray-900);
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+      .kpi-card__accent {
+        color: var(--green-600);
+      }
+      .kpi-card__hint {
+        font-size: 12px;
+        color: var(--gray-400);
+      }
+      .chart-card {
+        background: var(--white);
+        border: 1px solid var(--gray-100);
+        border-radius: 12px;
+        padding: 24px;
+      }
+      .chart-card__title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0 0 20px;
+      }
 
-    .form-card{background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:28px 32px;}
-    .section-title{font-size:16px;font-weight:600;color:var(--gray-900);margin:0 0 24px;padding-bottom:16px;border-bottom:1px solid var(--gray-100);}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-    .form-group{display:flex;flex-direction:column;gap:6px;}
-    .form-group.full{grid-column:1/-1;}
-    .form-label{font-size:12px;font-weight:500;color:var(--gray-600);}
-    .form-input,.form-select{padding:9px 12px;font-size:14px;font-family:var(--font-main);color:var(--gray-900);background:var(--gray-50);border:1px solid var(--gray-100);border-radius:8px;outline:none;transition:border-color 0.15s,box-shadow 0.15s;width:100%;}
-    .form-input:focus,.form-select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba(34,197,94,0.1);background:var(--white);}
+      .form-card {
+        background: var(--white);
+        border: 1px solid var(--gray-100);
+        border-radius: 12px;
+        padding: 28px 32px;
+      }
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0 0 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--gray-100);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .form-group.full {
+        grid-column: 1/-1;
+      }
+      .form-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--gray-600);
+      }
+      .form-input,
+      .form-select {
+        padding: 9px 12px;
+        font-size: 14px;
+        font-family: var(--font-main);
+        color: var(--gray-900);
+        background: var(--gray-50);
+        border: 1px solid var(--gray-100);
+        border-radius: 8px;
+        outline: none;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+        width: 100%;
+      }
+      .form-input:focus,
+      .form-select:focus {
+        border-color: var(--green-500);
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        background: var(--white);
+      }
 
-    .btn-primary-sm{padding:10px 20px;background:var(--gray-900);color:var(--white);border:none;border-radius:8px;font-size:13.5px;font-weight:600;font-family:var(--font-main);cursor:pointer;transition:background 0.15s;}
-    .btn-primary-sm:hover{background:var(--gray-800);}
-    .btn-secondary-sm{padding:10px 20px;background:var(--white);color:var(--gray-700);border:1px solid var(--gray-100);border-radius:8px;font-size:13.5px;font-weight:500;font-family:var(--font-main);cursor:pointer;transition:border-color 0.15s,color 0.15s;}
-    .btn-secondary-sm:hover{border-color:var(--gray-300);color:var(--gray-900);}
-    .btn-danger-sm{padding:10px 20px;background:var(--danger);color:var(--white);border:none;border-radius:8px;font-size:13.5px;font-weight:600;font-family:var(--font-main);cursor:pointer;transition:background 0.15s;}
-    .btn-danger-sm:hover{background:#b91c1c;}
+      .btn-primary-sm {
+        padding: 10px 20px;
+        background: var(--gray-900);
+        color: var(--white);
+        border: none;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 600;
+        font-family: var(--font-main);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .btn-primary-sm:hover {
+        background: var(--gray-800);
+      }
+      .btn-secondary-sm {
+        padding: 10px 20px;
+        background: var(--white);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-100);
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 500;
+        font-family: var(--font-main);
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          color 0.15s;
+      }
+      .btn-secondary-sm:hover {
+        border-color: var(--gray-300);
+        color: var(--gray-900);
+      }
+      .btn-danger-sm {
+        padding: 10px 20px;
+        background: var(--danger);
+        color: var(--white);
+        border: none;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 600;
+        font-family: var(--font-main);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .btn-danger-sm:hover {
+        background: #b91c1c;
+      }
 
-    #mensaje:not(:empty){padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;}
-    .msg-success{background:var(--green-50);color:var(--green-700);border:1px solid var(--green-100);}
-    .msg-error{background:#fef2f2;color:var(--danger);border:1px solid #fecaca;}
+      #mensaje:not(:empty) {
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .msg-success {
+        background: var(--green-50);
+        color: var(--green-700);
+        border: 1px solid var(--green-100);
+      }
+      .msg-error {
+        background: #fef2f2;
+        color: var(--danger);
+        border: 1px solid #fecaca;
+      }
 
-    .table-wrapper{overflow-x:auto;border-radius:8px;border:1px solid var(--gray-100);}
-    .data-table{width:100%;border-collapse:collapse;font-size:13.5px;}
-    .data-table thead{background:var(--gray-50);}
-    .data-table th{padding:11px 16px;text-align:center;font-size:11px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;color:var(--gray-400);font-family:var(--font-mono);border-bottom:1px solid var(--gray-100);}
-    .data-table td{padding:12px 16px;color:var(--gray-800);border-bottom:1px solid var(--gray-50);}
-    .data-table tbody tr:last-child td{border-bottom:none;}
-    .data-table tbody tr:hover td{background:var(--gray-50);}
-    .result-title{font-size:14px;font-weight:600;color:var(--gray-900);margin:0 0 14px;}
-    .result-empty{font-size:13px;color:var(--gray-400);}
-    .result-error{display:flex;align-items:center;gap:8px;color:var(--danger);font-size:13px;}
+      .table-wrapper {
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid var(--gray-100);
+      }
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+      }
+      .data-table thead {
+        background: var(--gray-50);
+      }
+      .data-table th {
+        padding: 11px 16px;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        color: var(--gray-400);
+        font-family: var(--font-mono);
+        border-bottom: 1px solid var(--gray-100);
+      }
+      .data-table td {
+        padding: 12px 16px;
+        color: var(--gray-800);
+        border-bottom: 1px solid var(--gray-50);
+      }
+      .data-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+      .data-table tbody tr:hover td {
+        background: var(--gray-50);
+      }
+      .result-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0 0 14px;
+      }
+      .result-empty {
+        font-size: 13px;
+        color: var(--gray-400);
+      }
+      .result-error {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--danger);
+        font-size: 13px;
+      }
 
-    /* ── Acciones de fila ── */
-    .row-actions{display:flex;gap:6px;}
-    .btn-row-edit{padding:4px 10px;font-size:12px;font-weight:500;font-family:var(--font-main);background:var(--gray-50);border:1px solid var(--gray-100);border-radius:6px;color:var(--gray-700);cursor:pointer;transition:border-color 0.15s,color 0.15s;}
-    .btn-row-edit:hover{border-color:var(--green-500);color:var(--green-600);}
-    .btn-row-delete{padding:4px 10px;font-size:12px;font-weight:500;font-family:var(--font-main);background:var(--gray-50);border:1px solid var(--gray-100);border-radius:6px;color:var(--gray-700);cursor:pointer;transition:border-color 0.15s,color 0.15s;}
-    .btn-row-delete:hover{border-color:var(--danger);color:var(--danger);}
+      /* ── Acciones de fila ── */
+      .row-actions {
+        display: flex;
+        gap: 6px;
+      }
+      .btn-row-edit {
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        font-family: var(--font-main);
+        background: var(--gray-50);
+        border: 1px solid var(--gray-100);
+        border-radius: 6px;
+        color: var(--gray-700);
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          color 0.15s;
+      }
+      .btn-row-edit:hover {
+        border-color: var(--green-500);
+        color: var(--green-600);
+      }
+      .btn-row-delete {
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        font-family: var(--font-main);
+        background: var(--gray-50);
+        border: 1px solid var(--gray-100);
+        border-radius: 6px;
+        color: var(--gray-700);
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          color 0.15s;
+      }
+      .btn-row-delete:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
 
-    /* ── Modal overlay ── */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
-    .modal-overlay.hidden{display:none;}
-    .modal-card{background:var(--white);border-radius:14px;padding:28px 32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.15);}
-    .modal-title{font-size:16px;font-weight:600;color:var(--gray-900);margin:0 0 20px;padding-bottom:16px;border-bottom:1px solid var(--gray-100);}
-    .modal-actions{display:flex;gap:10px;margin-top:24px;justify-content:flex-end;}
-    .modal-body{font-size:14px;color:var(--gray-700);line-height:1.6;}
+      /* ── Modal overlay ── */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      .modal-overlay.hidden {
+        display: none;
+      }
+      .modal-card {
+        background: var(--white);
+        border-radius: 14px;
+        padding: 28px 32px;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      }
+      .modal-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0 0 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--gray-100);
+      }
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 24px;
+        justify-content: flex-end;
+      }
+      .modal-body {
+        font-size: 14px;
+        color: var(--gray-700);
+        line-height: 1.6;
+      }
 
-    .sugerencias-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
-    .sugerencia-card{background:var(--white);border:1px solid var(--gray-100);border-radius:10px;padding:16px 18px;display:flex;align-items:center;gap:14px;}
-    .sugerencia-card__num{font-size:22px;font-weight:600;color:var(--gray-900);font-family:var(--font-mono);min-width:36px;}
-    .sugerencia-card__info{flex:1;}
-    .sugerencia-card__last{font-size:12px;color:var(--gray-400);margin:0 0 2px;}
-    .sugerencia-card__days{font-size:13px;color:var(--gray-700);margin:0 0 2px;}
-    .sugerencia-card__days strong{color:var(--green-600);}
-    .sugerencia-card__sev{font-size:11px;color:var(--gray-400);margin:0;font-family:var(--font-mono);}
-    .search-bar{display:flex;gap:10px;align-items:center;margin-bottom:20px;}
+      .sugerencias-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px;
+      }
+      .sugerencia-card {
+        background: var(--white);
+        border: 1px solid var(--gray-100);
+        border-radius: 10px;
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .sugerencia-card__num {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--gray-900);
+        font-family: var(--font-mono);
+        min-width: 36px;
+      }
+      .sugerencia-card__info {
+        flex: 1;
+      }
+      .sugerencia-card__last {
+        font-size: 12px;
+        color: var(--gray-400);
+        margin: 0 0 2px;
+      }
+      .sugerencia-card__days {
+        font-size: 13px;
+        color: var(--gray-700);
+        margin: 0 0 2px;
+      }
+      .sugerencia-card__days strong {
+        color: var(--green-600);
+      }
+      .sugerencia-card__sev {
+        font-size: 11px;
+        color: var(--gray-400);
+        margin: 0;
+        font-family: var(--font-mono);
+      }
+      .search-bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 20px;
+      }
 
-    #btnMobileSidebar{display:none;align-items:center;justify-content:center;width:36px;height:36px;background:var(--gray-900);border:none;border-radius:7px;cursor:pointer;color:var(--white);}
-    @media(max-width:767px){
-      #btnMobileSidebar{display:flex;}
-      .page-header{padding:12px 16px;}
-      main{padding:16px!important;}
-      .form-grid{grid-template-columns:1fr;}
-      .modal-card{padding:20px;}
-    }
+      #btnMobileSidebar {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: var(--gray-900);
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+        color: var(--white);
+      }
+      @media (max-width: 767px) {
+        #btnMobileSidebar {
+          display: flex;
+        }
+        .page-header {
+          padding: 12px 16px;
+        }
+        main {
+          padding: 16px !important;
+        }
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+        .modal-card {
+          padding: 20px;
+        }
+      }
 
-    #containerPropuesta {
-      min-height: 200px;
-      background: var(--white);
-    }
+      #containerPropuesta {
+        min-height: 200px;
+        background: var(--white);
+      }
 
-    /* Placeholder para celdas contenteditable */
-    .editable-cell[contenteditable="true"]:empty:before {
+      /* Placeholder para celdas contenteditable */
+      .editable-cell[contenteditable="true"]:empty:before {
         content: attr(data-placeholder);
         color: #9ca3af; /* gray-400 */
         cursor: text;
-    }
+      }
 
-    .editable-cell:focus {
+      .editable-cell:focus {
         outline: none;
         background-color: #fefce8; /* Un amarillo muy tenue para saber qué estás editando */
-    }
+      }
 
-    /* Limpiar estilos de inputs en la tabla */
-    .agenda-container input {
+      /* Limpiar estilos de inputs en la tabla */
+      .agenda-container input {
         outline: none;
         padding: 0;
         margin: 0;
-    }
+      }
 
-    .modal-overlay.hidden {
-    display: none !important;
-    }
-    /* Asegúrate de que sin la clase hidden, sea flex */
-    .modal-overlay {
+      .modal-overlay.hidden {
+        display: none !important;
+      }
+      /* Asegúrate de que sin la clase hidden, sea flex */
+      .modal-overlay {
         display: flex;
-        /* ... resto de tu estilo ... */    
-    
-    }
+        /* ... resto de tu estilo ... */
+      }
 
-    #containerAgendaGuardada {
-    width: 100%;
-    overflow-x: auto; /* Permite scroll horizontal en móviles */
-    display: block;   /* Asegura que ocupe su propia línea */
-    }
+      #containerAgendaGuardada {
+        width: 100%;
+        overflow-x: auto; /* Permite scroll horizontal en móviles */
+        display: block; /* Asegura que ocupe su propia línea */
+      }
 
-    /* Estilo para las etiquetas de turno en la tabla */
-    .badge-turno {
+      /* Estilo para las etiquetas de turno en la tabla */
+      .badge-turno {
         background: var(--gray-100);
         color: var(--gray-600);
         padding: 2px 8px;
@@ -170,23 +616,23 @@
         font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
-    }
+      }
 
-    /* Para resaltar el territorio */
-    .territorio-id {
+      /* Para resaltar el territorio */
+      .territorio-id {
         font-family: var(--font-mono);
         font-weight: 600;
         color: var(--green-600);
-    }
+      }
 
-    /* Efecto suave para la tabla de historial */
-    #containerAgendaGuardada table {
+      /* Efecto suave para la tabla de historial */
+      #containerAgendaGuardada table {
         border-radius: 8px;
         overflow: hidden;
-    }
+      }
 
-        /* Botones de gestión corporativos */
-    .btn-gestion-outline {
+      /* Botones de gestión corporativos */
+      .btn-gestion-outline {
         background: #ffffff;
         border: 1px solid var(--gray-200);
         color: var(--gray-700);
@@ -196,422 +642,778 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
-    }
+      }
 
-    .btn-gestion-outline:hover {
+      .btn-gestion-outline:hover {
         background: var(--gray-50);
         border-color: var(--gray-400);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
 
-    /* Badge de territorio */
-    .territorio-badge {
+      /* Badge de territorio */
+      .territorio-badge {
         font-family: var(--font-mono);
         color: var(--green-700);
         background: var(--green-50);
         padding: 4px 8px;
         border-radius: 4px;
         font-weight: 600;
-    
-    }
+      }
 
-        /* Tabla de Historial Estilo Reporte */
-    .data-table {
+      /* Tabla de Historial Estilo Reporte */
+      .data-table {
         border-spacing: 0;
         width: 100%;
-    }
+      }
 
-    .data-table th {
+      .data-table th {
         background: #f8fafc; /* Gris muy suave */
         color: #64748b;
         border-bottom: 2px solid #edf2f7;
-    }
+      }
 
-    .data-table td {
+      .data-table td {
         border-bottom: 1px solid #f1f5f9;
         padding: 14px 16px;
-    }
+      }
 
-    /* Botones de acción minimalistas */
-    .btn-gestion-outline {
+      /* Botones de acción minimalistas */
+      .btn-gestion-outline {
         border: 1px solid #e2e8f0;
         background: white;
         color: #475569;
-    }
+      }
 
-    .btn-gestion-outline:hover {
+      .btn-gestion-outline:hover {
         border-color: #94a3b8;
         color: #1e293b;
-    }
+      }
 
-    /* Estilo para los inputs de edición rápida en el historial */
-    .editable-conductor input, .editable-encuentro input {
+      /* Estilo para los inputs de edición rápida en el historial */
+      .editable-conductor input,
+      .editable-encuentro input {
         width: 100%;
         background: #fff;
         border: 1px solid var(--green-500);
         padding: 2px 6px;
         border-radius: 4px;
         font-size: 13px;
-        color: var(--gray-900)
-    }
+        color: var(--gray-900);
+      }
 
-    #seccionAgenda .form-card:first-of-type { display: none !important; }
+      #seccionAgenda .form-card:first-of-type {
+        display: none !important;
+      }
 
-    /* Transición más fluida para las secciones */
-    .section-base {
-      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
+      /* Transición más fluida para las secciones */
+      .section-base {
+        transition:
+          opacity 0.4s ease,
+          transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
 
-    /* Efecto de "skeleton" muy sutil para cuando cargan los datos */
-    .loading-pulse {
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
-    }
+      /* Efecto de "skeleton" muy sutil para cuando cargan los datos */
+      .loading-pulse {
+        animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
 
-    #asignacionesChart {
-      min-height: 250px !important;
-      max-height: 350px !important;
-      width: 100% !important;
-      display: block;
-  }
-
-  </style>
-</head>
-<body class="min-h-screen flex">
-
-  <div id="mainLoader" class="hidden fixed inset-0 bg-white/50 z-[100] flex items-center justify-center">
-      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"></div>
-  </div>
-
-  <!-- Sidebar -->
-  <aside id="sidebar" class="w-60 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-50 flex flex-col">
-    <div class="sidebar-logo">
-      <img src="../img/logo_planillas.png" alt="Logo">
-      <span>Gestión de<br>Territorios</span>
+      #asignacionesChart {
+        min-height: 250px !important;
+        max-height: 350px !important;
+        width: 100% !important;
+        display: block;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex">
+    <div
+      id="mainLoader"
+      class="hidden fixed inset-0 bg-white/50 z-[100] flex items-center justify-center"
+    >
+      <div
+        class="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"
+      ></div>
     </div>
-    <nav class="sidebar-section flex-1 overflow-y-auto">
-      <p class="sidebar-section-label">Principal</p>
-      <button id="btnDashboard" class="nav-btn active">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Dashboard
-      </button>
-      <button id="btnAgregar" class="nav-btn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Agregar asignación
-      </button>
-      <button id="btnConsultar" class="nav-btn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        Consultar asignaciones
-      </button>
-      <button id="btnSugerencias" class="nav-btn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Sugerir territorios
-      </button>
 
-      <button id="btnAgenda" class="nav-btn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Agenda Quincenal
-      </button>
-    </nav>
-    <div class="sidebar-section" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;">
-      <p class="sidebar-section-label">v3.2 — Territorial</p>
-    </div>
-  </aside>
-
-  <!-- Main -->
-  <div class="flex-1 flex flex-col md:ml-60">
-    <header class="page-header">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <button id="btnMobileSidebar" aria-label="Abrir menú">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-        <div>
-          <p id="headerTitle" class="page-header__title">Dashboard</p>
-          <p id="headerSub" class="page-header__sub">Resumen general del sistema</p>
-        </div>
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="w-60 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-50 flex flex-col"
+    >
+      <div class="sidebar-logo">
+        <img src="../img/logo_planillas.png" alt="Logo" />
+        <span>Gestión de<br />Territorios</span>
       </div>
-      <button id="btnLogout" class="btn-logout">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Salir
-      </button>
-    </header>
+      <nav class="sidebar-section flex-1 overflow-y-auto">
+        <p class="sidebar-section-label">Principal</p>
+        <button type="button" id="btnDashboard" class="nav-btn active">
+          <svg
+            role="img"
+            focusable="false"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-labelledby="titleDashboard"
+          >
+            <title id="titleDashboard">Icono de Dashboard</title>
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>
+          Dashboard
+        </button>
 
-    <main class="flex-1 p-8 overflow-y-auto">
+        <button type="button" id="btnAgregar" class="nav-btn">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="8" y1="12" x2="16" y2="12" />
+          </svg>
+          Agregar asignación
+        </button>
+        <button type="button" id="btnConsultar" class="nav-btn">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          Consultar Territorios
+        </button>
 
-      <!-- Dashboard -->
-      <section id="seccionDashboard" class="section-base animate-in">
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <p class="kpi-card__label">Total Territorios</p>
-            <p id="totalAsignaciones" class="kpi-card__value kpi-card__accent">60</p>
-            <p class="kpi-card__hint">Registradas en el sistema</p>
-          </div>
-          <div class="kpi-card">
-            <p class="kpi-card__label">Planillas Totales</p>
-            <p id="territoriosActivos" class="kpi-card__value kpi-card__accent">14</p>
-            <p class="kpi-card__hint">Con asignación vigente</p>
-          </div>
-          <div class="kpi-card">
-            <p class="kpi-card__label">Planillas Completadas</p>
-            <p id="asignacionesCompletadas" class="kpi-card__value kpi-card__accent">3</p>
-            <p class="kpi-card__hint">Finalizadas este período</p>
+        <button type="button" id="btnSugerencias" class="nav-btn">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon
+              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+            />
+          </svg>
+          Sugerir territorios
+        </button>
+
+        <button type="button" id="btnAgenda" class="nav-btn">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          Agenda Quincenal
+        </button>
+
+        <button type="button" id="btnPlanillas" class="nav-btn">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            ></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Planillas
+        </button>
+      </nav>
+      <div
+        class="sidebar-section"
+        style="
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          padding-top: 16px;
+        "
+      >
+        <p class="sidebar-section-label">v3.2 — Territorial</p>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="flex-1 flex flex-col md:ml-60">
+      <header class="page-header">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <button type="button" id="btnMobileSidebar" aria-label="Abrir menú">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <div>
+            <p id="headerTitle" class="page-header__title">Dashboard</p>
+            <p id="headerSub" class="page-header__sub">
+              Resumen general del sistema
+            </p>
           </div>
         </div>
-        <div class="chart-card">
-          <p class="chart-card__title">Asignaciones por territorio — vista general</p>
-          <canvas id="asignacionesChart" style="max-height:280px;"></canvas>
-        </div>
-      </section>
+        <button id="btnLogout" class="btn-logout">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Salir
+        </button>
+      </header>
 
-      <!-- Agregar -->
-      <section id="seccionAgregar" class="section-base hidden">
-        <div class="form-card">
-          <h3 class="section-title">Nueva asignación</h3>
-          <form id="asignacionForm">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label" for="numeroTerritorio">Número de territorio</label>
-                <input id="numeroTerritorio" type="number" class="form-input" placeholder="Ej: 12" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="conductor">Conductor</label>
-                <input id="conductor" type="text" class="form-input" placeholder="Nombre completo" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="fechaAsignado">Fecha asignado (domingo)</label>
-                <select id="fechaAsignado" class="form-select" required></select>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="fechaCompletado">Fecha completado</label>
-                <select id="fechaCompletado" class="form-select" required></select>
-              </div>
-              <div class="form-group full">
-                <label class="form-label" for="totalAbarcado">Cantidad abarcada</label>
-                <input id="totalAbarcado" type="text" class="form-input" placeholder="Descripción del área cubierta" required>
-              </div>
+      <main class="flex-1 p-8 overflow-y-auto">
+        <!-- Dashboard -->
+        <section id="seccionDashboard" class="section-base animate-in">
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <p class="kpi-card__label">Total Territorios</p>
+              <p
+                id="totalAsignaciones"
+                class="kpi-card__value kpi-card__accent"
+              ></p>
+              <p class="kpi-card__hint">Registradas en el sistema</p>
             </div>
-            <div style="display:flex;gap:10px;margin-top:20px;">
-              <button type="submit" class="btn-primary-sm">Registrar asignación</button>
-              <button type="reset" class="btn-secondary-sm">Limpiar</button>
+            <div class="kpi-card">
+              <p class="kpi-card__label">Planillas Totales</p>
+              <p
+                id="territoriosActivos"
+                class="kpi-card__value kpi-card__accent"
+              ></p>
+              <p class="kpi-card__hint">Con asignación vigente</p>
             </div>
-          </form>
-          <div id="mensaje" style="margin-top:16px;"></div>
-        </div>
-      </section>
-
-      <!-- Consultar -->
-      <section id="seccionConsultar" class="section-base hidden">
-        <div class="form-card">
-          <h3 class="section-title">Consultar por territorio</h3>
-          <div class="search-bar">
-            <input id="territorioInput" type="number" class="form-input" style="max-width:200px;" placeholder="Nº de territorio (1-60)">
-            <button id="consultarBtn" class="btn-primary-sm">Buscar</button>
-          </div>
-          <div id="resultadoTerritorio"></div>
-        </div>
-      </section>
-
-      <!-- Sugerencias -->
-      <section id="seccionSugerencias" class="section-base hidden">
-        <div class="form-card" style="margin-bottom:20px;">
-          <h3 class="section-title">Territorios sugeridos para asignar</h3>
-          <div class="search-bar">
-            <select id="rangoSelect" class="form-select" style="max-width:220px;">
-              <option value="1-20">Territorios 1 – 20</option>
-              <option value="21-40">Territorios 21 – 40</option>
-              <option value="41-60">Territorios 41 – 60</option>
-            </select>
-            <button id="btnBuscarSugerencias" class="btn-primary-sm">Buscar</button>
-          </div>
-        </div>
-        <div id="resultadoSugerencias" class="sugerencias-grid"></div>
-      </section>
-
-      <!-- Sección Agenda Unificada y Mejorada -->
-      <section id="seccionAgenda" class="section-base hidden">
-        <!-- Card 1: Generación de Propuesta Nueva -->
-        <div class="form-card mb-6">
-          <h3 class="section-title">Planificación de Nueva Agenda</h3>
-          <div class="search-bar flex gap-4 items-end">
-            <div class="form-group">
-              <label class="form-label">Fecha de Inicio</label>
-              <input type="date" id="fechaInicioAgenda" class="form-input" style="max-width:200px;">
+            <div class="kpi-card">
+              <p class="kpi-card__label">Planillas Completadas</p>
+              <p
+                id="asignacionesCompletadas"
+                class="kpi-card__value kpi-card__accent"
+              ></p>
+              <p class="kpi-card__hint">Finalizadas este período</p>
             </div>
-            <!-- ID CLAVE: btnGenerarPropuesta -->
-            <button id="btnGenerarPropuesta" class="btn-primary-sm">Generar Propuesta</button>
           </div>
-          
-          <!-- ID CLAVE: containerPropuesta (Aquí el JS inyectará la tabla editable) -->
-          <div id="containerPropuesta" class="table-wrapper mt-4 border-dashed border-2 border-gray-200 min-h-[100px]">
-            <p class="p-8 text-center text-gray-400">Seleccioná una fecha para generar la sugerencia.</p>
+          <div class="chart-card">
+            <p class="chart-card__title">
+              Asignaciones por territorio — vista general
+            </p>
+            <canvas id="asignacionesChart" style="max-height: 280px"></canvas>
           </div>
-        
-          <!-- Botón para Guardar la propuesta generada -->
-          <div id="accionesPropuesta" class="hidden mt-4 flex justify-end">
-              <button id="btnConfirmarAgenda" class="btn-primary-sm" style="background: var(--green-600);">
-                  Confirmar y Guardar Agenda
+        </section>
+
+        <!-- Agregar -->
+        <section id="seccionAgregar" class="section-base hidden">
+          <div class="form-card">
+            <h3 class="section-title">Nueva asignación</h3>
+            <form id="asignacionForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="numeroTerritorio"
+                    >Número de territorio</label
+                  >
+                  <input
+                    id="numeroTerritorio"
+                    type="number"
+                    class="form-input"
+                    placeholder="Ej: 12"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="conductor">Conductor</label>
+                  <input
+                    id="conductor"
+                    type="text"
+                    class="form-input"
+                    placeholder="Nombre completo"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="fechaAsignado"
+                    >Fecha asignado (domingo)</label
+                  >
+                  <select
+                    id="fechaAsignado"
+                    class="form-select"
+                    required
+                  ></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="fechaCompletado"
+                    >Fecha completado</label
+                  >
+                  <select
+                    id="fechaCompletado"
+                    class="form-select"
+                    required
+                  ></select>
+                </div>
+                <div class="form-group full">
+                  <label class="form-label" for="totalAbarcado"
+                    >Cantidad abarcada</label
+                  >
+                  <input
+                    id="totalAbarcado"
+                    type="text"
+                    class="form-input"
+                    placeholder="Descripción del área cubierta"
+                    required
+                  />
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <button type="submit" class="btn-primary-sm">
+                  Registrar asignación
+                </button>
+                <button type="reset" class="btn-secondary-sm">Limpiar</button>
+              </div>
+            </form>
+            <div id="mensaje" style="margin-top: 16px"></div>
+          </div>
+        </section>
+
+        <!-- Consultar -->
+        <section id="seccionConsultar" class="section-base hidden">
+          <div class="form-card">
+            <h3 class="section-title">Consultar por territorio</h3>
+            <div class="search-bar">
+              <input
+                id="territorioInput"
+                type="number"
+                class="form-input"
+                style="max-width: 200px"
+                placeholder="Nº de territorio (1-60)"
+              />
+              <button id="consultarBtn" class="btn-primary-sm">Buscar</button>
+            </div>
+            <div id="resultadoTerritorio"></div>
+          </div>
+        </section>
+
+        <!-- Sugerencias -->
+        <section id="seccionSugerencias" class="section-base hidden">
+          <div class="form-card" style="margin-bottom: 20px">
+            <h3 class="section-title">Territorios sugeridos para asignar</h3>
+            <div class="search-bar">
+              <select
+                id="rangoSelect"
+                class="form-select"
+                style="max-width: 220px"
+              >
+                <option value="1-20">Territorios 1 – 20</option>
+                <option value="21-40">Territorios 21 – 40</option>
+                <option value="41-60">Territorios 41 – 60</option>
+              </select>
+              <button id="btnBuscarSugerencias" class="btn-primary-sm">
+                Buscar
               </button>
+            </div>
           </div>
-        </div>
-      
-        <!-- Card 2: Historial de Agendas Guardadas -->
-        <div class="form-card">
-        <h3 class="section-title">Sugerencia de Territorios</h3>
-          <div class="table-wrapper">
-            <table class="data-table">
+          <div id="resultadoSugerencias" class="sugerencias-grid"></div>
+        </section>
 
-              <tbody id="tablaHistorialAgenda">
-                <!-- El JS inyectará los datos aquí -->
-                <tr>
-                  <td colspan="2" class="p-8 text-center text-gray-400">Cargando historial...</td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- Sección Agenda Unificada y Mejorada -->
+        <section id="seccionAgenda" class="section-base hidden">
+          <!-- Card 1: Generación de Propuesta Nueva -->
+          <div class="form-card mb-6">
+            <h3 class="section-title">Planificación de Nueva Agenda</h3>
+            <div class="search-bar flex gap-4 items-end">
+              <div class="form-group">
+                <label class="form-label">Fecha de Inicio</label>
+                <input
+                  type="date"
+                  id="fechaInicioAgenda"
+                  class="form-input"
+                  style="max-width: 200px"
+                />
+              </div>
+              <!-- ID CLAVE: btnGenerarPropuesta -->
+              <button id="btnGenerarPropuesta" class="btn-primary-sm">
+                Generar Propuesta
+              </button>
+            </div>
+
+            <!-- ID CLAVE: containerPropuesta (Aquí el JS inyectará la tabla editable) -->
+            <div
+              id="containerPropuesta"
+              class="table-wrapper mt-4 border-dashed border-2 border-gray-200 min-h-[100px]"
+            >
+              <p class="p-8 text-center text-gray-400">
+                Seleccioná una fecha para generar la sugerencia.
+              </p>
+            </div>
+
+            <!-- Botón para Guardar la propuesta generada -->
+            <div id="accionesPropuesta" class="hidden mt-4 flex justify-end">
+              <button
+                id="btnConfirmarAgenda"
+                class="btn-primary-sm"
+                style="background: var(--green-600)"
+              >
+                Confirmar y Guardar Agenda
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
-      
-      
-      <section id="seccionPlanillaS13" class="section-base hidden">
-        <div class="form-card" style="background: white; border: 2px solid #000; padding: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #000; margin-bottom: 10px; padding-bottom: 5px;">
-            <h2 style="font-family: 'DM Sans', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Registro de Asignación de Territorio</h2>
-            <p style="font-weight: 600;">Año de servicio: <span style="border-bottom: 1px solid #000; padding: 0 20px;">2026</span></p>
+
+          <!-- Card 2: Historial de Agendas Guardadas -->
+          <div class="form-card">
+            <h3 class="section-title">Sugerencia de Territorios</h3>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <tbody id="tablaHistorialAgenda">
+                  <!-- El JS inyectará los datos aquí -->
+                  <tr>
+                    <td colspan="2" class="p-8 text-center text-gray-400">
+                      Cargando historial...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        
-          <div class="table-wrapper" style="border: 1.5px solid #000;">
-            <table id="tablaS13" class="data-table" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 11px;">
-                  <thead>
-                    <tr style="background: #e5e7eb; border-bottom: 1.5px solid #000;">
-                      <th style="border-right: 1.5px solid #000; width: 40px;">Núm. de terr.</th>
-                      <th style="border-right: 1.5px solid #000; width: 80px;">Última fecha completó*</th>
-                      <th colspan="2" style="border-right: 1.5px solid #000;">Asignado 1</th>
-                      <th colspan="2" style="border-right: 1.5px solid #000;">Asignado 2</th>
-                      <th colspan="2" style="border-right: 1.5px solid #000;">Asignado 3</th>
-                      <th colspan="2" style="border-right: 1.5px solid #000;">Asignado 4</th>
-                      <th colspan="2">Asignado 5</th> <!-- Agregada la 5ta -->
-                    </tr>
-                    <tr style="background: #f3f4f6; font-size: 9px; border-bottom: 1.5px solid #000;">
-                      <th style="border-right: 1.5px solid #000;"></th>
-                      <th style="border-right: 1.5px solid #000;"></th>
-                      <th style="border-right: 1px solid #000;">Nombre / Fecha</th>
-                      <th style="border-right: 1.5px solid #000;">Comp.</th>
-                      <th style="border-right: 1px solid #000;">Nombre / Fecha</th>
-                      <th style="border-right: 1.5px solid #000;">Comp.</th>
-                      <th style="border-right: 1px solid #000;">Nombre / Fecha</th>
-                      <th style="border-right: 1.5px solid #000;">Comp.</th>
-                      <th style="border-right: 1px solid #000;">Nombre / Fecha</th>
-                      <th style="border-right: 1.5px solid #000;">Comp.</th>
-                      <th style="border-right: 1px solid #000;">Nombre / Fecha</th>
-                      <th>Comp.</th>
-                    </tr>
-                  </thead>
-              <tbody id="tbodyS13">
-                <!-- Se llenará con JS -->
-              </tbody>
-            </table>
+        </section>
+
+        <section id="seccionPlanillaS13" class="section-base hidden">
+          <div
+            class="form-card"
+            style="background: white; border: 2px solid #000; padding: 20px"
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                border-bottom: 2px solid #000;
+                margin-bottom: 10px;
+                padding-bottom: 5px;
+              "
+            >
+              <h2
+                style="
+                  font-family: &quot;DM Sans&quot;, sans-serif;
+                  font-weight: 700;
+                  text-transform: uppercase;
+                  letter-spacing: 1px;
+                "
+              >
+                Registro de Asignación de Territorio
+              </h2>
+              <p style="font-weight: 600">
+                Año de servicio:
+                <span style="border-bottom: 1px solid #000; padding: 0 20px"
+                  >2026</span
+                >
+              </p>
+            </div>
+
+            <div class="table-wrapper" style="border: 1.5px solid #000">
+              <table
+                id="tablaS13"
+                class="data-table"
+                style="
+                  border-collapse: collapse;
+                  width: 100%;
+                  text-align: center;
+                  font-size: 11px;
+                "
+              >
+                <thead>
+                  <tr
+                    style="background: #e5e7eb; border-bottom: 1.5px solid #000"
+                  >
+                    <th style="border-right: 1.5px solid #000; width: 40px">
+                      Núm. de terr.
+                    </th>
+                    <th style="border-right: 1.5px solid #000; width: 80px">
+                      Última fecha completó*
+                    </th>
+                    <th colspan="2" style="border-right: 1.5px solid #000">
+                      Asignado 1
+                    </th>
+                    <th colspan="2" style="border-right: 1.5px solid #000">
+                      Asignado 2
+                    </th>
+                    <th colspan="2" style="border-right: 1.5px solid #000">
+                      Asignado 3
+                    </th>
+                    <th colspan="2" style="border-right: 1.5px solid #000">
+                      Asignado 4
+                    </th>
+                    <th colspan="2">Asignado 5</th>
+                    <!-- Agregada la 5ta -->
+                  </tr>
+                  <tr
+                    style="
+                      background: #f3f4f6;
+                      font-size: 9px;
+                      border-bottom: 1.5px solid #000;
+                    "
+                  >
+                    <th style="border-right: 1.5px solid #000"></th>
+                    <th style="border-right: 1.5px solid #000"></th>
+                    <th style="border-right: 1px solid #000">Nombre / Fecha</th>
+                    <th style="border-right: 1.5px solid #000">Comp.</th>
+                    <th style="border-right: 1px solid #000">Nombre / Fecha</th>
+                    <th style="border-right: 1.5px solid #000">Comp.</th>
+                    <th style="border-right: 1px solid #000">Nombre / Fecha</th>
+                    <th style="border-right: 1.5px solid #000">Comp.</th>
+                    <th style="border-right: 1px solid #000">Nombre / Fecha</th>
+                    <th style="border-right: 1.5px solid #000">Comp.</th>
+                    <th style="border-right: 1px solid #000">Nombre / Fecha</th>
+                    <th>Comp.</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyS13">
+                  <!-- Se llenará con JS -->
+                </tbody>
+              </table>
+            </div>
+            <p style="font-size: 10px; margin-top: 10px">
+              *Cuando comience una nueva página, anote en esta columna la última
+              fecha en que los territorios se completaron.
+            </p>
           </div>
-          <p style="font-size: 10px; margin-top: 10px;">*Cuando comience una nueva página, anote en esta columna la última fecha en que los territorios se completaron.</p>
-        </div>
-    </section>
+        </section>
 
-    </main>
-  </div>
+        <!-- Sección Planillas (Árbol Zona -> Año -> Planilla) -->
+        <section id="seccionPlanillas" class="section-base hidden">
+          <div class="form-card">
+            <!-- Cabecera y migas de pan (Breadcrumbs) -->
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+              "
+            >
+              <h3
+                id="planillasTituloSeccion"
+                class="section-title"
+                style="margin: 0"
+              >
+                Seleccione una Zona
+              </h3>
+              <button id="btnVolverPlanillas" class="btn-secondary-sm hidden">
+                ← Volver
+              </button>
+            </div>
 
+            <!-- Contenedor dinámico donde el controlador inyectará las tarjetas / carpetas -->
+            <div
+              id="containerPlanillas"
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 16px;
+              "
+            >
+              <!-- El JS llenará este espacio de forma dinámica -->
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
 
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
+    <!-- ═══════════════════════════════════════════════════════════════════════
        MODAL: Editar asignación
        ═══════════════════════════════════════════════════════════════════════ -->
-  <div id="modalEdicion" class="modal-overlay hidden">
-    <div class="modal-card">
-      <h3 class="modal-title">Editar asignación</h3>
-      <form id="formEdicion">
-        <input type="hidden" id="editId">
-        <div class="form-grid">
-          <div class="form-group full">
-            <label class="form-label" for="editConductor">Conductor</label>
-            <input id="editConductor" type="text" class="form-input" placeholder="Nombre completo" required>
+    <div id="modalEdicion" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h3 class="modal-title">Editar asignación</h3>
+        <form id="formEdicion">
+          <input type="hidden" id="editId" />
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label" for="editConductor">Conductor</label>
+              <input
+                id="editConductor"
+                type="text"
+                class="form-input"
+                placeholder="Nombre completo"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="editFechaAsignado"
+                >Fecha asignado (DD/MM/AAAA)</label
+              >
+              <input
+                id="editFechaAsignado"
+                type="text"
+                class="form-input"
+                placeholder="DD/MM/AAAA"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="editFechaCompletado"
+                >Fecha completado (DD/MM/AAAA)</label
+              >
+              <input
+                id="editFechaCompletado"
+                type="text"
+                class="form-input"
+                placeholder="DD/MM/AAAA"
+              />
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="editCantidad"
+                >Cantidad abarcada</label
+              >
+              <!-- Este ID 'editCantidad' debe coincidir exactamente con tu JS -->
+              <input
+                id="editCantidad"
+                type="text"
+                class="form-input"
+                placeholder="Ej: Manzanas 1 a 4"
+              />
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="editFechaAsignado">Fecha asignado (DD/MM/AAAA)</label>
-            <input id="editFechaAsignado" type="text" class="form-input" placeholder="DD/MM/AAAA" required>
+          <div class="modal-actions">
+            <button type="button" id="btnCancelEdit" class="btn-secondary-sm">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn-primary-sm"
+              style="background: var(--green-600)"
+            >
+              Guardar cambios
+            </button>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="editFechaCompletado">Fecha completado (DD/MM/AAAA)</label>
-            <input id="editFechaCompletado" type="text" class="form-input" placeholder="DD/MM/AAAA">
-          </div>
-          <div class="form-group full">
-            <label class="form-label" for="editCantidad">Cantidad abarcada</label>
-            <!-- Este ID 'editCantidad' debe coincidir exactamente con tu JS -->
-            <input id="editCantidad" type="text" class="form-input" placeholder="Ej: Manzanas 1 a 4">
-          </div>
-        </div>
-        <div class="modal-actions">
-          <button type="button" id="btnCancelEdit" class="btn-secondary-sm">Cancelar</button>
-          <button type="submit" class="btn-primary-sm" style="background: var(--green-600);">Guardar cambios</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════
-       MODAL: Confirmar eliminación
-       ═══════════════════════════════════════════════════════════════════════ -->
-  <div id="modalConfirm" class="modal-overlay hidden">
-    <div class="modal-card" style="max-width:380px;">
-      <h3 class="modal-title">Confirmar eliminación</h3>
-      <input type="hidden" id="confirmDeleteId">
-
-      <p id="confirmInfoText" style="margin-bottom: 15px; font-size: 14px; color: var(--gray-700);"></p>
-
-      <p class="modal-body">
-        Esta acción no se puede deshacer. ¿Estás seguro de que querés eliminar esta asignación?
-      </p>
-      <div class="modal-actions">
-        <button type="button" id="btnCancelDelete" class="btn-secondary-sm">Cancelar</button>
-        <button type="button" id="btnConfirmDelete" class="btn-danger-sm">Sí, eliminar</button>
+        </form>
       </div>
     </div>
-  </div>
 
-  <!-- Auth guard -->
-  <!-- Auth guard inline, sin módulos -->
-  <script>
-    if (!localStorage.getItem("token")) {
-      window.location.href = "../login/index.html";
-    }
-  </script>
-  <script type="module" src="./main.js"></script>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+       MODAL: Confirmar eliminación
+       ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="modalConfirm" class="modal-overlay hidden">
+      <div class="modal-card" style="max-width: 380px">
+        <h3 class="modal-title">Confirmar eliminación</h3>
+        <input type="hidden" id="confirmDeleteId" />
 
-  <!-- Nav & sidebar -->
-  <script>
-    const sidebar = document.getElementById("sidebar");
-    
-    // Abrir/Cerrar Sidebar Mobile
-    document.getElementById("btnMobileSidebar").onclick = () =>
-      sidebar.classList.toggle("-translate-x-full");
+        <p
+          id="confirmInfoText"
+          style="margin-bottom: 15px; font-size: 14px; color: var(--gray-700)"
+        ></p>
 
-    // Manejo visual de botones del Nav (clase Active)
-    const navButtons = document.querySelectorAll(".nav-btn");
-    navButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        navButtons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        if (window.innerWidth < 768) sidebar.classList.add("-translate-x-full");
-      });
-    });
+        <p class="modal-body">
+          Esta acción no se puede deshacer. ¿Estás seguro de que querés eliminar
+          esta asignación?
+        </p>
+        <div class="modal-actions">
+          <button type="button" id="btnCancelDelete" class="btn-secondary-sm">
+            Cancelar
+          </button>
+          <button type="button" id="btnConfirmDelete" class="btn-danger-sm">
+            Sí, eliminar
+          </button>
+        </div>
+      </div>
+    </div>
 
-    document.querySelectorAll(".modal-overlay").forEach(modal => {
-        modal.addEventListener("click", (e) => {
-            if (e.target === modal) modal.classList.add("hidden");
+    <!-- Auth guard -->
+    <!-- Auth guard inline, sin módulos -->
+    <script>
+      if (!localStorage.getItem("token")) {
+        window.location.href = "../login/index.html";
+      }
+    </script>
+    <script type="module" src="./main.js"></script>
+
+    <!-- Nav & sidebar -->
+    <script>
+      const sidebar = document.getElementById("sidebar");
+
+      // Abrir/Cerrar Sidebar Mobile
+      document.getElementById("btnMobileSidebar").onclick = () =>
+        sidebar.classList.toggle("-translate-x-full");
+
+      // Manejo visual de botones del Nav (clase Active)
+      const navButtons = document.querySelectorAll(".nav-btn");
+      navButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          navButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          if (window.innerWidth < 768)
+            sidebar.classList.add("-translate-x-full");
         });
-    });
+      });
 
-  </script>
-</body>
+      document.querySelectorAll(".modal-overlay").forEach((modal) => {
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) modal.classList.add("hidden");
+        });
+      });
+    </script>
+  </body>
 </html>

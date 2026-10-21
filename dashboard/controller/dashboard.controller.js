@@ -195,11 +195,11 @@ export const Controller = {
     try {
       UIManager.showLoading(true);
 
-      // 1. Pedir datos
+      // 1. Pedir datos de sugerencias/territorios
       const response = await Api.getSugerencias(rango);
       const territorios = response.sugerencias || response;
 
-      // 2. Renderizar tarjetas
+      // 2. Renderizar tarjetas de sugerencias
       UIManager.renderSugerencias(territorios);
 
       // 3. Renderizar Gráfico
@@ -209,12 +209,59 @@ export const Controller = {
 
         console.log("📊 Datos cargados para gráfico:", { labels, values });
 
-        // Usamos el ID exacto de tu canvas
         window.Charts.renderBarChart(
           "asignacionesChart",
           labels,
           values,
           "#10b981",
+        );
+      }
+
+      // 4. ⚡ ACTUALIZAR KPIs DESDE LOS ENDPOINTS ⚡
+      try {
+        // Ejecutamos las peticiones en paralelo
+        const [totalPlanillasRes, planillasCompletasRes] = await Promise.all([
+          Api.getTotalPlanillas().catch(() => null),
+          Api.getTotalPlanillasCompletas().catch(() => null),
+        ]);
+
+        // KPI 1: Total Territorios (obtenido de la cantidad de territorios recibidos o total único)
+        const elTotalTerritorios = document.getElementById("totalAsignaciones");
+        if (elTotalTerritorios) {
+          elTotalTerritorios.textContent = 60;
+        }
+
+        // KPI 2: Planillas Totales
+        const elPlanillasTotales =
+          document.getElementById("territoriosActivos");
+        if (elPlanillasTotales && totalPlanillasRes !== null) {
+          // Extraemos el valor del JSON (ej: { total: 14 } o valor numérico directo)
+          const totalPlanillasVal =
+            typeof totalPlanillasRes === "object"
+              ? (totalPlanillasRes.total ??
+                totalPlanillasRes.count ??
+                JSON.stringify(totalPlanillasRes))
+              : totalPlanillasRes;
+          elPlanillasTotales.textContent = totalPlanillasVal;
+        }
+
+        // KPI 3: Planillas Completadas
+        const elPlanillasCompletadas = document.getElementById(
+          "asignacionesCompletadas",
+        );
+        if (elPlanillasCompletadas && planillasCompletasRes !== null) {
+          const completasVal =
+            typeof planillasCompletasRes === "object"
+              ? (planillasCompletasRes.total ??
+                planillasCompletasRes.count ??
+                JSON.stringify(planillasCompletasRes))
+              : planillasCompletasRes;
+          elPlanillasCompletadas.textContent = completasVal;
+        }
+      } catch (kpiError) {
+        console.error(
+          "❌ Error al actualizar los KPIs del dashboard:",
+          kpiError,
         );
       }
     } catch (error) {
@@ -321,4 +368,131 @@ export const Controller = {
       console.error("Error cargando historial:", error);
     }
   },
+
+  // Planilla
+
+  planillasCache: [],
+  zonaActualPlanillas: null,
+  anioActualPlanillas: null,
+
+  async initPlanillas() {
+    try {
+      UIManager.showLoading(true);
+      // 1. Consumimos el nuevo endpoint
+      this.planillasCache = await Api.getPlanillas();
+      this.renderZonasPlanillas();
+    } catch (error) {
+      console.error("❌ Error al cargar planillas:", error);
+      UIManager.mostrarMensaje("No se pudieron cargar las planillas", "error");
+    } finally {
+      UIManager.showLoading(false);
+    }
+  },
+
+  renderZonasPlanillas() {
+    this.zonaActualPlanillas = null;
+    this.anioActualPlanillas = null;
+
+    const titulo = document.getElementById("planillasTituloSeccion");
+    const btnVolver = document.getElementById("btnVolverPlanillas");
+    const container = document.getElementById("containerPlanillas");
+
+    if (titulo) titulo.innerText = "Seleccione una Zona";
+    if (btnVolver) btnVolver.classList.add("hidden");
+    if (!container) return;
+
+    const zonas = [1, 2, 3];
+
+    container.innerHTML = zonas
+      .map(
+        (z) => `
+      <div class="card-zona" data-zona="${z}" style="background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        <div style="font-size: 32px; margin-bottom: 8px;">📂</div>
+        <h4 style="font-size: 16px; font-weight: 600; color: var(--gray-900); margin: 0;">Zona ${z}</h4>
+        <p style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">Explorar años y planillas</p>
+      </div>
+    `,
+      )
+      .join("");
+  },
+
+  seleccionarZonaPlanillas(zona) {
+    this.zonaActualPlanillas = zona;
+    this.anioActualPlanillas = null;
+
+    const titulo = document.getElementById("planillasTituloSeccion");
+    const btnVolver = document.getElementById("btnVolverPlanillas");
+    const container = document.getElementById("containerPlanillas");
+
+    if (titulo) titulo.innerText = `Zona ${zona} — Seleccione un Año`;
+    if (btnVolver) btnVolver.classList.remove("hidden");
+
+    // Filtrar años únicos para esta zona
+    const anios = [
+      ...new Set(
+        this.planillasCache.filter((p) => p.zona === zona).map((p) => p.anio),
+      ),
+    ].sort((a, b) => b - a); // Más recientes primero
+
+    container.innerHTML = anios
+      .map(
+        (anio) => `
+      <div class="planilla-card-item" onclick="Controller.seleccionarAnioPlanillas(${anio})" style="background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        <div style="font-size: 32px; margin-bottom: 8px;">📅</div>
+        <h4 style="font-size: 16px; font-weight: 600; color: var(--gray-900); margin: 0;">Año ${anio}</h4>
+        <p style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">Ver planillas registradas</p>
+      </div>
+    `,
+      )
+      .join("");
+  },
+
+  seleccionarAnioPlanillas(anio) {
+    this.anioActualPlanillas = anio;
+
+    const titulo = document.getElementById("planillasTituloSeccion");
+    const container = document.getElementById("containerPlanillas");
+
+    if (titulo)
+      titulo.innerText = `Zona ${this.zonaActualPlanillas} / Año ${anio} — Planillas`;
+
+    // Filtrar planillas por zona y año
+    const planillasFiltradas = this.planillasCache.filter(
+      (p) => p.zona === this.zonaActualPlanillas && p.anio === anio,
+    );
+
+    container.innerHTML = planillasFiltradas
+      .map(
+        (p) => `
+      <div onclick="Controller.abrirGoogleSheet('${p.spreadsheet_id}')" style="background: var(--white); border: 1px solid var(--gray-200); border-radius: 12px; padding: 20px; text-align: left; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 24px;">📊</div>
+        <div style="overflow: hidden;">
+          <h4 style="font-size: 14px; font-weight: 600; color: var(--gray-900); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${p.nombre_planilla}">${p.nombre_planilla}</h4>
+          <p style="font-size: 11px; color: var(--green-600); margin-top: 2px; font-weight: 500;">Abrir en Google Sheets ↗</p>
+        </div>
+      </div>
+    `,
+      )
+      .join("");
+  },
+
+  volverNivelPlanillas() {
+    if (this.anioActualPlanillas !== null) {
+      // Si estamos en planillas, volvemos a selección de años
+      this.seleccionarZonaPlanillas(this.zonaActualPlanillas);
+    } else if (this.zonaActualPlanillas !== null) {
+      // Si estamos en años, volvemos a selección de zonas
+      this.renderZonasPlanillas();
+    }
+  },
+
+  abrirGoogleSheet(spreadsheetId) {
+    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
+    window.open(url, "_blank");
+  },
 };
+
+window.Controller = Controller;
+
+//FALTA AGREGAR DESD EENDPOINT MOSTRAR EN TIEMPO REAL PLANILLAS TOTALES Y PLANILLAS COMPLETAS TTOALES SON 6 YA ESTA
+//HECHO
