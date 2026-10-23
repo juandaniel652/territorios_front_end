@@ -416,6 +416,10 @@ export const UIManager = {
       })
       .join("");
   },
+
+  renderTablaReporteSemanal(reportes) {
+    Tables.renderTablaReporteSemanal(reportes);
+  },
 };
 
 // --- EXPOSICIÓN GLOBAL PARA DELEGACIÓN DE EVENTOS ---

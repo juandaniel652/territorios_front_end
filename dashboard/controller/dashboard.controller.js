@@ -531,6 +531,66 @@ export const Controller = {
     const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
     window.open(url, "_blank");
   },
+
+  // --- REPORTE SEMANAL CONSOLIDADO ---
+  semanasConReportesCache: [],
+
+  async initReporteSemanal() {
+    try {
+      UIManager.showLoading(true);
+
+      // 1. Obtenemos el listado de semanas con reportes anidados del backend
+      this.semanasConReportesCache = await Api.getSemanasConReportes();
+
+      const selectSemana = document.getElementById("selectSemanaReporte");
+      if (!selectSemana) return;
+
+      selectSemana.innerHTML = "";
+
+      if (
+        !this.semanasConReportesCache ||
+        this.semanasConReportesCache.length === 0
+      ) {
+        selectSemana.innerHTML = `<option value="">Sin semanas registradas</option>`;
+        UIManager.renderTablaReporteSemanal([]);
+        return;
+      }
+
+      // 2. Poblamos el selector con los labels formateados por el backend
+      this.semanasConReportesCache.forEach((semana, index) => {
+        const option = document.createElement("option");
+        option.value = index; // Guardamos el índice en el array para recuperarlo rápido
+        option.textContent = semana.label;
+        selectSemana.appendChild(option);
+      });
+
+      // 3. Renderizamos por defecto la primera semana (la más reciente)
+      selectSemana.value = 0;
+      this.seleccionarSemanaReporte(0);
+
+      // 4. Asignamos el listener para cuando el usuario cambie la opción
+      selectSemana.onchange = (e) => {
+        const idx = parseInt(e.target.value, 10);
+        this.seleccionarSemanaReporte(idx);
+      };
+    } catch (error) {
+      console.error("❌ Error al cargar reportes semanales:", error);
+      UIManager.mostrarMensaje(
+        "No se pudieron cargar los reportes semanales",
+        "error",
+      );
+    } finally {
+      UIManager.showLoading(false);
+    }
+  },
+
+  seleccionarSemanaReporte(index) {
+    const semana = this.semanasConReportesCache[index];
+    if (!semana) return;
+
+    // Le pasamos los reportes anidados de esa semana a la UI
+    UIManager.renderTablaReporteSemanal(semana.reportes);
+  },
 };
 
 window.Controller = Controller;

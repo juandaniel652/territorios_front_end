@@ -851,6 +851,24 @@
           Agenda Quincenal
         </button>
 
+        <button type="button" id="btnReportesSemanales" class="nav-btn">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Reportes Semanales
+        </button>
+
         <button type="button" id="btnPlanillas" class="nav-btn">
           <svg
             width="15"
@@ -1134,6 +1152,50 @@
                       Cargando historial...
                     </td>
                   </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sección Reportes Semanales Consolidados -->
+        <section id="seccionReportesSemanales" class="section-base hidden">
+          <div class="form-card mb-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="section-title mb-0">
+                Reporte de Territorios por Semana
+              </h3>
+              <div class="w-72">
+                <select
+                  id="selectSemanaReporte"
+                  class="form-select w-full bg-white border border-gray-200 rounded-md p-2 text-sm font-medium text-gray-700 focus:border-green-600 outline-none"
+                >
+                  <!-- Se llena dinámicamente -->
+                </select>
+              </div>
+            </div>
+
+            <div
+              class="table-wrapper border border-gray-200 rounded-lg overflow-hidden"
+            >
+              <table class="data-table w-full text-left border-collapse">
+                <thead
+                  class="bg-green-50 text-green-900 text-[11px] uppercase tracking-wider font-semibold border-b border-green-200"
+                >
+                  <tr>
+                    <th class="p-3">Territorio</th>
+                    <th class="p-3">Zona</th>
+                    <th class="p-3">Conductor</th>
+                    <th class="p-3">Asignado</th>
+                    <th class="p-3">Completado</th>
+                    <th class="p-3">Abarcado</th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="tablaReporteSemanalBody"
+                  class="divide-y divide-gray-100 text-sm"
+                >
+                  <!-- Se llena dinámicamente con JS -->
                 </tbody>
               </table>
             </div>

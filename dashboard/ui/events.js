@@ -33,6 +33,14 @@ async function handleNavegacion(btnNav) {
       console.error("Error al cargar planillas:", err);
     }
   }
+
+  if (btnNav.id === "btnReportesSemanales") {
+    try {
+      await Controller.initReporteSemanal();
+    } catch (err) {
+      console.error("Error al cargar reportes semanales:", err);
+    }
+  }
 }
 
 async function handleGenerarPropuesta() {

@@ -131,6 +131,16 @@ export const Api = {
     );
     return handleResponse(res);
   },
+
+  async getSemanasConReportes() {
+    const res = await fetch(
+      `${CONFIG.BASE_URL}/api/v1/territorios/reportes/semanas-con-reportes`,
+      {
+        headers: getHeaders(),
+      },
+    );
+    return handleResponse(res);
+  },
 };
 
 window.Api = Api;

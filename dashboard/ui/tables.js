@@ -175,4 +175,34 @@ export const Tables = {
             </td>
         </tr>`;
   },
+
+  renderTablaReporteSemanal(reportes) {
+    const tbody = document.getElementById("tablaReporteSemanalBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (!reportes || reportes.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400 italic">No hay territorios registrados en esta semana.</td></tr>`;
+      return;
+    }
+
+    reportes.forEach((item) => {
+      const fechaAsig = DateFormatter.toArgentina(item.fecha_asignado) || "—";
+      const fechaComp =
+        DateFormatter.toArgentina(item.fecha_completado) || "Pendiente";
+
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-green-50/40 transition-colors text-center";
+      tr.innerHTML = `
+        <td class="p-3 font-bold text-green-600">${item.territorio_numero}</td>
+        <td class="p-3 text-gray-600">${item.zona}</td>
+        <td class="p-3 text-gray-700 font-medium">${item.conductor_nombre || "Sin asignar"}</td>
+        <td class="p-3 text-gray-600">${fechaAsig}</td>
+        <td class="p-3 text-gray-600">${fechaComp}</td>
+        <td class="p-3"><span class="bg-green-50 text-green-700 px-2.5 py-1 rounded-full text-xs font-semibold border border-green-200">${item.cantidad_abarcado || "—"}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  },
 };
