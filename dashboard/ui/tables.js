@@ -1,6 +1,19 @@
 import { DateFormatter, agruparPorSemana } from "./utils.js";
 
 export const Tables = {
+  // Helper centralizado para formatear fechas con nombre de día (ej: "Lunes 19/10/2026")
+  _formatearConDia(fechaStr) {
+    if (!fechaStr) return null;
+    const [y, m, d] = fechaStr.split("-").map(Number);
+    const fechaObj = new Date(y, m - 1, d);
+
+    let nombreDia = fechaObj.toLocaleDateString("es-AR", { weekday: "long" });
+    nombreDia = nombreDia.charAt(0).toUpperCase() + nombreDia.slice(1);
+
+    const fechaCorta = DateFormatter.toArgentina(fechaStr);
+    return `${nombreDia} ${fechaCorta}`;
+  },
+
   renderAsignaciones(numero, asignaciones) {
     const container = document.getElementById("resultadoTerritorio");
     if (!container) return;
@@ -14,8 +27,9 @@ export const Tables = {
       .map((a) => {
         const id = a.id ?? "";
         const tieneId = id !== "" && id !== null;
-        const fechaAsignadoAR = DateFormatter.toArgentina(a.fecha_asignado);
-        const fechaCompletadoAR = DateFormatter.toArgentina(a.fecha_completado);
+        const fechaAsignadoAR = this._formatearConDia(a.fecha_asignado) || "—";
+        const fechaCompletadoAR =
+          this._formatearConDia(a.fecha_completado) || "Pendiente";
 
         return `
             <tr>
@@ -187,24 +201,10 @@ export const Tables = {
       return;
     }
 
-    // Helper interno para formatear "Día, Fecha" (ej: "Lunes 19/10")
-    const formatearConDia = (fechaStr) => {
-      if (!fechaStr) return null;
-      const [y, m, d] = fechaStr.split("-").map(Number);
-      const fechaObj = new Date(y, m - 1, d);
-
-      // Obtenemos el nombre del día en minúscula (ej: "lunes") y lo capitalizamos
-      let nombreDia = fechaObj.toLocaleDateString("es-AR", { weekday: "long" });
-      nombreDia = nombreDia.charAt(0).toUpperCase() + nombreDia.slice(1);
-
-      const fechaCorta = DateFormatter.toArgentina(fechaStr); // Ej: 19/10/2026
-      return `${nombreDia} ${fechaCorta}`;
-    };
-
     reportes.forEach((item) => {
-      const fechaAsigConDia = formatearConDia(item.fecha_asignado) || "—";
+      const fechaAsigConDia = this._formatearConDia(item.fecha_asignado) || "—";
       const fechaCompConDia =
-        formatearConDia(item.fecha_completado) || "Pendiente";
+        this._formatearConDia(item.fecha_completado) || "Pendiente";
 
       const tr = document.createElement("tr");
       tr.className = "hover:bg-green-50/40 transition-colors text-center";
