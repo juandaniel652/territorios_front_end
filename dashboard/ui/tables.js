@@ -187,19 +187,33 @@ export const Tables = {
       return;
     }
 
+    // Helper interno para formatear "Día, Fecha" (ej: "Lunes 19/10")
+    const formatearConDia = (fechaStr) => {
+      if (!fechaStr) return null;
+      const [y, m, d] = fechaStr.split("-").map(Number);
+      const fechaObj = new Date(y, m - 1, d);
+
+      // Obtenemos el nombre del día en minúscula (ej: "lunes") y lo capitalizamos
+      let nombreDia = fechaObj.toLocaleDateString("es-AR", { weekday: "long" });
+      nombreDia = nombreDia.charAt(0).toUpperCase() + nombreDia.slice(1);
+
+      const fechaCorta = DateFormatter.toArgentina(fechaStr); // Ej: 19/10/2026
+      return `${nombreDia} ${fechaCorta}`;
+    };
+
     reportes.forEach((item) => {
-      const fechaAsig = DateFormatter.toArgentina(item.fecha_asignado) || "—";
-      const fechaComp =
-        DateFormatter.toArgentina(item.fecha_completado) || "Pendiente";
+      const fechaAsigConDia = formatearConDia(item.fecha_asignado) || "—";
+      const fechaCompConDia =
+        formatearConDia(item.fecha_completado) || "Pendiente";
 
       const tr = document.createElement("tr");
       tr.className = "hover:bg-green-50/40 transition-colors text-center";
       tr.innerHTML = `
-        <td class="p-3 font-bold text-green-700">${item.territorio_numero}</td>
+        <td class="p-3 font-bold text-green-600">${item.territorio_numero}</td>
         <td class="p-3 text-gray-600">${item.zona}</td>
         <td class="p-3 text-gray-700 font-medium">${item.conductor_nombre || "Sin asignar"}</td>
-        <td class="p-3 text-gray-600">${fechaAsig}</td>
-        <td class="p-3 text-gray-600">${fechaComp}</td>
+        <td class="p-3 text-gray-600">${fechaAsigConDia}</td>
+        <td class="p-3 text-gray-600">${fechaCompConDia}</td>
         <td class="p-3"><span class="bg-green-50 text-green-700 px-2.5 py-1 rounded-full text-xs font-semibold border border-green-200">${item.cantidad_abarcado || "—"}</span></td>
       `;
       tbody.appendChild(tr);
