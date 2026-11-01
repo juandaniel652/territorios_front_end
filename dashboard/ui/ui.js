@@ -45,7 +45,7 @@ export const UIManager = {
       option.textContent = `Semana desde el Domingo ${labelFecha}`;
       selectDomingo.appendChild(option);
 
-      fecha.setDate(fecha.getDate() - 7);
+      fecha.setDate(fecha.getDate() - 6);
     }
   },
 
