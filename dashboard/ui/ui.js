@@ -275,7 +275,7 @@ export const UIManager = {
 
     const base = new Date(fechaDomingo + "T00:00:00");
 
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 0; i <= 6; i++) {
       const diaLab = new Date(base);
       diaLab.setDate(base.getDate() + i);
 

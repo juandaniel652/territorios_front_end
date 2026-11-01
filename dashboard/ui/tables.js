@@ -28,25 +28,24 @@ export const Tables = {
         const id = a.id ?? "";
         const tieneId = id !== "" && id !== null;
         const fechaAsignadoAR = this._formatearConDia(a.fecha_asignado) || "—";
-        const fechaCompletadoAR =
-          this._formatearConDia(a.fecha_completado) || "Pendiente";
+        const fechaCompletadoAR = this._formatearConDia(a.fecha_completado) || "Pendiente";
 
         return `
-            <tr>
-                <td>${a.conductor ?? "—"}</td>
-                <td>${fechaAsignadoAR}</td> 
-                <td>${fechaCompletadoAR}</td>
-                <td>${a.cantidad_abarcado ?? "—"}</td>
-                <td>
-                    <div class="row-actions">
-                        <button class="btn-row-edit" 
+            <tr class="text-center">
+                <td class="p-3 text-gray-700 font-medium">${a.conductor ?? "—"}</td>
+                <td class="p-3 text-gray-600">${fechaAsignadoAR}</td> 
+                <td class="p-3 text-gray-600">${fechaCompletadoAR}</td>
+                <td class="p-3"><span class="bg-green-50 text-green-700 px-2.5 py-1 rounded-full text-xs font-semibold border border-green-200">${a.cantidad_abarcado ?? "—"}</span></td>
+                <td class="p-3">
+                    <div class="row-actions flex justify-center gap-2">
+                        <button class="btn-row-edit px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs font-semibold" 
                             data-id="${id}" 
                             data-conductor="${a.conductor ?? ""}"
                             data-fecha-asignado="${a.fecha_asignado ?? ""}"
                             data-fecha-completado="${a.fecha_completado ?? ""}"
                             data-cantidad="${a.cantidad_abarcado ?? ""}"
                             ${!tieneId ? "disabled" : ""}>Editar</button>
-                        <button class="btn-row-delete" 
+                        <button class="btn-row-delete px-3 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-xs font-semibold" 
                             data-id="${id}" 
                             ${!tieneId ? "disabled" : ""}>Eliminar</button>
                     </div>
@@ -56,13 +55,19 @@ export const Tables = {
       .join("");
 
     container.innerHTML = `
-            <h4 class="result-title">Historial: Territorio ${numero}</h4>
-            <div class="table-wrapper">
-                <table class="data-table">
+            <h4 class="result-title font-bold text-gray-800 mb-3">Historial: Territorio ${numero}</h4>
+            <div class="table-wrapper border border-gray-200 rounded-lg overflow-x-auto bg-white">
+                <table class="data-table w-full text-left border-collapse min-w-[650px]">
                     <thead>
-                        <tr><th>Conductor</th><th>Asignado</th><th>Completado</th><th>Abarcado</th><th>Acciones</th></tr>
+                        <tr class="bg-green-50 text-green-900 text-[11px] uppercase tracking-wider font-semibold border-b border-green-200">
+                            <th class="p-3 text-center">Conductor</th>
+                            <th class="p-3 text-center">Asignado</th>
+                            <th class="p-3 text-center">Completado</th>
+                            <th class="p-3 text-center">Abarcado</th>
+                            <th class="p-3 text-center">Acciones</th>
+                        </tr>
                     </thead>
-                    <tbody>${filas}</tbody>
+                    <tbody class="divide-y divide-gray-100 text-sm">${filas}</tbody>
                 </table>
             </div>`;
   },
