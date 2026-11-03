@@ -99,6 +99,26 @@ function handleModals(target) {
     return true;
   }
 
+  // 💡 1.5 NUEVO: Si el clic se hizo en el botón de eliminar de la fila
+  const btnDelete = target.closest(".btn-row-delete");
+  if (btnDelete) {
+    const id = btnDelete.dataset.id;
+    if (id) {
+      // Si tienes un modal de confirmación configurado en Modals:
+      if (typeof Modals.abrirConfirmar === "function") {
+        Modals.abrirConfirmar(id);
+      } else {
+        // Alternativa directa si no usas modal de confirmación visual
+        Controller.eliminarAsignacion(id, () => {
+          const numTerritorio =
+            document.getElementById("territorioInput")?.value;
+          if (numTerritorio) Controller.consultarTerritorio(numTerritorio);
+        });
+      }
+    }
+    return true;
+  }
+
   // 2. Si el clic ocurrió DENTRO de la caja de contenido del modal
   if (target.closest(".modal-box") || target.closest(".modal-content")) {
     return false;
@@ -111,6 +131,20 @@ function handleModals(target) {
   ) {
     Modals.cerrarEdicion();
     Modals.cerrarConfirmar();
+    return true;
+  }
+
+  // 💡 NUEVO: Si hace clic en el botón definitivo de aceptar eliminación dentro del modal
+  const btnConfirmDelete = target.closest("#btnConfirmDelete");
+  if (btnConfirmDelete) {
+    const id = document.getElementById("confirmDeleteId")?.value;
+    if (id) {
+      Controller.eliminarAsignacion(id, () => {
+        Modals.cerrarConfirmar();
+        const numTerritorio = document.getElementById("territorioInput")?.value;
+        if (numTerritorio) Controller.consultarTerritorio(numTerritorio);
+      });
+    }
     return true;
   }
 
