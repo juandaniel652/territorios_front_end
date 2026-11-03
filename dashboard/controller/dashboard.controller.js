@@ -114,8 +114,28 @@ export const Controller = {
 
   _deArgentinoAISO(fechaArg) {
     if (!fechaArg) return null;
-    if (fechaArg.includes("-")) return fechaArg;
 
+    // Si viene como objeto Date (por ejemplo, si flatpickr o JS lo pasaron como objeto)
+    if (fechaArg instanceof Date) {
+      const anio = fechaArg.getFullYear();
+      const mes = String(fechaArg.getMonth() + 1).padStart(2, "0");
+      const dia = String(fechaArg.getDate()).padStart(2, "0");
+      return `${anio}-${mes}-${dia}`;
+    }
+
+    // Si ya viene como string pero tiene formato ISO con hora (ej: "2026-10-25T00:00:00.000Z")
+    if (typeof fechaArg === "string" && fechaArg.includes("T")) {
+      // Tomamos la parte de la fecha y nos aseguramos de no arrastrar UTC
+      const [anio, mes, dia] = fechaArg.split("T")[0].split("-");
+      return `${anio}-${mes}-${dia}`;
+    }
+
+    // Si ya viene limpio en formato "YYYY-MM-DD"
+    if (typeof fechaArg === "string" && fechaArg.includes("-")) {
+      return fechaArg.split("T")[0];
+    }
+
+    // Si viene en formato argentino "DD/MM/YYYY"
     const partes = fechaArg.split("/");
     if (partes.length !== 3) return null;
     return `${partes[2]}-${partes[1]}-${partes[0]}`;

@@ -1,10 +1,6 @@
 // dashboard/ui/ui.js
-import { DOM } from "./dom.js";
+
 import { Tables } from "./tables.js";
-import { Modals } from "./modals.js";
-import { Charts } from "./charts.js";
-import { initGlobalEvents } from "./events.js";
-import { DateFormatter } from "./utils.js";
 import { Controller } from "../controller/dashboard.controller.js";
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
@@ -29,7 +25,7 @@ export const UIManager = {
     // Ajustamos al domingo más cercano (hoy o anterior)
     fecha.setDate(fecha.getDate() - fecha.getDay());
 
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 10; i++) {
       const iso = fecha.toISOString().split("T")[0];
 
       // Formato: "03 de Mayo de 2026"
@@ -45,7 +41,7 @@ export const UIManager = {
       option.textContent = `Semana desde el Domingo ${labelFecha}`;
       selectDomingo.appendChild(option);
 
-      fecha.setDate(fecha.getDate() - 6);
+      fecha.setDate(fecha.getDate() - 7);
     }
   },
 
@@ -115,41 +111,6 @@ export const UIManager = {
             `;
       contenedor.appendChild(card);
     });
-  },
-
-  // --- PLANILLA S-13 (HISTORIAL TÉCNICO) ---
-  renderPlanillaS13(data) {
-    const tbody = document.getElementById("tbodyS13");
-    if (!tbody) return;
-
-    const registros = Array.isArray(data) ? data : [];
-
-    if (registros.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="12" class="p-4 text-center text-gray-400 italic">No hay datos para la planilla S-13</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = registros
-      .map((terr) => {
-        const historial = terr.historial || [];
-        let row = `<tr class="border-b border-black h-[42px]">
-                <td class="border-r border-black font-bold bg-gray-50 text-center">${String(terr.numero).padStart(2, "0")}</td>
-                <td class="border-r border-black text-[10px] text-center">${terr.ultima_fecha_anterior || "—"}</td>`;
-
-        // Renderizamos 5 columnas de historial (estándar S-13)
-        for (let i = 0; i < 5; i++) {
-          const reg = historial[i];
-          if (reg) {
-            row += `<td class="border-r border-black p-1 text-[9px]">
-                        <strong>${reg.conductor}</strong><br><span class="text-gray-400">${reg.fecha_asignado}</span>
-                    </td><td class="border-r border-black text-[9px] text-center">${reg.fecha_completado || ""}</td>`;
-          } else {
-            row += `<td class="border-r border-black"></td><td class="border-r border-black"></td>`;
-          }
-        }
-        return row + `</tr>`;
-      })
-      .join("");
   },
 
   // --- NAVEGACIÓN Y ESTADOS ---
@@ -273,28 +234,27 @@ export const UIManager = {
       return;
     }
 
-    const base = new Date(fechaDomingo + "T00:00:00");
+    // 💡 SOLUCIÓN: Desglosamos la fecha para evitar desfases de zona horaria UTC
+    const [year, month, day] = fechaDomingo.split("-").map(Number);
+    const base = new Date(year, month - 1, day);
 
-    for (let i = 0; i <= 6; i++) {
+    for (let i = 1; i <= 6; i++) {
       const diaLab = new Date(base);
       diaLab.setDate(base.getDate() + i);
 
       const iso = diaLab.toISOString().split("T")[0];
 
-      // Nombre del día (Lunes, Martes...)
       const nombreDia = diaLab.toLocaleDateString("es-AR", { weekday: "long" });
-      // Fecha (04-05-2026)
       const fechaNumerica = diaLab
         .toLocaleDateString("es-AR", {
           day: "2-digit",
           month: "2-digit",
           year: "numeric",
         })
-        .replace(/\//g, "-"); // Cambiamos / por - para que quede 04-05-2026
+        .replace(/\//g, "-");
 
       const option = document.createElement("option");
       option.value = iso;
-      // Resultado: "Lunes 04-05-2026"
       option.textContent = `${nombreDia.charAt(0).toUpperCase() + nombreDia.slice(1)} ${fechaNumerica}`;
       selectCompletado.appendChild(option);
     }
