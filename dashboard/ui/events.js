@@ -99,22 +99,12 @@ function handleModals(target) {
     return true;
   }
 
-  // 💡 1.5 NUEVO: Si el clic se hizo en el botón de eliminar de la fila
+  // 💡 NUEVO: Si el clic se hizo en el botón de eliminar de la fila
   const btnDelete = target.closest(".btn-row-delete");
   if (btnDelete) {
-    const id = btnDelete.dataset.id;
+    const { id, conductor, fecha } = btnDelete.dataset;
     if (id) {
-      // Si tienes un modal de confirmación configurado en Modals:
-      if (typeof Modals.abrirConfirmar === "function") {
-        Modals.abrirConfirmar(id);
-      } else {
-        // Alternativa directa si no usas modal de confirmación visual
-        Controller.eliminarAsignacion(id, () => {
-          const numTerritorio =
-            document.getElementById("territorioInput")?.value;
-          if (numTerritorio) Controller.consultarTerritorio(numTerritorio);
-        });
-      }
+      Modals.abrirConfirmarEliminacion(id, conductor, fecha);
     }
     return true;
   }
