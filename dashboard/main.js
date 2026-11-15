@@ -56,7 +56,7 @@ async function bootstrap() {
     console.error("Error al arrancar dashboard:", err);
     // Si el error es de token expirado (401 o 403), redirigimos
     if (err.status === 401 || err.status === 403) {
-      window.location.href = "../login/index.html";
+      window.location.href = "/login/index.html";
     }
   }
 }
