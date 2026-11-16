@@ -170,7 +170,7 @@ export const Controller = {
       console.log("🔄 Dashboard recargado en tiempo real.");
     } catch (error) {
       console.error("❌ Error al actualizar asignación:", error);
-      alert("Error al actualizar la asignación.");
+      UIManager.mostrarMensaje("Error al editar.", "error");
       throw error;
     }
   },
